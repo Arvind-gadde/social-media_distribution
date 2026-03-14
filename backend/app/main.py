@@ -50,3 +50,13 @@ app.include_router(notifications.router, prefix=PREFIX)
 @app.get("/health")
 async def health() -> dict:
     return {"status": "ok", "env": settings.APP_ENV}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=settings.APP_DEBUG,
+    )

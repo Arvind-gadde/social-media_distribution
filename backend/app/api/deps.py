@@ -25,13 +25,13 @@ async def get_current_user(
     db: Annotated[AsyncSession, Depends(get_db)],
     cache: Annotated[CacheService, Depends(get_cache)],
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_security)] = None,
-    dl_access_token: Annotated[str | None, Cookie()] = None,
+    cf_access_token: Annotated[str | None, Cookie()] = None,
 ) -> User:
     token = None
     if credentials:
         token = credentials.credentials
-    elif dl_access_token:
-        token = dl_access_token
+    elif cf_access_token:
+        token = cf_access_token
     if not token:
         raise AuthenticationError("Authentication required")
     payload = decode_token(token, expected_type="access")

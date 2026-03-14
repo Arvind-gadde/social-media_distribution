@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { getMe } from "../api/auth";
 import { useAuthStore } from "../store/authStore";
 import toast from "react-hot-toast";
+import api from "../api/client";
 
 export default function OAuthCallbackPage() {
   const [params] = useSearchParams();
@@ -16,13 +16,27 @@ export default function OAuthCallbackPage() {
       navigate("/login");
       return;
     }
-    getMe()
-      .then((r) => {
+
+    const code = params.get("code");
+    const state = params.get("state");
+
+    if (!code || !state) {
+      toast.error("Invalid callback parameters");
+      navigate("/login");
+      return;
+    }
+
+    // Exchange code with backend
+    api
+      .get("/auth/google/callback", { params: { code, state } })
+      .then((r: any) => {
         setUser(r.data.user);
         toast.success(`Welcome back, ${r.data.user.name}!`);
-        navigate("/dashboard");
+        // Small delay to allow cookies to be set
+        setTimeout(() => navigate("/dashboard"), 500);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("Auth error:", err);
         toast.error("Authentication failed");
         navigate("/login");
       });

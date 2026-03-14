@@ -13,14 +13,15 @@ import SettingsPage from "./pages/SettingsPage";
 import OAuthCallbackPage from "./pages/OAuthCallbackPage";
 
 export default function App() {
-  const { setUser, setLoading } = useAuthStore();
+  const setUser = useAuthStore((s) => s.setUser);
+  const setLoading = useAuthStore((s) => s.setLoading);
 
   useEffect(() => {
     getMe()
       .then((r) => setUser(r.data.user))
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
-  }, []);
+  }, [setUser, setLoading]);
 
   return (
     <Routes>
