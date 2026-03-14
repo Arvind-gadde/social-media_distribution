@@ -1,14 +1,16 @@
-"""Auth routes — Google OAuth with HttpOnly cookie tokens."""
+"""Auth routes — Google OAuth + email/password with HttpOnly cookie tokens."""
 from __future__ import annotations
+
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse
+
 from app.api.deps import AuthSvc, CurrentUser, Cache
 from app.core.security import (
     create_access_token, create_refresh_token,
     decode_token, generate_oauth_state, consume_oauth_state,
 )
 from app.exceptions import AuthenticationError
-from app.schemas.schemas import AuthResponse, UserResponse
+from app.schemas.schemas import AuthResponse, LoginRequest, RegisterRequest, UserResponse
 from app.config import get_settings
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -20,16 +22,65 @@ _SECURE = settings.is_production
 
 
 def _set_auth_cookies(response: Response, access: str, refresh: str) -> None:
-    response.set_cookie(_ACCESS_COOKIE, access, httponly=True, secure=_SECURE,
-        samesite="lax", max_age=settings.JWT_ACCESS_EXPIRE_MINUTES * 60, path="/")
-    response.set_cookie(_REFRESH_COOKIE, refresh, httponly=True, secure=_SECURE,
-        samesite="lax", max_age=settings.JWT_REFRESH_EXPIRE_DAYS * 86400, path="/api/v1/auth")
+    response.set_cookie(
+        _ACCESS_COOKIE, access, httponly=True, secure=_SECURE,
+        samesite="lax", max_age=settings.JWT_ACCESS_EXPIRE_MINUTES * 60, path="/",
+    )
+    response.set_cookie(
+        _REFRESH_COOKIE, refresh, httponly=True, secure=_SECURE,
+        samesite="lax", max_age=settings.JWT_REFRESH_EXPIRE_DAYS * 86400,
+        path="/api/v1/auth",
+    )
 
 
 def _clear_auth_cookies(response: Response) -> None:
     response.delete_cookie(_ACCESS_COOKIE, path="/")
     response.delete_cookie(_REFRESH_COOKIE, path="/api/v1/auth")
 
+
+def _user_json(user) -> dict:
+    return UserResponse.model_validate(user).model_dump(mode="json")
+
+
+def _auth_response(user, access: str, refresh: str, status_code: int = 200) -> Response:
+    """
+    Build auth response.
+    - access_token is returned in the JSON body so the frontend can store
+      it in memory and send as Bearer header (fixes Vite proxy cookie issues).
+    - Cookies are also set as a fallback for page refreshes.
+    """
+    resp = JSONResponse(
+        content={
+            "user": _user_json(user),
+            "access_token": access,
+        },
+        status_code=status_code,
+    )
+    _set_auth_cookies(resp, access, refresh)
+    return resp
+
+
+# ── Email / Password ──────────────────────────────────────────────────────
+
+@router.post("/register", status_code=201)
+async def register(body: RegisterRequest, auth_service: AuthSvc) -> Response:
+    user = await auth_service.register(
+        email=body.email,
+        password=body.password,
+        name=body.name,
+    )
+    access, refresh = auth_service.issue_tokens(user)
+    return _auth_response(user, access, refresh, status_code=201)
+
+
+@router.post("/login")
+async def login(body: LoginRequest, auth_service: AuthSvc) -> Response:
+    user = await auth_service.login(email=body.email, password=body.password)
+    access, refresh = auth_service.issue_tokens(user)
+    return _auth_response(user, access, refresh)
+
+
+# ── Google OAuth ──────────────────────────────────────────────────────────
 
 @router.get("/google/url")
 async def google_auth_url() -> dict:
@@ -50,12 +101,10 @@ async def google_callback(code: str, state: str, auth_service: AuthSvc) -> Respo
     google_info = await auth_service.exchange_google_code(code)
     user = await auth_service.get_or_create_google_user(google_info)
     access, refresh = auth_service.issue_tokens(user)
-    resp = JSONResponse(
-        content={"user": UserResponse.model_validate(user).model_dump(mode="json")}
-    )
-    _set_auth_cookies(resp, access, refresh)
-    return resp
+    return _auth_response(user, access, refresh)
 
+
+# ── Token management ──────────────────────────────────────────────────────
 
 @router.post("/refresh")
 async def refresh_token(request: Request, auth_service: AuthSvc) -> Response:
@@ -64,17 +113,20 @@ async def refresh_token(request: Request, auth_service: AuthSvc) -> Response:
         raise AuthenticationError("No refresh token")
     payload = decode_token(raw, expected_type="refresh")
     user_id = payload.get("sub")
+
     from app.repositories.repositories import UserRepository
     from app.db.session import AsyncSessionLocal
     import uuid
+
     async with AsyncSessionLocal() as db:
         repo = UserRepository(db)
         user = await repo.get_by_id(uuid.UUID(user_id))
-        if not user:
-            raise AuthenticationError("User not found")
+        if not user or not user.is_active:
+            raise AuthenticationError("User not found or inactive")
+
     access = create_access_token(user_id)
     refresh = create_refresh_token(user_id)
-    resp = JSONResponse(content={"ok": True})
+    resp = JSONResponse(content={"ok": True, "access_token": access})
     _set_auth_cookies(resp, access, refresh)
     return resp
 

@@ -6,7 +6,13 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      "/api": "http://localhost:8000",
+      "/api": {
+        target: "http://localhost:8000",
+        // changeOrigin rewrites the Host header so the backend accepts it.
+        // Do NOT set cookieDomainRewrite — it adds Domain=localhost to
+        // Set-Cookie headers, which Chrome silently drops.
+        changeOrigin: true,
+      },
     },
   },
 });

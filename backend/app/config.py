@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Set
 
-from pydantic import field_validator, model_validator
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -21,7 +20,8 @@ class Settings(BaseSettings):
     # ── Database ──────────────────────────────────────────────────────────
     DATABASE_URL: str
 
-    # ── Redis ─────────────────────────────────────────────────────────────
+    # ── Redis (self-hosted or Upstash) ────────────────────────────────────
+    # Upstash: rediss://default:<password>@<host>.upstash.io:6380
     REDIS_URL: str = "redis://localhost:6379/0"
 
     # ── JWT ───────────────────────────────────────────────────────────────
@@ -33,20 +33,29 @@ class Settings(BaseSettings):
     # ── Token Encryption ─────────────────────────────────────────────────
     TOKEN_ENCRYPTION_KEY: str
 
-    # ── OAuth ─────────────────────────────────────────────────────────────
+    # ── OAuth — Google Login ──────────────────────────────────────────────
+    # IMPORTANT: This must point to the FRONTEND callback page, not the backend.
+    # Register http://localhost:5173/auth/callback in Google Cloud Console.
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""
-    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/google/callback"
+    GOOGLE_REDIRECT_URI: str = "http://localhost:5173/auth/callback"
 
-    # ── Object Storage ────────────────────────────────────────────────────
+    # ── Object Storage — Cloudflare R2 ────────────────────────────────────
+    # R2 is S3-compatible. Get values from:
+    # dash.cloudflare.com → R2 → Manage R2 API Tokens
+    # S3_ENDPOINT_URL format: https://<account-id>.r2.cloudflarestorage.com
+    # S3_PUBLIC_BASE_URL: set after enabling public access on the bucket
     S3_ENDPOINT_URL: str = ""
     S3_ACCESS_KEY_ID: str = ""
     S3_SECRET_ACCESS_KEY: str = ""
     S3_BUCKET_NAME: str = "contentflow-media"
-    S3_REGION: str = "us-east-1"
+    S3_REGION: str = "auto"  # R2 uses "auto"
     S3_PUBLIC_BASE_URL: str = ""
 
-    # ── OpenAI ────────────────────────────────────────────────────────────
+    # ── AI — Primary: Gemini, Fallback: OpenAI ───────────────────────────
+    # Gemini free tier: 1,500 req/day. Get key at aistudio.google.com
+    GEMINI_API_KEY: str = ""
+    # OpenAI as backup. Get key at platform.openai.com
     OPENAI_API_KEY: str = ""
 
     # ── Platforms ─────────────────────────────────────────────────────────
@@ -77,8 +86,16 @@ class Settings(BaseSettings):
         return [o.strip() for o in self.APP_ALLOWED_ORIGINS.split(",")]
 
     @property
+    def has_gemini(self) -> bool:
+        return bool(self.GEMINI_API_KEY)
+
+    @property
     def has_openai(self) -> bool:
         return bool(self.OPENAI_API_KEY)
+
+    @property
+    def has_any_ai(self) -> bool:
+        return self.has_gemini or self.has_openai
 
     @property
     def has_s3(self) -> bool:

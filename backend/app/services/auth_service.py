@@ -1,9 +1,10 @@
-"""Auth service — Google OAuth, user creation, token lifecycle."""
+"""Auth service — Google OAuth, email/password auth, token lifecycle."""
 
 from __future__ import annotations
 
 import structlog
 import httpx
+import bcrypt
 
 from app.config import get_settings
 from app.core.security import (
@@ -23,6 +24,9 @@ settings = get_settings()
 _GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 _GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 
+# bcrypt cost factor — 12 is OWASP-recommended minimum for production
+_BCRYPT_ROUNDS = 12
+
 
 class AuthService:
     """Business logic for authentication. No HTTP framework dependencies."""
@@ -30,6 +34,62 @@ class AuthService:
     def __init__(self, user_repo: UserRepository, cache: CacheService) -> None:
         self._user_repo = user_repo
         self._cache = cache
+
+    # ── Password helpers ──────────────────────────────────────────────────
+
+    @staticmethod
+    def hash_password(plaintext: str) -> str:
+        """Return a bcrypt hash of the plaintext password."""
+        return bcrypt.hashpw(
+            plaintext.encode("utf-8"),
+            bcrypt.gensalt(rounds=_BCRYPT_ROUNDS),
+        ).decode("utf-8")
+
+    @staticmethod
+    def verify_password(plaintext: str, hashed: str) -> bool:
+        """Return True if plaintext matches the stored bcrypt hash."""
+        try:
+            return bcrypt.checkpw(plaintext.encode("utf-8"), hashed.encode("utf-8"))
+        except Exception:
+            return False
+
+    # ── Email / Password Auth ─────────────────────────────────────────────
+
+    async def register(self, email: str, password: str, name: str) -> User:
+        """
+        Create a new user with email/password credentials.
+        Raises ConflictError if email is already taken.
+        """
+        existing = await self._user_repo.get_by_email(email.lower())
+        if existing:
+            raise ConflictError("An account with this email already exists")
+
+        user = User(
+            email=email.lower(),
+            name=name,
+            password_hash=self.hash_password(password),
+        )
+        user = await self._user_repo.save(user)
+        logger.info("user_registered", user_id=str(user.id), email=email)
+        return user
+
+    async def login(self, email: str, password: str) -> User:
+        """
+        Authenticate with email/password.
+        Raises AuthenticationError on any failure — deliberately vague to
+        prevent user enumeration attacks.
+        """
+        user = await self._user_repo.get_by_email(email.lower())
+
+        # Always run verify_password even on missing user to prevent timing attacks
+        stored_hash = user.password_hash if user else "$2b$12$invalidhashfortimingatk"
+        password_valid = self.verify_password(password, stored_hash)
+
+        if not user or not password_valid or not user.is_active:
+            raise AuthenticationError("Invalid email or password")
+
+        logger.info("user_logged_in", user_id=str(user.id))
+        return user
 
     # ── Google OAuth ──────────────────────────────────────────────────────
 
@@ -43,6 +103,7 @@ class AuthService:
                         "code": code,
                         "client_id": settings.GOOGLE_CLIENT_ID,
                         "client_secret": settings.GOOGLE_CLIENT_SECRET,
+                        # Must match exactly the redirect_uri used to obtain the code
                         "redirect_uri": settings.GOOGLE_REDIRECT_URI,
                         "grant_type": "authorization_code",
                     },
@@ -75,25 +136,23 @@ class AuthService:
         if not email:
             raise AuthenticationError("Google account did not provide an email address")
 
-        # Try by Google ID first (most reliable)
         user = await self._user_repo.get_by_google_id(google_id)
         if not user:
-            user = await self._user_repo.get_by_email(email)
+            user = await self._user_repo.get_by_email(email.lower())
 
         if user:
-            # Refresh metadata
             user.google_id = google_id
             user.avatar_url = google_info.get("picture")
             user = await self._user_repo.save(user)
         else:
             user = User(
-                email=email,
+                email=email.lower(),
                 name=google_info.get("name", email.split("@")[0]),
                 avatar_url=google_info.get("picture"),
                 google_id=google_id,
             )
             user = await self._user_repo.save(user)
-            logger.info("user_created", user_id=str(user.id), email=email)
+            logger.info("user_created_google", user_id=str(user.id), email=email)
 
         return user
 

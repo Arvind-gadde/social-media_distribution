@@ -1,4 +1,10 @@
-"""AI service — platform recommendations and caption generation."""
+"""AI service — platform recommendations and caption generation.
+
+Provider strategy:
+  1. Gemini (google-generativeai) — free tier: 1,500 req/day
+  2. OpenAI GPT-4o-mini — fallback if Gemini fails or key missing
+  3. Rule-based — final fallback, always works with no API key
+"""
 
 from __future__ import annotations
 
@@ -39,10 +45,18 @@ _LANGUAGE_INSTRUCTIONS = {
 
 
 class AIService:
-    """Platform recommendations and AI-powered caption generation."""
+    """Platform recommendations and AI-powered caption generation.
 
-    def __init__(self, openai_api_key: Optional[str] = None) -> None:
-        self._openai_key = openai_api_key
+    Dependency-injected with API keys so it is testable without environment setup.
+    """
+
+    def __init__(
+        self,
+        gemini_api_key: Optional[str] = None,
+        openai_api_key: Optional[str] = None,
+    ) -> None:
+        self._gemini_key = gemini_api_key or ""
+        self._openai_key = openai_api_key or ""
 
     # ── Platform Recommendations ──────────────────────────────────────────
 
@@ -76,65 +90,126 @@ class AIService:
         elif duration_s <= 60:
             recs = [
                 {"platform": "josh", "reason": "60s creator videos perform best here", "score": 0.92},
-                {"platform": "instagram", "reason": "Reels up to 90s", "score": 0.88},
+                {"platform": "instagram", "reason": "Reels up to 90s supported", "score": 0.88},
                 {"platform": "youtube_shorts", "reason": "Shorts max is 60s", "score": 0.85},
-                {"platform": "roposo", "reason": "60s clips work well", "score": 0.80},
-                {"platform": "facebook", "reason": "Good reach for 1-min videos", "score": 0.68},
+                {"platform": "facebook", "reason": "Good for short video content", "score": 0.75},
+                {"platform": "x", "reason": "Video clips perform well", "score": 0.70},
             ]
         else:
             recs = [
-                {"platform": "youtube", "reason": "Long-form video performs best on YouTube", "score": 0.97},
-                {"platform": "facebook", "reason": "Facebook Watch for long videos", "score": 0.80},
+                {"platform": "youtube", "reason": "Best platform for long-form video", "score": 0.96},
+                {"platform": "facebook", "reason": "Long videos reach older demographics", "score": 0.80},
                 {"platform": "linkedin", "reason": "Professional long-form video", "score": 0.72},
-                {"platform": "instagram", "reason": "IGTV for longer content", "score": 0.65},
             ]
 
         if is_regional:
-            recs.append({"platform": "sharechat", "reason": "Regional language video content thrives here", "score": 0.89})
+            regional = [
+                {"platform": "sharechat", "reason": "Top regional language social platform", "score": 0.93},
+                {"platform": "koo", "reason": "Indian multilingual microblogging", "score": 0.85},
+            ]
+            recs = regional + recs
 
-        return sorted(recs, key=lambda x: x["score"], reverse=True)
+        return recs[:8]
 
     def _recommend_for_image(self, is_regional: bool) -> list[dict]:
         recs = [
-            {"platform": "instagram", "reason": "Visual-first platform, highest image engagement", "score": 0.95},
-            {"platform": "facebook", "reason": "Images get strong organic reach", "score": 0.82},
-            {"platform": "linkedin", "reason": "Great for infographics and professional imagery", "score": 0.78},
-            {"platform": "x", "reason": "Images boost engagement 3× on X", "score": 0.72},
+            {"platform": "instagram", "reason": "Best platform for visual content", "score": 0.96},
+            {"platform": "facebook", "reason": "Image posts drive strong engagement", "score": 0.85},
+            {"platform": "linkedin", "reason": "Images boost professional post reach", "score": 0.80},
+            {"platform": "x", "reason": "Images increase tweet visibility by 3x", "score": 0.78},
         ]
         if is_regional:
-            recs.extend([
-                {"platform": "sharechat", "reason": "Regional language images perform very well", "score": 0.90},
-                {"platform": "koo", "reason": "Good for regional image posts", "score": 0.75},
-            ])
-        return sorted(recs, key=lambda x: x["score"], reverse=True)
+            recs = [{"platform": "sharechat", "reason": "Image-heavy regional audience", "score": 0.88}] + recs
+        return recs
 
     def _recommend_for_text(self, is_regional: bool) -> list[dict]:
         recs = [
-            {"platform": "x", "reason": "Text-first microblogging platform", "score": 0.92},
-            {"platform": "linkedin", "reason": "Thought leadership content thrives here", "score": 0.88},
-            {"platform": "facebook", "reason": "Text posts with good storytelling", "score": 0.72},
+            {"platform": "x", "reason": "Built for short-form text posts", "score": 0.92},
+            {"platform": "linkedin", "reason": "Professional text content thrives here", "score": 0.88},
+            {"platform": "facebook", "reason": "Good reach for text posts", "score": 0.75},
         ]
         if is_regional:
-            recs.extend([
-                {"platform": "koo", "reason": "Indian microblogging — great for regional text", "score": 0.85},
-                {"platform": "sharechat", "reason": "Regional language text content thrives here", "score": 0.93},
-            ])
-        return sorted(recs, key=lambda x: x["score"], reverse=True)
+            recs = [
+                {"platform": "koo", "reason": "Regional language microblogging", "score": 0.90},
+                {"platform": "sharechat", "reason": "Text posts in regional languages", "score": 0.85},
+            ] + recs
+        return recs
 
     # ── Caption Generation ────────────────────────────────────────────────
 
-    def build_platform_caption(self, caption: str, platform: str) -> dict:
-        """Trim caption to platform limit and append default hashtags."""
-        limit = PLATFORM_CHAR_LIMITS.get(platform, 2000)
-        trimmed = caption[:limit]
-        hashtags = PLATFORM_DEFAULT_HASHTAGS.get(platform, [])
-        return {
-            "caption": trimmed,
-            "hashtags": hashtags,
-            "full_text": f"{trimmed}\n\n{' '.join(hashtags)}".strip() if hashtags else trimmed,
-        }
+    async def generate_caption(
+        self,
+        topic: str,
+        tone: str = "casual",
+        language: str = "en",
+        media_type: str = "video",
+        platforms: list[str] | None = None,
+    ) -> str:
+        """
+        Generate a social media caption.
+        Tries Gemini → OpenAI → rule-based fallback in order.
+        Never raises — always returns something useful.
+        """
+        validated_tone = tone if tone in _TONE_DESCRIPTIONS else "casual"
+        validated_lang = language if language in _LANGUAGE_INSTRUCTIONS else "en"
+        prompt = self._build_prompt(topic, validated_tone, validated_lang, media_type, platforms or [])
 
-    async def generate_ai_caption(
+        if self._gemini_key:
+            try:
+                return await self._call_gemini(prompt)
+            except Exception as exc:
+                logger.warning("gemini_caption_failed", error=str(exc))
+
+        if self._openai_key:
+            try:
+                return await self._call_openai(prompt)
+            except Exception as exc:
+                logger.warning("openai_caption_failed", error=str(exc))
+
+        logger.info("ai_caption_fallback_to_rule_based")
+        return self._rule_based_caption(topic, validated_tone)
+
+    async def suggest_hashtags(
+        self, platform: str, caption: str, language: str = "en"
+    ) -> list[str]:
+        """Return hashtag suggestions. Falls back to platform defaults."""
+        defaults = list(PLATFORM_DEFAULT_HASHTAGS.get(platform, []))
+        if not (self._gemini_key or self._openai_key):
+            return defaults[:15]
+
+        prompt = (
+            f"Generate 10 relevant hashtags for this social media caption on {platform}. "
+            f"Caption: {caption[:200]}\n"
+            "Return only hashtags, one per line, starting with #. No explanations."
+        )
+
+        raw = ""
+        if self._gemini_key:
+            try:
+                raw = await self._call_gemini(prompt, max_tokens=200)
+            except Exception as exc:
+                logger.warning("gemini_hashtag_failed", error=str(exc))
+
+        if not raw and self._openai_key:
+            try:
+                raw = await self._call_openai(prompt, max_tokens=200)
+            except Exception as exc:
+                logger.warning("openai_hashtag_failed", error=str(exc))
+
+        if raw:
+            tags = [
+                line.strip()
+                for line in raw.splitlines()
+                if line.strip().startswith("#")
+            ]
+            if tags:
+                return tags[:15]
+
+        return defaults[:15]
+
+    # ── Prompt builder ────────────────────────────────────────────────────
+
+    def _build_prompt(
         self,
         topic: str,
         tone: str,
@@ -142,79 +217,76 @@ class AIService:
         media_type: str,
         platforms: list[str],
     ) -> str:
-        """Generate a caption using OpenAI GPT-4o-mini."""
-        if not self._openai_key:
-            raise AIServiceError(
-                "OpenAI API key is not configured. Set OPENAI_API_KEY in your .env file."
-            )
-
-        if tone not in SUPPORTED_TONES:
-            raise AIServiceError(f"Unsupported tone '{tone}'. Choose from: {', '.join(SUPPORTED_TONES)}")
-
-        if language not in SUPPORTED_LANGUAGES:
-            raise AIServiceError(f"Unsupported language '{language}'")
-
-        tone_desc = _TONE_DESCRIPTIONS.get(tone, "friendly and conversational")
         lang_instruction = _LANGUAGE_INSTRUCTIONS.get(language, "Write in English")
-        platform_list = ", ".join(platforms) if platforms else "social media"
+        tone_desc = _TONE_DESCRIPTIONS.get(tone, _TONE_DESCRIPTIONS["casual"])
+        platform_str = ", ".join(platforms) if platforms else "social media"
 
-        prompt = f"""You are a social media content expert specialising in Indian audiences and creator culture.
+        char_limits = []
+        for p in platforms:
+            limit = PLATFORM_CHAR_LIMITS.get(p)
+            if limit:
+                char_limits.append(f"{p}: {limit} chars")
+        limits_str = "; ".join(char_limits) if char_limits else ""
 
-Write a single engaging social media caption for:
-- Topic: {topic}
-- Content type: {media_type}
-- Target platforms: {platform_list}
-- Tone: {tone_desc}
-- {lang_instruction}
+        return (
+            f"Write a {tone_desc} social media caption for a {media_type} about: {topic}\n"
+            f"Target platforms: {platform_str}\n"
+            f"{f'Character limits — {limits_str}' if limits_str else ''}\n"
+            f"{lang_instruction}.\n"
+            "Include 3-5 relevant emojis. Do NOT include hashtags (generated separately).\n"
+            "Return only the caption text, no explanations."
+        )
 
-Rules:
-1. Under 200 words
-2. Include 3–5 relevant emojis naturally placed
-3. End with a clear call-to-action
-4. If platforms include Instagram/Josh/Moj → make it punchy and visual
-5. If LinkedIn is included → professional but human, no buzzwords
-6. Do NOT include hashtags (added separately per platform)
-7. Output only the caption text — no preamble, no quotes"""
+    def _rule_based_caption(self, topic: str, tone: str) -> str:
+        """Deterministic fallback when no AI keys are available."""
+        openings = {
+            "casual": f"Hey everyone! Check out my latest {topic} content 🎉",
+            "professional": f"Excited to share insights on {topic} with my network.",
+            "funny": f"Plot twist: {topic} is actually amazing 😂",
+            "inspirational": f"Every journey starts with one step. Today's focus: {topic} 🌟",
+            "educational": f"Let's learn something new about {topic} today 📚",
+        }
+        return openings.get(tone, openings["casual"])
 
-        try:
-            from openai import AsyncOpenAI
-            client = AsyncOpenAI(api_key=self._openai_key)
-            response = await client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=400,
-                temperature=0.8,
-            )
-            return response.choices[0].message.content.strip()
-        except Exception as exc:
-            logger.error("openai_caption_failed", error=str(exc))
-            raise AIServiceError(f"Caption generation failed: {exc}") from exc
+    # ── Provider calls ────────────────────────────────────────────────────
 
-    async def suggest_hashtags(
-        self, platform: str, caption: str, language: str = "en"
-    ) -> list[str]:
-        """Suggest trending hashtags using OpenAI, fall back to defaults."""
-        if not self._openai_key:
-            return PLATFORM_DEFAULT_HASHTAGS.get(platform, [])
+    async def _call_gemini(self, prompt: str, max_tokens: int = 500) -> str:
+        """Call Google Gemini API (gemini-1.5-flash — free tier)."""
+        import google.generativeai as genai  # type: ignore[import]
 
-        try:
-            from openai import AsyncOpenAI
-            client = AsyncOpenAI(api_key=self._openai_key)
-            response = await client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[{
-                    "role": "user",
-                    "content": (
-                        f"Generate 8 trending hashtags for {platform} in India. "
-                        f"Language context: {language}. "
-                        f"Caption context: '{caption[:200]}'. "
-                        "Return only hashtags separated by spaces, no explanation."
-                    ),
-                }],
-                max_tokens=100,
-            )
-            text = response.choices[0].message.content.strip()
-            return [h for h in text.split() if h.startswith("#")][:8]
-        except Exception as exc:
-            logger.warning("hashtag_suggestion_failed", error=str(exc))
-            return PLATFORM_DEFAULT_HASHTAGS.get(platform, [])
+        genai.configure(api_key=self._gemini_key)
+        model = genai.GenerativeModel("gemini-1.5-flash")
+
+        # google-generativeai is sync; run in thread pool to avoid blocking event loop
+        import asyncio
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(
+            None,
+            lambda: model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    max_output_tokens=max_tokens,
+                    temperature=0.7,
+                ),
+            ),
+        )
+        text = response.text.strip()
+        if not text:
+            raise AIServiceError("Gemini returned empty response")
+        return text
+
+    async def _call_openai(self, prompt: str, max_tokens: int = 500) -> str:
+        """Call OpenAI GPT-4o-mini API."""
+        from openai import AsyncOpenAI
+
+        client = AsyncOpenAI(api_key=self._openai_key)
+        response = await client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=max_tokens,
+            temperature=0.7,
+        )
+        text = (response.choices[0].message.content or "").strip()
+        if not text:
+            raise AIServiceError("OpenAI returned empty response")
+        return text

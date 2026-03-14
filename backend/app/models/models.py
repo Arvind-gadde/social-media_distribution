@@ -30,7 +30,14 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     avatar_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+    # Google OAuth — null for email/password users
     google_id: Mapped[str | None] = mapped_column(String(200), unique=True, nullable=True)
+
+    # Email/password auth — null for Google-only users
+    # Stored as bcrypt hash — NEVER store plaintext passwords
+    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow, server_default=func.now()
@@ -73,7 +80,7 @@ class Post(Base):
     caption: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Media
-    media_key: Mapped[str | None] = mapped_column(String(500), nullable=True)   # S3 key
+    media_key: Mapped[str | None] = mapped_column(String(500), nullable=True)   # R2/S3 key
     media_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)  # Public URL
     media_type: Mapped[str | None] = mapped_column(String(20), nullable=True)   # image/video/text
     media_duration_s: Mapped[float | None] = mapped_column(nullable=True)
