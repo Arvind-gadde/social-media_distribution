@@ -16,13 +16,19 @@ settings = get_settings()
 
 # ── Fernet encryption for platform tokens ────────────────────────────────
 
+_fernet_instance: Fernet | None = None
+
 def _get_fernet() -> Fernet:
-    """Lazily initialise Fernet with the app key."""
-    key = settings.TOKEN_ENCRYPTION_KEY
-    if not key:
-        # Dev fallback — generate a temporary key (tokens won't survive restart)
-        return Fernet(Fernet.generate_key())
-    return Fernet(key.encode() if isinstance(key, str) else key)
+    """Cached Fernet instance for encrypting platform OAuth tokens."""
+    global _fernet_instance
+    if _fernet_instance is None:
+        key = settings.TOKEN_ENCRYPTION_KEY
+        if not key:
+            # Dev fallback — generate a stable key for process lifetime
+            _fernet_instance = Fernet(Fernet.generate_key())
+        else:
+            _fernet_instance = Fernet(key.encode() if isinstance(key, str) else key)
+    return _fernet_instance
 
 
 def encrypt_token(plaintext: str) -> str:

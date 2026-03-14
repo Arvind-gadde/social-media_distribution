@@ -21,16 +21,17 @@ _REFRESH_COOKIE = "cf_refresh_token"
 _SECURE = settings.is_production
 
 
-def _set_auth_cookies(response: Response, access: str, refresh: str) -> None:
+def _set_auth_cookies(response: Response, access: str, refresh: str | None = None) -> None:
     response.set_cookie(
         _ACCESS_COOKIE, access, httponly=True, secure=_SECURE,
         samesite="lax", max_age=settings.JWT_ACCESS_EXPIRE_MINUTES * 60, path="/",
     )
-    response.set_cookie(
-        _REFRESH_COOKIE, refresh, httponly=True, secure=_SECURE,
-        samesite="lax", max_age=settings.JWT_REFRESH_EXPIRE_DAYS * 86400,
-        path="/api/v1/auth",
-    )
+    if refresh:
+        response.set_cookie(
+            _REFRESH_COOKIE, refresh, httponly=True, secure=_SECURE,
+            samesite="lax", max_age=settings.JWT_REFRESH_EXPIRE_DAYS * 86400,
+            path="/api/v1/auth",
+        )
 
 
 def _clear_auth_cookies(response: Response) -> None:
@@ -147,6 +148,14 @@ async def logout(request: Request, current_user: CurrentUser, cache: Cache) -> R
     return resp
 
 
-@router.get("/me", response_model=AuthResponse)
-async def get_me(current_user: CurrentUser) -> AuthResponse:
-    return AuthResponse(user=UserResponse.model_validate(current_user))
+@router.get("/me")
+async def get_me(response: Response, current_user: CurrentUser) -> Response:
+    access_token = create_access_token(str(current_user.id))
+    _set_auth_cookies(response, access_token, None)
+    
+    return JSONResponse(
+        content={
+            "user": _user_json(current_user),
+            "access_token": access_token,
+        },
+    )

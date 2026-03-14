@@ -21,9 +21,13 @@ from app.config import get_settings
 
 _security = HTTPBearer(auto_error=False)
 
+_cache_singleton: CacheService | None = None
 
 async def get_cache() -> CacheService:
-    return CacheService()
+    global _cache_singleton
+    if _cache_singleton is None:
+        _cache_singleton = CacheService()
+    return _cache_singleton
 
 
 async def get_current_user(
