@@ -17,11 +17,16 @@ class Settings(BaseSettings):
     APP_SECRET_KEY: str
     APP_ALLOWED_ORIGINS: str = "http://localhost:5173"
 
+    # ── Dev bypass ────────────────────────────────────────────────────────
+    # Set to true in .env to skip ALL authentication in development.
+    # Every request will be served as "Dev User" with no login required.
+    # Has zero effect when APP_ENV=production.
+    DEV_BYPASS_AUTH: bool = False
+
     # ── Database ──────────────────────────────────────────────────────────
     DATABASE_URL: str
 
-    # ── Redis (self-hosted or Upstash) ────────────────────────────────────
-    # Upstash: rediss://default:<password>@<host>.upstash.io:6380
+    # ── Redis ─────────────────────────────────────────────────────────────
     REDIS_URL: str = "redis://localhost:6379/0"
 
     # ── JWT ───────────────────────────────────────────────────────────────
@@ -34,28 +39,20 @@ class Settings(BaseSettings):
     TOKEN_ENCRYPTION_KEY: str
 
     # ── OAuth — Google Login ──────────────────────────────────────────────
-    # IMPORTANT: This must point to the FRONTEND callback page, not the backend.
-    # Register http://localhost:5173/auth/callback in Google Cloud Console.
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""
     GOOGLE_REDIRECT_URI: str = "http://localhost:5173/auth/callback"
 
     # ── Object Storage — Cloudflare R2 ────────────────────────────────────
-    # R2 is S3-compatible. Get values from:
-    # dash.cloudflare.com → R2 → Manage R2 API Tokens
-    # S3_ENDPOINT_URL format: https://<account-id>.r2.cloudflarestorage.com
-    # S3_PUBLIC_BASE_URL: set after enabling public access on the bucket
     S3_ENDPOINT_URL: str = ""
     S3_ACCESS_KEY_ID: str = ""
     S3_SECRET_ACCESS_KEY: str = ""
     S3_BUCKET_NAME: str = "contentflow-media"
-    S3_REGION: str = "auto"  # R2 uses "auto"
+    S3_REGION: str = "auto"
     S3_PUBLIC_BASE_URL: str = ""
 
-    # ── AI — Primary: Gemini, Fallback: OpenAI ───────────────────────────
-    # Gemini free tier: 1,500 req/day. Get key at aistudio.google.com
+    # ── AI ────────────────────────────────────────────────────────────────
     GEMINI_API_KEY: str = ""
-    # OpenAI as backup. Get key at platform.openai.com
     OPENAI_API_KEY: str = ""
 
     # ── Platforms ─────────────────────────────────────────────────────────
@@ -101,8 +98,6 @@ class Settings(BaseSettings):
     def has_s3(self) -> bool:
         return bool(self.S3_ACCESS_KEY_ID and self.S3_SECRET_ACCESS_KEY)
 
-    # ── Startup validation ────────────────────────────────────────────────
-
     @model_validator(mode="after")
     def validate_secrets(self) -> "Settings":
         insecure = {"CHANGE-ME", "changeme", "secret", ""}
@@ -111,15 +106,19 @@ class Settings(BaseSettings):
             if any(value.lower().startswith(s) for s in insecure):
                 if self.is_production:
                     raise ValueError(
-                        f"{field_name} must be set to a secure value in production. "
-                        "Generate with: openssl rand -hex 64"
+                        f"{field_name} must be set to a secure value in production."
                     )
         if self.is_production and not self.TOKEN_ENCRYPTION_KEY:
             raise ValueError("TOKEN_ENCRYPTION_KEY is required in production")
+        if self.is_production and self.DEV_BYPASS_AUTH:
+            raise ValueError(
+                "DEV_BYPASS_AUTH must be false in production — "
+                "it disables ALL authentication."
+            )
         return self
 
 
 @lru_cache()
 def get_settings() -> Settings:
-    """Cached settings singleton. Call get_settings() everywhere."""
+    """Cached settings singleton."""
     return Settings()

@@ -10,32 +10,35 @@ from app.core.security import (
     decode_token, generate_oauth_state, consume_oauth_state,
 )
 from app.exceptions import AuthenticationError
-from app.schemas.schemas import AuthResponse, LoginRequest, RegisterRequest, UserResponse
+from app.schemas.schemas import LoginRequest, RegisterRequest, UserResponse
 from app.config import get_settings
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 settings = get_settings()
 
-_ACCESS_COOKIE = "cf_access_token"
+_ACCESS_COOKIE  = "cf_access_token"
 _REFRESH_COOKIE = "cf_refresh_token"
 _SECURE = settings.is_production
 
 
 def _set_auth_cookies(response: Response, access: str, refresh: str | None = None) -> None:
     response.set_cookie(
-        _ACCESS_COOKIE, access, httponly=True, secure=_SECURE,
-        samesite="lax", max_age=settings.JWT_ACCESS_EXPIRE_MINUTES * 60, path="/",
+        _ACCESS_COOKIE, access,
+        httponly=True, secure=_SECURE, samesite="lax",
+        max_age=settings.JWT_ACCESS_EXPIRE_MINUTES * 60,
+        path="/",
     )
     if refresh:
         response.set_cookie(
-            _REFRESH_COOKIE, refresh, httponly=True, secure=_SECURE,
-            samesite="lax", max_age=settings.JWT_REFRESH_EXPIRE_DAYS * 86400,
-            path="/api/v1/auth",
+            _REFRESH_COOKIE, refresh,
+            httponly=True, secure=_SECURE, samesite="lax",
+            max_age=settings.JWT_REFRESH_EXPIRE_DAYS * 86400,
+            path="/api/v1/auth",   # browser only sends this cookie to /api/v1/auth/*
         )
 
 
 def _clear_auth_cookies(response: Response) -> None:
-    response.delete_cookie(_ACCESS_COOKIE, path="/")
+    response.delete_cookie(_ACCESS_COOKIE,  path="/")
     response.delete_cookie(_REFRESH_COOKIE, path="/api/v1/auth")
 
 
@@ -45,16 +48,12 @@ def _user_json(user) -> dict:
 
 def _auth_response(user, access: str, refresh: str, status_code: int = 200) -> Response:
     """
-    Build auth response.
-    - access_token is returned in the JSON body so the frontend can store
-      it in memory and send as Bearer header (fixes Vite proxy cookie issues).
-    - Cookies are also set as a fallback for page refreshes.
+    Single JSONResponse with body + cookies set on the same object.
+    access_token in body → frontend stores in memory as Bearer header.
+    Cookies → fallback for page refreshes (HttpOnly, JS-invisible).
     """
     resp = JSONResponse(
-        content={
-            "user": _user_json(user),
-            "access_token": access,
-        },
+        content={"user": _user_json(user), "access_token": access},
         status_code=status_code,
     )
     _set_auth_cookies(resp, access, refresh)
@@ -112,6 +111,7 @@ async def refresh_token(request: Request, auth_service: AuthSvc) -> Response:
     raw = request.cookies.get(_REFRESH_COOKIE)
     if not raw:
         raise AuthenticationError("No refresh token")
+
     payload = decode_token(raw, expected_type="refresh")
     user_id = payload.get("sub")
 
@@ -125,8 +125,9 @@ async def refresh_token(request: Request, auth_service: AuthSvc) -> Response:
         if not user or not user.is_active:
             raise AuthenticationError("User not found or inactive")
 
-    access = create_access_token(user_id)
+    access  = create_access_token(user_id)
     refresh = create_refresh_token(user_id)
+
     resp = JSONResponse(content={"ok": True, "access_token": access})
     _set_auth_cookies(resp, access, refresh)
     return resp
@@ -149,13 +150,27 @@ async def logout(request: Request, current_user: CurrentUser, cache: Cache) -> R
 
 
 @router.get("/me")
-async def get_me(response: Response, current_user: CurrentUser) -> Response:
-    access_token = create_access_token(str(current_user.id))
-    _set_auth_cookies(response, access_token, None)
-    
-    return JSONResponse(
-        content={
-            "user": _user_json(current_user),
-            "access_token": access_token,
-        },
-    )
+async def get_me(current_user: CurrentUser) -> Response:
+    """
+    Return current user + fresh access token, refreshing the access cookie.
+
+    BUG THAT WAS HERE (now fixed):
+      The old signature was: async def get_me(response: Response, current_user: CurrentUser)
+      It called _set_auth_cookies(response, ...) on the FastAPI-injected background
+      Response, then returned a DIFFERENT JSONResponse object.
+      FastAPI does NOT merge cookies from the injected Response into a separately
+      constructed JSONResponse — the Set-Cookie headers were silently dropped.
+      Result: access cookie was never rotated on /auth/me calls, so after 60 minutes
+      the cookie expired and users were kicked to login on next page refresh.
+
+    Fix: build ONE JSONResponse and call _set_auth_cookies directly on it.
+    """
+    access  = create_access_token(str(current_user.id))
+    refresh = create_refresh_token(str(current_user.id))
+
+    resp = JSONResponse(content={
+        "user":         _user_json(current_user),
+        "access_token": access,
+    })
+    _set_auth_cookies(resp, access, refresh)
+    return resp

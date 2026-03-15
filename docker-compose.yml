@@ -5,8 +5,9 @@ services:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: contentflow
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: social-media-distribution
+
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:

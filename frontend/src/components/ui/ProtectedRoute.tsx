@@ -1,6 +1,12 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 
+// ── DEV BYPASS ────────────────────────────────────────────────────────────
+// Set this to true to skip all auth checks during development.
+// Flip back to false before deploying to production.
+const DEV_BYPASS_AUTH = true;
+// ─────────────────────────────────────────────────────────────────────────
+
 interface Props {
   children?: React.ReactNode;
 }
@@ -9,7 +15,11 @@ export default function ProtectedRoute({ children }: Props) {
   const user = useAuthStore((s) => s.user);
   const isLoading = useAuthStore((s) => s.isLoading);
 
-  // While checking session on initial load — show spinner
+  // Dev bypass — skip all auth, render everything directly
+  if (DEV_BYPASS_AUTH) {
+    return children ? <>{children}</> : <Outlet />;
+  }
+
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -20,7 +30,5 @@ export default function ProtectedRoute({ children }: Props) {
 
   if (!user) return <Navigate to="/login" replace />;
 
-  // Supports both wrapper pattern (<ProtectedRoute><Layout /></ProtectedRoute>)
-  // and outlet pattern (nested <Route> children)
   return children ? <>{children}</> : <Outlet />;
 }

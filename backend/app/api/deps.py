@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import Depends, Cookie
+from fastapi import Depends, Request, Cookie
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,9 +19,11 @@ from app.services.cache_service import CacheService
 from app.services.post_service import PostService
 from app.config import get_settings
 
+_security = get_settings
 _security = HTTPBearer(auto_error=False)
 
 _cache_singleton: CacheService | None = None
+
 
 async def get_cache() -> CacheService:
     global _cache_singleton
@@ -31,11 +33,23 @@ async def get_cache() -> CacheService:
 
 
 async def get_current_user(
+    request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],
     cache: Annotated[CacheService, Depends(get_cache)],
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_security)] = None,
     cf_access_token: Annotated[str | None, Cookie()] = None,
 ) -> User:
+    settings = get_settings()
+
+    # ── DEV BYPASS ────────────────────────────────────────────────────────
+    # If DevAuthBypassMiddleware injected a dev user, return it immediately.
+    # No DB hit, no JWT validation, no cookies needed.
+    if not settings.is_production and getattr(settings, "DEV_BYPASS_AUTH", False):
+        dev_user = getattr(request.state, "dev_user", None)
+        if dev_user is not None:
+            return dev_user
+    # ─────────────────────────────────────────────────────────────────────
+
     token = None
     if credentials:
         token = credentials.credentials
@@ -89,9 +103,9 @@ async def get_media_service() -> MediaService:
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
-DbSession = Annotated[AsyncSession, Depends(get_db)]
-AuthSvc = Annotated[AuthService, Depends(get_auth_service)]
-PostSvc = Annotated[PostService, Depends(get_post_service)]
-AISvc = Annotated[AIService, Depends(get_ai_service)]
-MediaSvc = Annotated[MediaService, Depends(get_media_service)]
-Cache = Annotated[CacheService, Depends(get_cache)]
+DbSession   = Annotated[AsyncSession, Depends(get_db)]
+AuthSvc     = Annotated[AuthService, Depends(get_auth_service)]
+PostSvc     = Annotated[PostService, Depends(get_post_service)]
+AISvc       = Annotated[AIService, Depends(get_ai_service)]
+MediaSvc    = Annotated[MediaService, Depends(get_media_service)]
+Cache       = Annotated[CacheService, Depends(get_cache)]

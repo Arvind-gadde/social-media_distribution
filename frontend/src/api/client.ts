@@ -32,19 +32,21 @@ function processQueue(error: unknown) {
   failedQueue = [];
 }
 
-// Endpoints that must NEVER trigger the auto-refresh logic.
-// ⚠️  /auth/refresh MUST be here — without it, the interceptor intercepts its
-//     own refresh attempt when it gets a 401, pushes it onto failedQueue, and
-//     creates a deadlock where the queue waits for a response that's IN the queue.
+// ⚠️  /auth/refresh MUST be in this list.
+//
+// Without it, the interceptor intercepts its own refresh call when that call
+// gets a 401, pushes it onto failedQueue, and creates a deadlock:
+//   – outer await api.post("/auth/refresh") waits for processQueue(null)
+//   – processQueue(null) waits for the inner /auth/refresh to resolve
+//   – inner /auth/refresh is sitting in failedQueue, waiting for processQueue
+//   → nothing ever moves → setLoading(false) is never called → spinner forever
 const SKIP_REFRESH = [
   "/auth/login",
   "/auth/register",
-  "/auth/refresh",       // ← THE CRITICAL FIX: was missing, caused the deadlock
+  "/auth/refresh",      // ← CRITICAL — prevents the deadlock described above
   "/auth/logout",
   "/auth/google/url",
   "/auth/google/callback",
-  // NOTE: /auth/me is intentionally NOT here — we want 401s from /auth/me
-  // to trigger a refresh attempt so session restoration works correctly.
 ];
 
 api.interceptors.response.use(
@@ -58,8 +60,8 @@ api.interceptors.response.use(
     );
 
     if (status === 401 && !originalReq?._retry && !shouldSkip) {
-      // Another refresh already in-flight — queue this request.
       if (isRefreshing) {
+        // Another refresh is in flight — queue this request until it resolves.
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
@@ -71,8 +73,8 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Use a raw fetch here — NOT api.post() — so this call is completely
-        // outside the interceptor and cannot be caught or queued again.
+        // Use raw fetch — NOT api.post() — so this call is completely outside
+        // the Axios interceptor chain and can never be caught or queued again.
         const refreshResp = await fetch("/api/v1/auth/refresh", {
           method: "POST",
           credentials: "include",
@@ -80,7 +82,6 @@ api.interceptors.response.use(
         });
 
         if (!refreshResp.ok) {
-          // Refresh token invalid/expired — treat as a clean logout.
           throw new Error("refresh_failed");
         }
 
@@ -93,13 +94,11 @@ api.interceptors.response.use(
 
         processQueue(null);
         isRefreshing = false;
-        return api(originalReq);           // retry the original request
+        return api(originalReq);
       } catch (refreshError) {
         processQueue(refreshError);
         isRefreshing = false;
 
-        // Only log out if this was a genuine auth failure (refresh expired).
-        // Don't call logout() for network errors — user might just be offline.
         const isAuthFailure =
           (refreshError as Error)?.message === "refresh_failed" ||
           (refreshError as any)?.response?.status === 401;
@@ -112,12 +111,12 @@ api.interceptors.response.use(
       }
     }
 
-    // Show toast for non-401 errors (don't toast on expected 401 auth checks).
     const message =
       error.response?.data?.detail ||
       error.response?.data?.message ||
       "Something went wrong";
 
+    // Don't toast on expected 401 auth checks (e.g. /auth/me on page load).
     if (status && status !== 401) {
       toast.error(message);
     }

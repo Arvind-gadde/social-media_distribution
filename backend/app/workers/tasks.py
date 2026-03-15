@@ -1,4 +1,4 @@
-"""Celery tasks — idempotent post distribution across platforms."""
+"""Celery tasks — post distribution + content agent pipeline."""
 from __future__ import annotations
 import asyncio, uuid
 from datetime import datetime, timezone
@@ -8,10 +8,31 @@ from app.constants import CELERY_MAX_RETRIES, CELERY_RETRY_BACKOFF_S
 
 logger = structlog.get_logger(__name__)
 
+
+@celery_app.task(name="app.workers.tasks.run_content_agent", bind=True, max_retries=2)
+def run_content_agent(self) -> dict:
+    """Full agent pipeline: collect → score → summarise. Runs every 2h via beat."""
+    return asyncio.get_event_loop().run_until_complete(_run_agent_pipeline())
+
+
+async def _run_agent_pipeline() -> dict:
+    from app.config import get_settings
+    from app.services.content_agent.collector import collect_all
+    from app.services.content_agent.agent import run_agent_pipeline
+    settings = get_settings()
+    collect_stats = await collect_all(youtube_api_key=getattr(settings, "YOUTUBE_API_KEY", ""))
+    agent_stats = await run_agent_pipeline(
+        gemini_key=getattr(settings, "GEMINI_API_KEY", ""),
+        openai_key=getattr(settings, "OPENAI_API_KEY", ""),
+    )
+    return {**collect_stats, **agent_stats}
+
+
 @celery_app.task(bind=True, name="app.workers.tasks.distribute_post",
     max_retries=CELERY_MAX_RETRIES, default_retry_delay=CELERY_RETRY_BACKOFF_S, acks_late=True)
 def distribute_post(self, post_id: str) -> dict:
     return asyncio.get_event_loop().run_until_complete(_distribute(self, post_id))
+
 
 async def _distribute(task, post_id: str) -> dict:
     from app.db.session import AsyncSessionLocal
@@ -21,10 +42,8 @@ async def _distribute(task, post_id: str) -> dict:
     from app.services.cache_service import get_cache_instance
     from app.config import get_settings
     from sqlalchemy import select as sa_select
-
     settings = get_settings()
     cache = get_cache_instance()
-
     async with AsyncSessionLocal() as db:
         await db.begin()
         try:
@@ -52,10 +71,8 @@ async def _distribute(task, post_id: str) -> dict:
                 try:
                     await _publish_to_platform(platform, token_data, post, caption, settings)
                     results[platform] = "published"
-                    logger.info("platform_published", platform=platform, post_id=post_id)
                 except Exception as exc:
                     results[platform] = f"failed:{type(exc).__name__}"
-                    logger.error("platform_failed", platform=platform, error=str(exc))
             post.platform_status = {**platform_status, **results}
             success = sum(1 for s in results.values() if s == "published")
             failed = sum(1 for s in results.values() if s.startswith("failed"))
@@ -71,8 +88,8 @@ async def _distribute(task, post_id: str) -> dict:
             return {"success": success, "failed": failed}
         except Exception as exc:
             await db.rollback()
-            logger.error("distribute_failed", post_id=post_id, error=str(exc))
             raise task.retry(exc=exc)
+
 
 async def _publish_to_platform(platform, token, post, caption, settings):
     from app.services.platforms import InstagramService, YouTubeService, FacebookService, LinkedInService, TwitterService
@@ -97,6 +114,7 @@ async def _publish_to_platform(platform, token, post, caption, settings):
     elif platform == "x":
         svc = TwitterService(token["api_key"], token["api_secret"], token["access_token"], token["access_secret"])
         await svc.post_tweet(caption)
+
 
 async def _notify_user(cache, user_id, success, failed):
     sub = await cache.get_push_subscription(user_id)

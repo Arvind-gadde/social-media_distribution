@@ -1,97 +1,147 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAuthStore } from "../store/authStore";
+import { format } from "date-fns";
+import { AlertCircle, Clock, Send, TrendingUp } from "lucide-react";
 import { getAnalytics } from "../api/analytics";
 import { listPosts } from "../api/posts";
-import { format } from "date-fns";
-import { TrendingUp, Send, AlertCircle, Clock } from "lucide-react";
+import { useAuthStore } from "../store/authStore";
 import { PLATFORMS } from "../types";
-import clsx from "clsx";
 
 const STATUS_BADGE: Record<string, string> = {
   published: "badge-green",
-  partial:   "badge-yellow",
-  failed:    "badge-red",
-  processing:"badge-blue",
+  partial: "badge-yellow",
+  failed: "badge-red",
+  processing: "badge-blue",
   scheduled: "badge-purple",
-  draft:     "badge-gray",
+  draft: "badge-gray",
 };
 
 export default function DashboardPage() {
-  const user = useAuthStore((s) => s.user);
-  const { data: analytics } = useQuery({ queryKey: ["analytics"], queryFn: () => getAnalytics().then(r => r.data) });
-  const { data: posts = [] } = useQuery({ queryKey: ["posts"], queryFn: () => listPosts({ limit: 5 }).then(r => r.data) });
+  const user = useAuthStore((state) => state.user);
+  const { data: analytics } = useQuery({
+    queryKey: ["analytics"],
+    queryFn: () => getAnalytics().then((response) => response.data),
+  });
+  const { data: posts = [] } = useQuery({
+    queryKey: ["posts"],
+    queryFn: () => listPosts({ limit: 5 }).then((response) => response.data),
+  });
 
   const stats = [
-    { label: "Total Posts",     value: analytics?.total_posts     ?? "—", icon: Send,         color: "text-brand-600", bg: "bg-brand-50"  },
-    { label: "Published",       value: analytics?.published_posts  ?? "—", icon: TrendingUp,   color: "text-emerald-600", bg: "bg-emerald-50" },
-    { label: "Partial",         value: analytics?.partial_posts   ?? "—", icon: AlertCircle,  color: "text-amber-600",   bg: "bg-amber-50"  },
-    { label: "Failed",          value: analytics?.failed_posts    ?? "—", icon: Clock,        color: "text-red-600",    bg: "bg-red-50"    },
+    {
+      label: "Total Posts",
+      value: analytics?.total_posts ?? "-",
+      icon: Send,
+      color: "text-brand-300",
+      bg: "bg-white/10",
+    },
+    {
+      label: "Published",
+      value: analytics?.published_posts ?? "-",
+      icon: TrendingUp,
+      color: "text-emerald-300",
+      bg: "bg-white/10",
+    },
+    {
+      label: "Partial",
+      value: analytics?.partial_posts ?? "-",
+      icon: AlertCircle,
+      color: "text-amber-300",
+      bg: "bg-white/10",
+    },
+    {
+      label: "Failed",
+      value: analytics?.failed_posts ?? "-",
+      icon: Clock,
+      color: "text-red-300",
+      bg: "bg-white/10",
+    },
   ];
 
   return (
-    <div className="p-6 space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-800">
-          Good {new Date().getHours() < 12 ? "morning" : "evening"}, {user?.name?.split(" ")[0]} 👋
+    <div className="space-y-8 animate-fade-in">
+      <header className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold text-white">
+          Good {new Date().getHours() < 12 ? "morning" : "evening"},{" "}
+          {user?.name?.split(" ")[0]}
         </h1>
-        <p className="text-slate-500 text-sm mt-1">Here's how your content is performing</p>
-      </div>
+        <p className="text-white/60">
+          A quick overview of your content pipeline and performance metrics.
+        </p>
+      </header>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="card p-5 flex items-center gap-4">
-            <div className={clsx("w-11 h-11 rounded-xl flex items-center justify-center", bg)}>
-              <Icon size={20} className={color} />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-slate-800">{value}</p>
-              <p className="text-xs text-slate-500">{label}</p>
+          <div key={label} className="card p-5">
+            <div className="flex items-center justify-between gap-4">
+              <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${bg}`}>
+                <Icon size={20} className={color} />
+              </div>
+              <div className="text-right">
+                <p className="text-3xl font-bold text-white">{value}</p>
+                <p className="text-xs text-white/50">{label}</p>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Connected Platforms */}
-      <div className="card p-5">
-        <h2 className="font-semibold text-slate-700 mb-4">Connected Platforms</h2>
-        <div className="flex flex-wrap gap-2">
-          {PLATFORMS.map((p) => {
-            const connected = user?.connected_platforms?.includes(p.id);
+      <div className="card p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-white">Connected Platforms</h2>
+          <p className="text-xs text-white/50">Sync status updates in real time</p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          {PLATFORMS.map((platform) => {
+            const connected = user?.connected_platforms?.includes(platform.id);
             return (
-              <div key={p.id} className={clsx(
-                "flex items-center gap-2 px-3 py-1.5 rounded-xl border text-sm font-medium",
-                connected ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-100 bg-slate-50 text-slate-400"
-              )}>
-                <span>{p.icon}</span>
-                <span>{p.name}</span>
-                {connected && <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />}
+              <div
+                key={platform.id}
+                className={
+                  "flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-semibold transition " +
+                  (connected
+                    ? "border-white/10 bg-white/10 text-white"
+                    : "border-white/10 bg-white/5 text-white/60")
+                }
+              >
+                <span>{platform.icon}</span>
+                <span>{platform.name}</span>
+                {connected && <span className="h-2 w-2 rounded-full bg-emerald-400" />}
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Recent Posts */}
-      <div className="card">
-        <div className="px-5 py-4 border-b border-slate-100">
-          <h2 className="font-semibold text-slate-700">Recent Posts</h2>
+      <div className="card p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-white">Recent Posts</h2>
+          <p className="text-xs text-white/50">Latest activity</p>
         </div>
+
         {posts.length === 0 ? (
-          <div className="py-12 text-center text-slate-400">
-            <div className="text-4xl mb-2">📭</div>
-            <p>No posts yet — go upload your first piece of content!</p>
+          <div className="py-16 text-center text-white/50">
+            <p className="text-base font-medium text-white/70">No posts yet</p>
+            <p className="mt-2 text-sm text-white/45">
+              Upload your first piece of content to get started.
+            </p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-50">
+          <div className="space-y-2">
             {posts.map((post) => (
-              <div key={post.id} className="px-5 py-3.5 flex items-center gap-3 hover:bg-slate-50 transition-colors">
-                <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-lg shrink-0">
-                  {post.media_type === "video" ? "🎥" : post.media_type === "image" ? "📷" : "📝"}
+              <div
+                key={post.id}
+                className="flex items-center gap-4 rounded-2xl bg-white/5 p-4 transition hover:bg-white/10"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-lg">
+                  {post.media_type === "video" ? "VID" : post.media_type === "image" ? "IMG" : "TXT"}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-700 truncate">{post.caption || post.title || "Untitled"}</p>
-                  <p className="text-xs text-slate-400">{format(new Date(post.created_at), "dd MMM yyyy, h:mm a")}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-white">
+                    {post.caption || post.title || "Untitled"}
+                  </p>
+                  <p className="text-xs text-white/50">
+                    {format(new Date(post.created_at), "dd MMM yyyy, h:mm a")}
+                  </p>
                 </div>
                 <span className={STATUS_BADGE[post.status] || "badge-gray"}>{post.status}</span>
               </div>

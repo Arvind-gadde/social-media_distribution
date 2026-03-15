@@ -9,7 +9,7 @@ from app.core.middleware import (
     app_exception_handler, unhandled_exception_handler,
 )
 from app.exceptions import AppError
-from app.api.v1 import auth, posts, ai, analytics, platforms, notifications
+from app.api.v1 import auth, posts, ai, analytics, platforms, notifications, agent
 
 settings = get_settings()
 configure_logging(debug=settings.APP_DEBUG)
@@ -22,7 +22,10 @@ app = FastAPI(
     redoc_url=None,
 )
 
-# ── Middleware (order matters — outermost runs first) ─────────────────────
+if not settings.is_production and getattr(settings, "DEV_BYPASS_AUTH", False):
+    from app.core.dev_bypass import DevAuthBypassMiddleware
+    app.add_middleware(DevAuthBypassMiddleware)
+
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RequestIDMiddleware)
 app.add_middleware(
@@ -33,18 +36,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Exception handlers ────────────────────────────────────────────────────
 app.add_exception_handler(AppError, app_exception_handler)
 app.add_exception_handler(Exception, unhandled_exception_handler)
 
-# ── Routers ───────────────────────────────────────────────────────────────
 PREFIX = "/api/v1"
-app.include_router(auth.router, prefix=PREFIX)
-app.include_router(posts.router, prefix=PREFIX)
-app.include_router(ai.router, prefix=PREFIX)
-app.include_router(analytics.router, prefix=PREFIX)
-app.include_router(platforms.router, prefix=PREFIX)
+app.include_router(auth.router,          prefix=PREFIX)
+app.include_router(posts.router,         prefix=PREFIX)
+app.include_router(ai.router,            prefix=PREFIX)
+app.include_router(analytics.router,     prefix=PREFIX)
+app.include_router(platforms.router,     prefix=PREFIX)
 app.include_router(notifications.router, prefix=PREFIX)
+app.include_router(agent.router,         prefix=PREFIX)
 
 
 @app.get("/health")
