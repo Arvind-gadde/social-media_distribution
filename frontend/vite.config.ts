@@ -5,12 +5,11 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    host: "0.0.0.0",   // needed so Docker can expose the port
+    host: "0.0.0.0",
+    allowedHosts: ["all"],
     proxy: {
       "/api": {
-        // When running in Docker, use the service name "backend"
-        // NOT localhost — localhost inside the frontend container = frontend itself
-        target: "http://backend:8000",
+        target: process.env["VITE_BACKEND_URL"] ?? "http://backend:8000",
         changeOrigin: true,
       },
     },
