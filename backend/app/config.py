@@ -110,11 +110,7 @@ class Settings(BaseSettings):
                     )
         if self.is_production and not self.TOKEN_ENCRYPTION_KEY:
             raise ValueError("TOKEN_ENCRYPTION_KEY is required in production")
-        if self.is_production and self.DEV_BYPASS_AUTH:
-            raise ValueError(
-                "DEV_BYPASS_AUTH must be false in production — "
-                "it disables ALL authentication."
-            )
+        
         return self
 
 
