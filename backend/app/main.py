@@ -22,7 +22,7 @@ app = FastAPI(
     redoc_url=None,
 )
 
-if not settings.is_production and getattr(settings, "DEV_BYPASS_AUTH", False):
+if getattr(settings, "DEV_BYPASS_AUTH", False):
     from app.core.dev_bypass import DevAuthBypassMiddleware
     app.add_middleware(DevAuthBypassMiddleware)
 
