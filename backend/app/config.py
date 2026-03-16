@@ -103,7 +103,7 @@ class Settings(BaseSettings):
         insecure = {"CHANGE-ME", "changeme", "secret", ""}
         for field_name in ("APP_SECRET_KEY", "JWT_SECRET_KEY"):
             value = getattr(self, field_name, "")
-            if any(value.lower().startswith(s) for s in insecure):
+            if any(value.lower()== s for s in insecure):
                 if self.is_production:
                     raise ValueError(
                         f"{field_name} must be set to a secure value in production."
