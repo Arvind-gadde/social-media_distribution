@@ -2,6 +2,7 @@
 from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import select
 from app.config import get_settings
 from app.core.logging import configure_logging
 from app.core.middleware import (
@@ -10,6 +11,8 @@ from app.core.middleware import (
 )
 from app.exceptions import AppError
 from app.api.v1 import auth, posts, ai, analytics, platforms, notifications, agent
+from app.db.session import AsyncSessionLocal
+from app.models.models import User
 
 settings = get_settings()
 configure_logging(debug=settings.APP_DEBUG)
@@ -23,7 +26,7 @@ app = FastAPI(
 )
 
 if getattr(settings, "DEV_BYPASS_AUTH", False):
-    from app.core.dev_bypass import DevAuthBypassMiddleware
+    from app.core.dev_bypass import DevAuthBypassMiddleware, _DEV_USER_ID
     app.add_middleware(DevAuthBypassMiddleware)
 
 app.add_middleware(SecurityHeadersMiddleware)
@@ -52,6 +55,27 @@ app.include_router(agent.router,         prefix=PREFIX)
 @app.get("/health")
 async def health() -> dict:
     return {"status": "ok", "env": settings.APP_ENV}
+
+
+@app.on_event("startup")
+async def ensure_dev_user() -> None:
+    if settings.is_production or not getattr(settings, "DEV_BYPASS_AUTH", False):
+        return
+
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(select(User).where(User.id == _DEV_USER_ID))
+        if result.scalar_one_or_none() is not None:
+            return
+
+        db.add(User(
+            id=_DEV_USER_ID,
+            email="dev@local.dev",
+            name="Dev User",
+            is_active=True,
+            connected_platforms=[],
+            encrypted_platform_tokens={},
+        ))
+        await db.commit()
 
 
 if __name__ == "__main__":

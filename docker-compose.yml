@@ -62,7 +62,19 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     env_file: ./backend/.env
-    command: celery -A app.workers.celery_app worker -Q distribution -c 2 --loglevel=info
+    command: celery -A app.workers.celery_app worker -Q distribution,agent -c 2 --loglevel=info
+    depends_on:
+      db:    { condition: service_healthy }
+      redis: { condition: service_healthy }
+    volumes:
+      - ./backend:/app
+
+  beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file: ./backend/.env
+    command: celery -A app.workers.celery_app beat --loglevel=info
     depends_on:
       db:    { condition: service_healthy }
       redis: { condition: service_healthy }
