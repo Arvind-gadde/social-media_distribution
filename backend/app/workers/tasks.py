@@ -9,23 +9,40 @@ from app.constants import CELERY_MAX_RETRIES, CELERY_RETRY_BACKOFF_S
 logger = structlog.get_logger(__name__)
 
 
-@celery_app.task(name="app.workers.tasks.run_content_agent", bind=True, max_retries=2)
-def run_content_agent(self) -> dict:
-    """Full agent pipeline: collect → score → summarise. Runs every 2h via beat."""
-    return asyncio.get_event_loop().run_until_complete(_run_agent_pipeline())
+@celery_app.task(
+    name="app.workers.tasks.run_content_agent",
+    bind=True,
+    max_retries=2,
+    soft_time_limit=1800,   # 30 min soft limit — creative pass can be slow
+    time_limit=2100,        # 35 min hard kill
+)
+def run_content_agent(self, triggered_by: str = "celery_beat") -> dict:
+    """Multi-agent orchestrated pipeline: Scout→Score→Analyst→FactCheck→Creative.
+
+    Runs every 2 h via beat.  Can also be triggered manually via
+    POST /api/v1/agent/run-collection which passes triggered_by="manual_api".
+    """
+    try:
+        return asyncio.get_event_loop().run_until_complete(
+            _run_orchestrated_pipeline(triggered_by=triggered_by)
+        )
+    except Exception as exc:
+        logger.error("run_content_agent_task_failed", error=str(exc))
+        raise self.retry(exc=exc)
 
 
-async def _run_agent_pipeline() -> dict:
+async def _run_orchestrated_pipeline(triggered_by: str = "celery_beat") -> dict:
     from app.config import get_settings
-    from app.services.content_agent.collector import collect_all
-    from app.services.content_agent.agent import run_agent_pipeline
+    from app.services.content_agent.orchestrator import run_orchestrated_pipeline
+
     settings = get_settings()
-    collect_stats = await collect_all(youtube_api_key=getattr(settings, "YOUTUBE_API_KEY", ""))
-    agent_stats = await run_agent_pipeline(
+    return await run_orchestrated_pipeline(
+        triggered_by=triggered_by,
+        anthropic_key=getattr(settings, "ANTHROPIC_API_KEY", ""),
         gemini_key=getattr(settings, "GEMINI_API_KEY", ""),
         openai_key=getattr(settings, "OPENAI_API_KEY", ""),
+        youtube_api_key=getattr(settings, "YOUTUBE_API_KEY", ""),
     )
-    return {**collect_stats, **agent_stats}
 
 
 @celery_app.task(bind=True, name="app.workers.tasks.distribute_post",

@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     S3_PUBLIC_BASE_URL: str = ""
 
     # ── AI ────────────────────────────────────────────────────────────────
+    ANTHROPIC_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
 
@@ -87,6 +88,10 @@ class Settings(BaseSettings):
         return [o.strip() for o in self.APP_ALLOWED_ORIGINS.split(",")]
 
     @property
+    def has_anthropic(self) -> bool:
+        return bool(self.ANTHROPIC_API_KEY)
+
+    @property
     def has_gemini(self) -> bool:
         return bool(self.GEMINI_API_KEY)
 
@@ -96,7 +101,7 @@ class Settings(BaseSettings):
 
     @property
     def has_any_ai(self) -> bool:
-        return self.has_gemini or self.has_openai
+        return self.has_anthropic or self.has_gemini or self.has_openai
 
     @property
     def has_s3(self) -> bool:

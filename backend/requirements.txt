@@ -39,7 +39,8 @@ aiobotocore>=2.15.0
 Pillow==10.3.0
 aiofiles==23.2.1
 
-# ── AI — Gemini (primary) + OpenAI (fallback) ────────────────────────────
+# ── AI — Claude (primary) + Gemini + OpenAI (fallbacks) ──────────────────
+anthropic>=0.28.0,<1.0.0
 google-generativeai>=0.7.0
 openai>=1.54.0,<2.0.0
 

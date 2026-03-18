@@ -10,7 +10,7 @@ from app.core.middleware import (
     app_exception_handler, unhandled_exception_handler,
 )
 from app.exceptions import AppError
-from app.api.v1 import auth, posts, ai, analytics, platforms, notifications, agent
+from app.api.v1 import auth, posts, ai, analytics, platforms, notifications, agent, insights
 from app.db.session import AsyncSessionLocal
 from app.models.models import User
 
@@ -50,6 +50,7 @@ app.include_router(analytics.router,     prefix=PREFIX)
 app.include_router(platforms.router,     prefix=PREFIX)
 app.include_router(notifications.router, prefix=PREFIX)
 app.include_router(agent.router,         prefix=PREFIX)
+app.include_router(insights.router,      prefix=PREFIX)
 
 
 @app.get("/health")

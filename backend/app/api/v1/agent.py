@@ -226,5 +226,5 @@ async def delete_generated_post(post_id: str, current_user: CurrentUser, db: DbS
 @router.post("/run-collection")
 async def trigger_collection(current_user: CurrentUser) -> JSONResponse:
     from app.workers.tasks import run_content_agent
-    run_content_agent.delay()
-    return JSONResponse({"status": "triggered", "message": "Collection started in background"})
+    run_content_agent.delay(triggered_by="manual_api")
+    return JSONResponse({"status": "triggered", "message": "Orchestrated pipeline started in background"})
