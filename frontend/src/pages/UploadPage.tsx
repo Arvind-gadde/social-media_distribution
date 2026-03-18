@@ -161,6 +161,14 @@ export default function UploadPage() {
     uploadMutation.mutate(form);
   };
 
+  const handleGenerateCaption = () => {
+    if (aiTopic.trim().length < 3) {
+      toast.error("Prompt must be at least 3 characters");
+      return;
+    }
+    aiMutation.mutate();
+  };
+
   const canSubmit = selectedPlatforms.length > 0 && (Boolean(file) || caption.trim().length > 0);
 
   return (
@@ -328,8 +336,8 @@ export default function UploadPage() {
 
               <button
                 type="button"
-                onClick={() => aiMutation.mutate()}
-                disabled={!aiTopic.trim() || aiMutation.isPending}
+                onClick={handleGenerateCaption}
+                disabled={aiTopic.trim().length < 3 || aiMutation.isPending}
                 className="btn-primary w-full"
               >
                 {aiMutation.isPending ? "Generating caption..." : "Generate caption"}

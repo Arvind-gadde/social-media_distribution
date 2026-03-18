@@ -11,7 +11,7 @@ router = APIRouter(prefix="/ai", tags=["ai"])
 async def generate_caption(
     req: AICaptionRequest, _: CurrentUser, ai_service: AISvc
 ) -> AICaptionResponse:
-    caption = await ai_service.generate_ai_caption(
+    caption = await ai_service.generate_caption(
         topic=req.topic,
         tone=req.tone,
         language=req.language,

@@ -24,6 +24,35 @@ let failedQueue: Array<{
   reject: (reason?: unknown) => void;
 }> = [];
 
+function getErrorMessage(data: any): string {
+  if (typeof data?.message === "string" && data.message.trim()) {
+    return data.message;
+  }
+
+  if (typeof data?.detail === "string" && data.detail.trim()) {
+    return data.detail;
+  }
+
+  if (Array.isArray(data?.detail) && data.detail.length > 0) {
+    const first = data.detail[0];
+    if (typeof first === "string" && first.trim()) {
+      return first;
+    }
+    if (first && typeof first === "object") {
+      const msg =
+        typeof first.msg === "string" && first.msg.trim()
+          ? first.msg
+          : "Request validation failed";
+      const loc = Array.isArray(first.loc)
+        ? first.loc.filter((part: unknown) => typeof part === "string" || typeof part === "number").join(".")
+        : "";
+      return loc ? `${loc}: ${msg}` : msg;
+    }
+  }
+
+  return "Something went wrong";
+}
+
 function processQueue(error: unknown) {
   failedQueue.forEach(({ resolve, reject }) => {
     if (error) reject(error);
@@ -111,10 +140,7 @@ api.interceptors.response.use(
       }
     }
 
-    const message =
-      error.response?.data?.detail ||
-      error.response?.data?.message ||
-      "Something went wrong";
+    const message = getErrorMessage(error.response?.data);
 
     // Don't toast on expected 401 auth checks (e.g. /auth/me on page load).
     if (status && status !== 401) {

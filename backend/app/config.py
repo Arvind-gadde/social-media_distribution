@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -79,6 +79,10 @@ class Settings(BaseSettings):
         return self.APP_ENV == "production"
 
     @property
+    def sync_database_url(self) -> str:
+        return self.DATABASE_URL.replace("+asyncpg", "+psycopg2")
+
+    @property
     def allowed_origins(self) -> list[str]:
         return [o.strip() for o in self.APP_ALLOWED_ORIGINS.split(",")]
 
@@ -97,6 +101,18 @@ class Settings(BaseSettings):
     @property
     def has_s3(self) -> bool:
         return bool(self.S3_ACCESS_KEY_ID and self.S3_SECRET_ACCESS_KEY)
+
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def normalize_database_url(cls, value: str) -> str:
+        url = str(value).strip()
+        if url.startswith("postgres://"):
+            url = "postgresql://" + url[len("postgres://"):]
+        if url.startswith("postgresql://"):
+            url = "postgresql+asyncpg://" + url[len("postgresql://"):]
+        elif url.startswith("postgresql+psycopg2://"):
+            url = "postgresql+asyncpg://" + url[len("postgresql+psycopg2://"):]
+        return url
 
     @model_validator(mode="after")
     def validate_secrets(self) -> "Settings":

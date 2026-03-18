@@ -35,10 +35,10 @@ export default function Layout() {
   }, [user]);
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(236,72,153,0.2),transparent_55%),radial-gradient(circle_at_bottom,_rgba(99,102,241,0.2),transparent_55%),rgb(9,11,17)] lg:grid lg:grid-cols-[280px_minmax(0,1fr)]">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(236,72,153,0.2),transparent_55%),radial-gradient(circle_at_bottom,_rgba(99,102,241,0.2),transparent_55%),rgb(9,11,17)] lg:grid lg:h-screen lg:grid-cols-[280px_minmax(0,1fr)] lg:overflow-hidden">
       {/* Sidebar */}
-      <aside className="relative border-b border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_25px_60px_rgba(0,0,0,0.35)] lg:min-h-screen lg:border-b-0 lg:border-r">
-        <div className="flex flex-col gap-5 p-4 lg:h-full lg:p-6">
+      <aside className="relative border-b border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_25px_60px_rgba(0,0,0,0.35)] lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
+        <div className="flex flex-col gap-5 p-4 lg:h-full lg:overflow-y-auto lg:p-6">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl gradient-bg shadow-lg shadow-purple-500/30">
@@ -96,7 +96,7 @@ export default function Layout() {
           )}
         </div>
       </aside>
-      <main className="relative min-h-[calc(100vh-10rem)] overflow-y-auto p-4 lg:min-h-screen lg:p-8">
+      <main className="relative min-h-[calc(100vh-10rem)] p-4 lg:h-screen lg:overflow-y-auto lg:p-8">
         <div className="mx-auto max-w-7xl">
           <Outlet />
         </div>
