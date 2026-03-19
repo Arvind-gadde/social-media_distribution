@@ -12,6 +12,7 @@ import HistoryPage from "./pages/HistoryPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import SettingsPage from "./pages/SettingsPage";
 import AgentPage from "./pages/AgentPage";
+import InsightsPage from "./pages/InsightsPage";
 
 // ── DEV BYPASS ────────────────────────────────────────────────────────────
 const DEV_BYPASS_AUTH = true;
@@ -112,7 +113,8 @@ export default function App() {
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/agent" element={<AgentPage />} />
+        <Route path="/agent"     element={<AgentPage />} />
+        <Route path="/insights"  element={<InsightsPage />} />
         <Route path="/upload"    element={<UploadPage />} />
         <Route path="/history"   element={<HistoryPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />

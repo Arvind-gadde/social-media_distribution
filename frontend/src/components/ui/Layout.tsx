@@ -1,17 +1,18 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useMemo } from "react";
-import { LayoutDashboard, Upload, History, BarChart2, Settings, LogOut, Zap, Sparkles } from "lucide-react";
+import { LayoutDashboard, Upload, History, BarChart2, Settings, LogOut, Zap, Sparkles, Flame } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 import { logout } from "../../api/auth";
 import toast from "react-hot-toast";
 
 const NAV = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/agent",     icon: Sparkles,       label: "Agent" },
-  { to: "/upload",    icon: Upload,          label: "Upload" },
-  { to: "/history",   icon: History,         label: "History" },
+  { to: "/agent",     icon: Sparkles,        label: "Agent"     },
+  { to: "/insights",  icon: Flame,           label: "Insights"  },
+  { to: "/upload",    icon: Upload,          label: "Upload"    },
+  { to: "/history",   icon: History,         label: "History"   },
   { to: "/analytics", icon: BarChart2,       label: "Analytics" },
-  { to: "/settings",  icon: Settings,        label: "Settings" },
+  { to: "/settings",  icon: Settings,        label: "Settings"  },
 ];
 
 export default function Layout() {

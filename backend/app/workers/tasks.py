@@ -23,7 +23,7 @@ def run_content_agent(self, triggered_by: str = "celery_beat") -> dict:
     POST /api/v1/agent/run-collection which passes triggered_by="manual_api".
     """
     try:
-        return asyncio.get_event_loop().run_until_complete(
+        return asyncio.run(
             _run_orchestrated_pipeline(triggered_by=triggered_by)
         )
     except Exception as exc:
@@ -48,7 +48,7 @@ async def _run_orchestrated_pipeline(triggered_by: str = "celery_beat") -> dict:
 @celery_app.task(bind=True, name="app.workers.tasks.distribute_post",
     max_retries=CELERY_MAX_RETRIES, default_retry_delay=CELERY_RETRY_BACKOFF_S, acks_late=True)
 def distribute_post(self, post_id: str) -> dict:
-    return asyncio.get_event_loop().run_until_complete(_distribute(self, post_id))
+    return asyncio.run(_distribute(self, post_id))
 
 
 async def _distribute(task, post_id: str) -> dict:
