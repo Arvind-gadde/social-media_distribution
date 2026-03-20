@@ -64,43 +64,95 @@ export default function SettingsPage() {
   ).length;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-5 animate-fade-in">
+    <div className="mx-auto max-w-4xl space-y-5 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col gap-1 pt-1">
         <h1 className="text-2xl font-bold text-white tracking-tight">Settings</h1>
         <p className="text-sm text-white/50">Manage your account and connected channels</p>
       </div>
 
-      {/* Profile card */}
-      <div className="card p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <User size={14} className="text-white/40" />
-          <h2 className="text-xs font-semibold text-white/45 uppercase tracking-wide">Profile</h2>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="relative shrink-0">
-            <img
-              src={
-                user?.avatar_url ||
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name ?? "U")}&background=6839d8&color=fff&bold=true`
-              }
-              className="h-16 w-16 rounded-2xl object-cover border border-white/15"
-              alt={user?.name}
-            />
-            <span className="absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full bg-emerald-400 ring-2 ring-[#090b11]" />
+      {/* Profile + Notifications/Security — side by side on desktop */}
+      <div className="grid gap-5 lg:grid-cols-[1fr_1fr]">
+        {/* Profile card */}
+        <div className="card p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <User size={14} className="text-white/40" />
+            <h2 className="text-xs font-semibold text-white/45 uppercase tracking-wide">Profile</h2>
           </div>
-          <div className="min-w-0">
-            <p className="text-base font-bold text-white">{user?.name}</p>
-            <p className="text-sm text-white/45 mt-0.5">{user?.email}</p>
-            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              Active
-            </span>
+          <div className="flex items-center gap-4">
+            <div className="relative shrink-0">
+              <img
+                src={
+                  user?.avatar_url ||
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name ?? "U")}&background=6839d8&color=fff&bold=true&size=128`
+                }
+                className="h-16 w-16 rounded-2xl object-cover border border-white/15"
+                alt={user?.name}
+              />
+              <span className="absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full bg-emerald-400 ring-2 ring-[#090b11]" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-base font-bold text-white">{user?.name}</p>
+              <p className="text-sm text-white/45 mt-0.5">{user?.email}</p>
+              <span className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                Active
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Notifications + Security stacked in right column */}
+        <div className="space-y-5">
+          {/* Push Notifications */}
+          <div className="card p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Bell size={14} className="text-white/40" />
+              <h2 className="text-xs font-semibold text-white/45 uppercase tracking-wide">Notifications</h2>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-white">Push Notifications</p>
+                <p className="text-xs text-white/40 mt-0.5">Get notified when posts succeed or fail</p>
+              </div>
+              <button
+                type="button"
+                onClick={handlePushToggle}
+                role="switch"
+                aria-checked={pushEnabled}
+                className={clsx(
+                  "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50",
+                  pushEnabled ? "bg-brand-600" : "bg-white/20"
+                )}
+              >
+                <span
+                  className={clsx(
+                    "inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200",
+                    pushEnabled ? "translate-x-6" : "translate-x-1"
+                  )}
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* Security */}
+          <div className="card p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Shield size={14} className="text-white/40" />
+              <h2 className="text-xs font-semibold text-white/45 uppercase tracking-wide">Security</h2>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-white">Account Security</p>
+                <p className="text-xs text-white/40 mt-0.5">Your account is protected with secure authentication</p>
+              </div>
+              <span className="badge-green text-[11px]">Protected</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Connected Platforms */}
+      {/* Connected Platforms — full width below the 2-col grid */}
       <div className="card overflow-hidden p-0">
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.07]">
           <div className="flex items-center gap-3">
@@ -127,7 +179,7 @@ export default function SettingsPage() {
           </p>
         </div>
 
-        <div className="divide-y divide-white/[0.05] mt-2">
+        <div className="grid gap-0 mt-2 lg:grid-cols-2">
           {PLATFORMS.map((platform) => {
             const connected = user?.connected_platforms?.includes(platform.id);
             const isConnecting = connectingId === platform.id;
@@ -136,7 +188,7 @@ export default function SettingsPage() {
             return (
               <div
                 key={platform.id}
-                className="flex items-center gap-3.5 px-5 py-3.5 transition-colors hover:bg-white/[0.025]"
+                className="flex items-center gap-3.5 px-5 py-3.5 transition-colors hover:bg-white/[0.025] border-b border-white/[0.05] last:border-b-0 lg:odd:border-r lg:odd:border-r-white/[0.05]"
               >
                 <span className="text-2xl shrink-0">{platform.icon}</span>
                 <div className="flex-1 min-w-0">
@@ -167,52 +219,6 @@ export default function SettingsPage() {
               </div>
             );
           })}
-        </div>
-      </div>
-
-      {/* Push Notifications */}
-      <div className="card p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <Bell size={14} className="text-white/40" />
-          <h2 className="text-xs font-semibold text-white/45 uppercase tracking-wide">Notifications</h2>
-        </div>
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold text-white">Push Notifications</p>
-            <p className="text-xs text-white/40 mt-0.5">Get notified when posts succeed or fail</p>
-          </div>
-          <button
-            type="button"
-            onClick={handlePushToggle}
-            role="switch"
-            aria-checked={pushEnabled}
-            className={clsx(
-              "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50",
-              pushEnabled ? "bg-brand-600" : "bg-white/20"
-            )}
-          >
-            <span
-              className={clsx(
-                "inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200",
-                pushEnabled ? "translate-x-6" : "translate-x-1"
-              )}
-            />
-          </button>
-        </div>
-      </div>
-
-      {/* Security */}
-      <div className="card p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <Shield size={14} className="text-white/40" />
-          <h2 className="text-xs font-semibold text-white/45 uppercase tracking-wide">Security</h2>
-        </div>
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold text-white">Account Security</p>
-            <p className="text-xs text-white/40 mt-0.5">Your account is protected with secure authentication</p>
-          </div>
-          <span className="badge-green text-[11px]">Protected</span>
         </div>
       </div>
     </div>

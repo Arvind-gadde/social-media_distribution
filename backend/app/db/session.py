@@ -35,12 +35,11 @@ class Base(DeclarativeBase):
 
 
 async def get_db() -> AsyncSession:  # type: ignore[return]
-    """FastAPI dependency — yields a DB session, rolls back on error."""
+    """FastAPI dependency — yields a DB session, commits on success, rolls back on error."""
     async with AsyncSessionLocal() as session:
         try:
             yield session
+            await session.commit()
         except Exception:
             await session.rollback()
             raise
-        finally:
-            await session.close()
