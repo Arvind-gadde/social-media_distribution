@@ -152,25 +152,22 @@ async def logout(request: Request, current_user: CurrentUser, cache: Cache) -> R
 @router.get("/me")
 async def get_me(current_user: CurrentUser) -> Response:
     """
-    Return current user + fresh access token, refreshing the access cookie.
+    Return current user + fresh access token.
 
-    BUG THAT WAS HERE (now fixed):
-      The old signature was: async def get_me(response: Response, current_user: CurrentUser)
-      It called _set_auth_cookies(response, ...) on the FastAPI-injected background
-      Response, then returned a DIFFERENT JSONResponse object.
-      FastAPI does NOT merge cookies from the injected Response into a separately
-      constructed JSONResponse — the Set-Cookie headers were silently dropped.
-      Result: access cookie was never rotated on /auth/me calls, so after 60 minutes
-      the cookie expired and users were kicked to login on next page refresh.
+    IMPORTANT: Only the access token is rotated here. The refresh token is
+    NOT reissued — doing so would overwrite the existing refresh cookie,
+    and if concurrent /auth/me calls race each other (React StrictMode,
+    multiple tabs, or page-load timing), one call's refresh token
+    overwrites the other's, invalidating it. The next refresh attempt
+    then fails → auto-logout.
 
-    Fix: build ONE JSONResponse and call _set_auth_cookies directly on it.
+    The refresh token is only reissued in POST /auth/refresh.
     """
-    access  = create_access_token(str(current_user.id))
-    refresh = create_refresh_token(str(current_user.id))
+    access = create_access_token(str(current_user.id))
 
     resp = JSONResponse(content={
         "user":         _user_json(current_user),
         "access_token": access,
     })
-    _set_auth_cookies(resp, access, refresh)
+    _set_auth_cookies(resp, access)
     return resp

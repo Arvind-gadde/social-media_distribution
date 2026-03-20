@@ -170,7 +170,7 @@ export default function UploadPage() {
       : "text-purple-300 border-purple-400/30 bg-purple-500/10";
 
   return (
-    <div className="mx-auto max-w-3xl w-full space-y-5 animate-fade-in">
+    <div className="mx-auto max-w-5xl w-full space-y-5 animate-fade-in">
 
       {/* ── Page header ── */}
       <div className="flex flex-col gap-1 pt-1">

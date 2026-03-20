@@ -14,34 +14,10 @@ import SettingsPage from "./pages/SettingsPage";
 import AgentPage from "./pages/AgentPage";
 import InsightsPage from "./pages/InsightsPage";
 
-// ── DEV BYPASS ────────────────────────────────────────────────────────────
-const DEV_BYPASS_AUTH = true;
-
-const DEV_USER = {
-  id: "00000000-0000-0000-0000-000000000001",
-  email: "dev@local.dev",
-  name: "Dev User",
-  avatar_url: null,
-  google_id: null,
-  is_active: true,
-  connected_platforms: [],
-  encrypted_platform_tokens: {},
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-};
-// ─────────────────────────────────────────────────────────────────────────
-
 export default function App() {
   const { setUser, setAccessToken, setLoading } = useAuthStore();
 
   useEffect(() => {
-    if (DEV_BYPASS_AUTH) {
-      setUser(DEV_USER as any);
-      setAccessToken("dev-bypass-token");
-      setLoading(false);
-      return;
-    }
-
     const restoreSession = async () => {
       try {
         const meResp = await fetch("/api/v1/auth/me", {
