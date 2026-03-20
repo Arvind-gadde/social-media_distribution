@@ -3,13 +3,22 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Resolve .env path relative to this file so it works regardless of CWD.
+# Supports both: running uvicorn from project root OR from backend/.
+_ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
+
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=str(_ENV_FILE),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     # ── App ───────────────────────────────────────────────────────────────
     APP_ENV: str = "development"
@@ -18,9 +27,6 @@ class Settings(BaseSettings):
     APP_ALLOWED_ORIGINS: str = "http://localhost:5173"
 
     # ── Dev bypass ────────────────────────────────────────────────────────
-    # Set to true in .env to skip ALL authentication in development.
-    # Every request will be served as "Dev User" with no login required.
-    # Has zero effect when APP_ENV=production.
     DEV_BYPASS_AUTH: bool = False
 
     # ── Database ──────────────────────────────────────────────────────────
@@ -124,18 +130,17 @@ class Settings(BaseSettings):
         insecure = {"CHANGE-ME", "changeme", "secret", ""}
         for field_name in ("APP_SECRET_KEY", "JWT_SECRET_KEY"):
             value = getattr(self, field_name, "")
-            if any(value.lower()== s for s in insecure):
+            if any(value.lower() == s for s in insecure):
                 if self.is_production:
                     raise ValueError(
                         f"{field_name} must be set to a secure value in production."
                     )
         if self.is_production and not self.TOKEN_ENCRYPTION_KEY:
             raise ValueError("TOKEN_ENCRYPTION_KEY is required in production")
-        
         return self
 
 
 @lru_cache()
 def get_settings() -> Settings:
-    """Cached settings singleton."""
+    """Cached settings singleton — one instance per process lifetime."""
     return Settings()
