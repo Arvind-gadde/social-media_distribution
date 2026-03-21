@@ -7,10 +7,10 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, desc
 
 from app.api.deps import CurrentUser, DbSession, Cache
-from app.models.models import ContentItem, ContentCategory, GeneratedPost
+from app.models.models import ContentItem, ContentCategory, ContentInsight, GeneratedPost
 from app.services.content_agent.hashtags import get_hashtags, format_hashtags
 from app.config import get_settings
 from app.exceptions import NotFoundError
@@ -19,15 +19,50 @@ router = APIRouter(prefix="/agent", tags=["agent"])
 settings = get_settings()
 
 
+# ── Source-type mapping ──────────────────────────────────────────────────
+_SOURCE_TYPE_PREFIXES = [
+    ("nitter_",   "x"),
+    ("linkedin_", "linkedin"),
+    ("rss_",      "rss"),
+    ("github_",   "github"),
+    ("reddit_",   "reddit"),
+    ("hn_",       "hackernews"),
+    ("youtube_",  "youtube"),
+]
+
+
+def _source_type_from_key(source_key: str) -> str:
+    """Derive a human-readable source type from the source_key prefix."""
+    for prefix, source_type in _SOURCE_TYPE_PREFIXES:
+        if source_key.startswith(prefix):
+            return source_type
+    return "other"
+
+
+def _fallback_summary(item: ContentItem) -> str:
+    """Return item.summary if present, else a cleaned snippet from raw_content."""
+    if item.summary:
+        return item.summary
+    raw = (item.raw_content or "").strip()
+    if not raw:
+        return item.title or ""
+    MAX_LEN = 250
+    snippet = raw[:MAX_LEN].rsplit(" ", 1)[0] if len(raw) > MAX_LEN else raw
+    return snippet + ("…" if len(raw) > MAX_LEN else "")
+
+
 def _item_to_dict(item: ContentItem) -> dict:
+    """Basic serializer (used by generate/posts endpoints)."""
     return {
         "id": str(item.id),
         "source_key": item.source_key,
         "source_label": item.source_label,
         "source_url": item.source_url,
+        "source_type": _source_type_from_key(item.source_key),
         "title": item.title,
-        "summary": item.summary,
+        "summary": _fallback_summary(item),
         "key_points": item.key_points or [],
+        "raw_content": (item.raw_content or "")[:500],  # expose excerpt for frontend
         "category": item.category.value if item.category else "other",
         "relevance_score": item.relevance_score,
         "is_trending": item.is_trending,
@@ -35,6 +70,26 @@ def _item_to_dict(item: ContentItem) -> dict:
         "published_at": item.published_at.isoformat() if item.published_at else None,
         "fetched_at": item.fetched_at.isoformat(),
     }
+
+
+def _enriched_item_dict(item: ContentItem, insight: ContentInsight | None) -> dict:
+    """Enriched serializer — includes ContentInsight fields for the feed."""
+    base = _item_to_dict(item)
+    if insight:
+        base["virality_score"] = insight.virality_score
+        base["is_value_gap"] = insight.is_value_gap
+        base["suggested_angle"] = insight.suggested_angle
+        base["fact_check_passed"] = insight.fact_check_passed
+        base["sentiment_breakdown"] = insight.sentiment_breakdown or {}
+        base["broll_assets"] = insight.broll_assets or []
+    else:
+        base["virality_score"] = 0.0
+        base["is_value_gap"] = False
+        base["suggested_angle"] = None
+        base["fact_check_passed"] = None
+        base["sentiment_breakdown"] = {}
+        base["broll_assets"] = []
+    return base
 
 
 def _post_to_dict(post: GeneratedPost, item: ContentItem | None = None) -> dict:
@@ -59,6 +114,7 @@ def _post_to_dict(post: GeneratedPost, item: ContentItem | None = None) -> dict:
 async def get_feed(
     current_user: CurrentUser, db: DbSession,
     category: Optional[str] = Query(None),
+    source_type: Optional[str] = Query(None, description="Filter by source type: x, linkedin, rss, github, reddit, hackernews, youtube"),
     min_score: float = Query(0.4, ge=0.0, le=1.0),
     hours_back: int = Query(48, ge=1, le=168),
     limit: int = Query(20, ge=1, le=50),
@@ -76,22 +132,56 @@ async def get_feed(
         except ValueError:
             pass
 
-    result = await db.execute(
-        select(ContentItem).where(and_(*filters))
-        .order_by(ContentItem.is_trending.desc(), ContentItem.relevance_score.desc(), ContentItem.fetched_at.desc())
+    # Source-type filter: match items whose source_key starts with the type prefix
+    if source_type:
+        prefix_map = {st: pfx for pfx, st in _SOURCE_TYPE_PREFIXES}
+        prefix = prefix_map.get(source_type)
+        if prefix:
+            filters.append(ContentItem.source_key.startswith(prefix))
+
+    # Outerjoin ContentInsight to enrich items with virality/sentiment/etc.
+    query = (
+        select(ContentItem, ContentInsight)
+        .outerjoin(ContentInsight, ContentInsight.content_item_id == ContentItem.id)
+        .where(and_(*filters))
+        .order_by(
+            desc(ContentItem.is_trending),
+            desc(ContentInsight.virality_score),
+            desc(ContentItem.relevance_score),
+            desc(ContentItem.fetched_at),
+        )
         .limit(limit).offset(offset)
     )
-    items = result.scalars().all()
-    count_result = await db.execute(select(func.count(ContentItem.id)).where(and_(*filters)))
-    total = count_result.scalar() or 0
+    result = await db.execute(query)
+    rows = result.all()
+
+    # Count query (uses same filters, just counts)
+    count_q = (
+        select(func.count(ContentItem.id))
+        .outerjoin(ContentInsight, ContentInsight.content_item_id == ContentItem.id)
+        .where(and_(*filters))
+    )
+    total = (await db.execute(count_q)).scalar() or 0
+
     trending_result = await db.execute(
         select(func.count(ContentItem.id)).where(and_(ContentItem.is_trending == True, ContentItem.fetched_at >= cutoff))
     )
+
+    # Collect distinct source types for filter chips
+    source_types_result = await db.execute(
+        select(ContentItem.source_key)
+        .where(and_(ContentItem.is_processed == True, ContentItem.fetched_at >= cutoff))
+        .distinct()
+    )
+    source_keys = [row[0] for row in source_types_result.all()]
+    available_source_types = sorted(set(_source_type_from_key(k) for k in source_keys) - {"other"})
+
     return JSONResponse({
-        "items": [_item_to_dict(i) for i in items],
+        "items": [_enriched_item_dict(item, insight) for item, insight in rows],
         "total": total,
         "trending_count": trending_result.scalar() or 0,
         "categories": [c.value for c in ContentCategory],
+        "source_types": available_source_types,
     })
 
 

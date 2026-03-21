@@ -245,7 +245,7 @@ async def run_orchestrated_pipeline(
         from app.models.models import ContentCategory as CC
 
         BATCH_SIZE = 10
-        MIN_SCORE = 0.40
+        MIN_SCORE = 0.30  # Low threshold: default 0.5 always passes
         MAX_TO_PROCESS = 40
 
         async with AsyncSessionLocal() as db:
@@ -274,21 +274,16 @@ async def run_orchestrated_pipeline(
             for item in raw_items
         ]
 
-        # Batch scoring
+        # Batch scoring (gracefully handles no LLM — assigns 0.5 default)
         for i in range(0, len(item_dicts), BATCH_SIZE):
             batch = item_dicts[i : i + BATCH_SIZE]
             await score_items(batch, gemini_key=gemini_key, openai_key=openai_key)
 
-        # Summarise top-scoring items
-        top = sorted(
-            [x for x in item_dicts if x["relevance_score"] >= MIN_SCORE],
-            key=lambda x: x["relevance_score"],
-            reverse=True,
-        )[:15]
-        for item in top:
+        # Summarise ALL items (creates fallback from raw_content when no LLM)
+        for item in item_dicts:
             await summarise_item(item, gemini_key=gemini_key, openai_key=openai_key)
 
-        # Write scores back to ContentItem
+        # Write scores + summaries back to ContentItem
         async with AsyncSessionLocal() as db:
             for item_dict in item_dicts:
                 try:
@@ -313,6 +308,7 @@ async def run_orchestrated_pipeline(
                     logger.warning("score_write_failed", error=str(inner_exc))
             await db.commit()
 
+        # ALL processed items pass to analyst (pure-math virality works without LLM)
         scored_items = [x for x in item_dicts if x["relevance_score"] >= MIN_SCORE]
         summary["items_scored"] = len(scored_items)
         logger.info("stage_score_complete", total=len(item_dicts), scored=len(scored_items))

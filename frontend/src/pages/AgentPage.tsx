@@ -1,15 +1,20 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Sparkles, RefreshCw, TrendingUp, Newspaper, Zap, Copy, Check,
   ExternalLink, ChevronDown, ChevronUp, Twitter, Linkedin,
   Instagram, Youtube, Filter, Clock, Star, Hash,
+  ShieldCheck, ShieldAlert, ShieldQuestion, Flame, X,
+  Github, Globe, MessageSquare, BookOpen,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import {
   getAgentFeed, getAgentStats, generateContent, triggerCollection,
-  type ContentItem, type GeneratedPost,
+  type ContentItem, type GeneratedPost, type SourceType,
 } from "../api/agent";
+import { OverviewModal } from "../components/ui/OverviewModal";
+
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const CATEGORY_META: Record<string, { label: string; dot: string }> = {
   model_release:  { label: "Model Release",  dot: "bg-purple-400" },
@@ -31,6 +36,16 @@ const PLATFORM_CONFIG = [
   { key: "youtube_script", label: "YouTube/Reels", icon: Youtube,   accent: "hover:border-red-500 hover:text-red-400",    active: "border-red-500 text-red-400 bg-red-500/10" },
 ];
 
+const SOURCE_TYPE_CONFIG: Record<string, { label: string; icon: typeof Globe; color: string }> = {
+  x:          { label: "𝕏 / Twitter",  icon: Twitter,       color: "text-sky-400" },
+  linkedin:   { label: "LinkedIn",     icon: Linkedin,      color: "text-blue-400" },
+  rss:        { label: "RSS",          icon: Globe,         color: "text-orange-400" },
+  github:     { label: "GitHub",       icon: Github,        color: "text-white/70" },
+  reddit:     { label: "Reddit",       icon: MessageSquare, color: "text-orange-500" },
+  hackernews: { label: "Hacker News",  icon: Zap,           color: "text-amber-400" },
+  youtube:    { label: "YouTube",      icon: Youtube,       color: "text-red-400" },
+};
+
 const TIME_OPTIONS = [
   { label: "24h",    value: 24 },
   { label: "48h",    value: 48 },
@@ -39,6 +54,9 @@ const TIME_OPTIONS = [
 ];
 
 const PAGE_SIZE = 15;
+const NEW_ITEMS_KEY = "contentflow_agent_last_seen_total";
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function timeAgo(iso: string | null): string {
   if (!iso) return "";
@@ -48,18 +66,91 @@ function timeAgo(iso: string | null): string {
   return `${Math.round(diff / 86400)}d ago`;
 }
 
-function ScoreBar({ score }: { score: number }) {
-  const w = Math.round(score * 100);
-  const color = score >= 0.8 ? "bg-emerald-400" : score >= 0.6 ? "bg-amber-400" : "bg-slate-600";
+// ─── Virality Ring ────────────────────────────────────────────────────────────
+
+function ViralityRing({ score }: { score: number }) {
+  const pct = Math.round(score * 100);
+  const r = 16;
+  const circ = 2 * Math.PI * r;
+  const dash = (pct / 100) * circ;
+  const color = pct >= 70 ? "#10b981" : pct >= 45 ? "#f59e0b" : "#475569";
+
   return (
-    <div className="flex items-center gap-1.5 shrink-0">
-      <div className="w-12 h-1 bg-white/10 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${color} transition-all`} style={{ width: `${w}%` }} />
-      </div>
-      <span className="text-[10px] text-white/40 w-6 tabular-nums">{w}%</span>
+    <div className="relative flex items-center justify-center w-11 h-11 shrink-0">
+      <svg width="44" height="44" viewBox="0 0 44 44" className="-rotate-90">
+        <circle cx="22" cy="22" r={r} stroke="rgba(255,255,255,0.08)" strokeWidth="3" fill="none" />
+        <circle cx="22" cy="22" r={r} stroke={color} strokeWidth="3" fill="none"
+          strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" />
+      </svg>
+      <span className="absolute text-[10px] font-bold text-white/80">{pct}</span>
     </div>
   );
 }
+
+// ─── Content-Worthy Badge ─────────────────────────────────────────────────────
+
+function ContentWorthyBadge({ virality }: { virality: number }) {
+  const pct = Math.round(virality * 100);
+  if (pct >= 60) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 font-semibold">
+        <Zap size={9} /> Create Content
+      </span>
+    );
+  }
+  if (pct >= 40) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-400/25 font-semibold">
+        <Zap size={9} /> Maybe
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-white/[0.06] text-white/35 border border-white/[0.09] font-semibold">
+      <Zap size={9} /> Skip
+    </span>
+  );
+}
+
+// ─── Fact-Check Badge ─────────────────────────────────────────────────────────
+
+function FactBadge({ passed }: { passed: boolean | null }) {
+  if (passed === null)
+    return <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-white/[0.07] text-white/40 border border-white/[0.09]"><ShieldQuestion size={9} /> Unverified</span>;
+  if (passed)
+    return <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25"><ShieldCheck size={9} /> Verified</span>;
+  return <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/25"><ShieldAlert size={9} /> Flagged</span>;
+}
+
+// ─── Sentiment Bar ────────────────────────────────────────────────────────────
+
+function SentimentBar({ breakdown }: { breakdown: Record<string, number> }) {
+  const pos = Math.round((breakdown.positive ?? 0) * 100);
+  const neg = Math.round((breakdown.negative ?? 0) * 100);
+  const con = Math.round((breakdown.controversial ?? 0) * 100);
+  if (pos + neg + con === 0) return null;
+  return (
+    <div className="space-y-0.5">
+      <p className="text-[10px] text-white/30 uppercase tracking-wider">Sentiment</p>
+      <div className="flex h-1.5 rounded-full overflow-hidden w-24 gap-px">
+        {pos > 0 && <div className="bg-emerald-500" style={{ width: `${pos}%` }} />}
+        {neg > 0 && <div className="bg-red-500" style={{ width: `${neg}%` }} />}
+        {con > 0 && <div className="bg-amber-500" style={{ width: `${con}%` }} />}
+      </div>
+    </div>
+  );
+}
+
+// ─── Source Icon ───────────────────────────────────────────────────────────────
+
+function SourceIcon({ sourceType }: { sourceType: string }) {
+  const cfg = SOURCE_TYPE_CONFIG[sourceType];
+  if (!cfg) return null;
+  const Icon = cfg.icon;
+  return <Icon size={12} className={`shrink-0 ${cfg.color}`} />;
+}
+
+// ─── Copy Button ──────────────────────────────────────────────────────────────
 
 function CopyBtn({ text, label = "Copy" }: { text: string; label?: string }) {
   const [copied, setCopied] = useState(false);
@@ -79,6 +170,8 @@ function CopyBtn({ text, label = "Copy" }: { text: string; label?: string }) {
   );
 }
 
+// ─── Stat Card ────────────────────────────────────────────────────────────────
+
 function StatCard({ icon: Icon, label, value, color }: { icon: any; label: string; value: number; color: string }) {
   return (
     <div className="glass rounded-2xl p-4 flex items-center gap-3">
@@ -92,6 +185,8 @@ function StatCard({ icon: Icon, label, value, color }: { icon: any; label: strin
     </div>
   );
 }
+
+// ─── Generated Panel ──────────────────────────────────────────────────────────
 
 function GeneratedPanel({ post, platform }: { post: GeneratedPost; platform: string }) {
   const cfg = PLATFORM_CONFIG.find(p => p.key === platform);
@@ -196,9 +291,12 @@ function GeneratedPanel({ post, platform }: { post: GeneratedPost; platform: str
   );
 }
 
-function ContentCard({ item, onGenerate }: {
+// ─── Content Card (REDESIGNED) ────────────────────────────────────────────────
+
+function ContentCard({ item, onGenerate, onViewOverview }: {
   item: ContentItem;
   onGenerate: (id: string, platform: string) => Promise<Record<string, GeneratedPost>>;
+  onViewOverview: (item: ContentItem) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [generating, setGenerating] = useState<string | null>(null);
@@ -220,51 +318,88 @@ function ContentCard({ item, onGenerate }: {
   return (
     <div className="glass-card overflow-hidden hover:border-white/[0.15] transition-all duration-200 p-0">
       <div className="p-5">
-        {/* Meta row */}
-        <div className="flex items-center gap-2 mb-2.5 flex-wrap">
+        {/* Row 1: Source + Category + Time + Badges */}
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
+          <SourceIcon sourceType={item.source_type} />
           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${meta.dot}`} />
           <span className="text-xs text-white/50 font-medium">{meta.label}</span>
           <span className="text-white/20">·</span>
           <span className="text-xs text-white/40">{item.source_label}</span>
           <span className="text-white/20">·</span>
           <span className="text-xs text-white/40">{timeAgo(item.published_at || item.fetched_at)}</span>
-          {item.is_trending && (
-            <span className="ml-auto inline-flex items-center gap-1 text-[10px] text-amber-300 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-full font-semibold">
-              <TrendingUp size={9} /> Trending
-            </span>
-          )}
+          <div className="flex items-center gap-1.5 ml-auto flex-wrap justify-end">
+            {item.is_trending && (
+              <span className="inline-flex items-center gap-1 text-[10px] text-amber-300 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-full font-semibold">
+                <TrendingUp size={9} /> Trending
+              </span>
+            )}
+            {item.is_value_gap && (
+              <span className="inline-flex items-center gap-1 text-[10px] text-orange-300 bg-orange-500/10 border border-orange-400/20 px-2 py-0.5 rounded-full font-semibold">
+                <Flame size={9} /> Gap
+              </span>
+            )}
+            <ContentWorthyBadge virality={item.virality_score} />
+            <FactBadge passed={item.fact_check_passed} />
+          </div>
         </div>
 
-        {/* Title + score */}
-        <div className="flex items-start gap-3 mb-2.5">
-          {item.source_url ? (
-            <a href={item.source_url} target="_blank" rel="noopener noreferrer"
-              className="text-sm font-semibold text-white hover:text-white/90 leading-snug group flex items-start gap-1.5 flex-1 transition-colors">
-              {item.title}
-              <ExternalLink size={11} className="shrink-0 mt-0.5 text-white/25 group-hover:text-white/55 transition-colors" />
-            </a>
-          ) : (
-            <p className="text-sm font-semibold text-white leading-snug flex-1">{item.title}</p>
-          )}
-          <ScoreBar score={item.relevance_score} />
+        {/* Row 2: Virality Ring + Title + Summary */}
+        <div className="flex items-start gap-3 mb-3">
+          <ViralityRing score={item.virality_score} />
+          <div className="flex-1 min-w-0">
+            {item.source_url ? (
+              <a href={item.source_url} target="_blank" rel="noopener noreferrer"
+                className="text-sm font-semibold text-white hover:text-white/90 leading-snug group flex items-start gap-1.5 transition-colors">
+                {item.title}
+                <ExternalLink size={11} className="shrink-0 mt-0.5 text-white/25 group-hover:text-white/55 transition-colors" />
+              </a>
+            ) : (
+              <p className="text-sm font-semibold text-white leading-snug">{item.title}</p>
+            )}
+
+            {item.summary && (
+              <p className="text-xs text-white/50 leading-relaxed mt-1.5">{item.summary}</p>
+            )}
+          </div>
         </div>
 
-        {item.summary && (
-          <p className="text-xs text-white/45 leading-relaxed line-clamp-2 mb-3">{item.summary}</p>
-        )}
-
+        {/* Row 3: Key Points */}
         {item.key_points?.length > 0 && (
-          <ul className="mb-3 space-y-0.5">
-            {item.key_points.slice(0, 2).map((pt, i) => (
+          <ul className="mb-3 space-y-0.5 ml-14">
+            {item.key_points.slice(0, 3).map((pt, i) => (
               <li key={i} className="text-xs text-white/45 flex gap-1.5">
                 <span className="text-brand-400 shrink-0">›</span>{pt}
               </li>
             ))}
+            {item.key_points.length > 3 && (
+              <li className="text-[10px] text-white/25">+{item.key_points.length - 3} more</li>
+            )}
           </ul>
         )}
 
-        {/* Generate buttons */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+        {/* Row 4: Suggested angle + Sentiment */}
+        {(item.suggested_angle || Object.keys(item.sentiment_breakdown).length > 0) && (
+          <div className="flex flex-wrap items-end gap-3 mb-3 ml-14">
+            {item.suggested_angle && (
+              <div className="flex-1 min-w-0 bg-white/[0.04] border border-white/[0.07] rounded-lg p-2.5">
+                <p className="text-[10px] text-white/35 uppercase tracking-wider mb-0.5 flex items-center gap-1">
+                  <Zap size={9} /> Suggested angle
+                </p>
+                <p className="text-xs text-white/70 leading-relaxed">{item.suggested_angle}</p>
+              </div>
+            )}
+            <SentimentBar breakdown={item.sentiment_breakdown} />
+          </div>
+        )}
+
+        {/* Row 5: Generate buttons */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-1 ml-14">
+          <button onClick={() => onViewOverview(item)}
+            className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border border-brand-500/30 text-brand-300 bg-brand-500/10 hover:bg-brand-500/20 font-semibold transition-all mr-2">
+            <BookOpen size={11} />
+            Overview
+          </button>
+          
           <span className="text-[11px] text-white/30 font-medium mr-0.5">Generate:</span>
           {PLATFORM_CONFIG.map(p => (
             <button key={p.key} onClick={() => handle(p.key)} disabled={!!generating}
@@ -302,11 +437,46 @@ function ContentCard({ item, onGenerate }: {
   );
 }
 
+// ─── New Items Banner ─────────────────────────────────────────────────────────
+
+function NewItemsBanner({ newCount, onDismiss }: { newCount: number; onDismiss: () => void }) {
+  if (newCount <= 0) return null;
+  return (
+    <div className="relative flex items-center justify-between gap-3 rounded-xl border border-brand-500/30 px-4 py-3 mb-4 animate-slide-up overflow-hidden"
+      style={{ background: "linear-gradient(135deg, rgba(98,114,241,0.12), rgba(168,85,247,0.12))" }}>
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-brand-500/20 shrink-0">
+          <Flame size={15} className="text-brand-300" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-white">
+            🔥 {newCount} new {newCount === 1 ? "story" : "stories"} since your last visit
+          </p>
+          <p className="text-xs text-white/40">Fresh content opportunities are waiting for you</p>
+        </div>
+      </div>
+      <button
+        onClick={onDismiss}
+        className="rounded-lg p-1.5 text-white/40 hover:bg-white/10 hover:text-white transition-all shrink-0"
+        aria-label="Dismiss"
+      >
+        <X size={16} />
+      </button>
+    </div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
 export default function AgentPage() {
   const queryClient = useQueryClient();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSourceType, setSelectedSourceType] = useState<string | null>(null);
   const [hoursBack, setHoursBack] = useState(48);
   const [page, setPage] = useState(0);
+  const [newItemsCount, setNewItemsCount] = useState(0);
+  const [overviewItem, setOverviewItem] = useState<ContentItem | null>(null);
+  const bannerDismissedRef = useRef(false);
 
   const { data: statsData } = useQuery({
     queryKey: ["agent-stats"],
@@ -315,9 +485,10 @@ export default function AgentPage() {
   });
 
   const { data: feedData, isLoading, isFetching } = useQuery({
-    queryKey: ["agent-feed", selectedCategory, hoursBack, page],
+    queryKey: ["agent-feed", selectedCategory, selectedSourceType, hoursBack, page],
     queryFn: () => getAgentFeed({
       category: selectedCategory || undefined,
+      source_type: selectedSourceType || undefined,
       hours_back: hoursBack,
       min_score: 0,
       limit: PAGE_SIZE,
@@ -326,20 +497,74 @@ export default function AgentPage() {
     placeholderData: (prev) => prev,
   });
 
+  // Track new items for the banner
+  useEffect(() => {
+    if (!feedData || bannerDismissedRef.current) return;
+    const lastSeen = parseInt(localStorage.getItem(NEW_ITEMS_KEY) || "0", 10);
+    if (feedData.total > lastSeen && lastSeen > 0) {
+      setNewItemsCount(feedData.total - lastSeen);
+    }
+  }, [feedData]);
+
+  const handleDismissNewItems = () => {
+    if (feedData) {
+      localStorage.setItem(NEW_ITEMS_KEY, String(feedData.total));
+    }
+    setNewItemsCount(0);
+    bannerDismissedRef.current = true;
+  };
+
   const items = feedData?.items || [];
   const total = feedData?.total || 0;
   const hasMore = (page + 1) * PAGE_SIZE < total;
   const totalPages = Math.ceil(total / PAGE_SIZE);
   const categories = feedData?.categories || [];
+  const sourceTypes: SourceType[] = feedData?.source_types || [];
+
+  // Poll after collection to detect new items and show notification
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const baselineRef = useRef(0);
+
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => () => stopPolling(), [stopPolling]);
 
   const triggerMut = useMutation({
     mutationFn: () => triggerCollection().then(r => r.data),
     onSuccess: () => {
-      toast.success("Collecting! Stories appear in ~1 minute.");
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["agent-feed"] });
-        queryClient.invalidateQueries({ queryKey: ["agent-stats"] });
-      }, 60_000);
+      toast.success("Pipeline started! Polling for results…");
+      baselineRef.current = statsData?.items_collected_24h ?? 0;
+      let ticks = 0;
+      const MAX_TICKS = 12; // 12 × 10s = 2 min
+
+      stopPolling();
+      pollRef.current = setInterval(async () => {
+        ticks++;
+        try {
+          const fresh = await getAgentStats().then(r => r.data);
+          if (fresh.items_collected_24h > baselineRef.current) {
+            const newCount = fresh.items_collected_24h - baselineRef.current;
+            toast.success(`🔥 ${newCount} new stories collected!`);
+            setNewItemsCount(newCount);
+            bannerDismissedRef.current = false;
+            queryClient.invalidateQueries({ queryKey: ["agent-feed"] });
+            queryClient.invalidateQueries({ queryKey: ["agent-stats"] });
+            stopPolling();
+          } else if (ticks >= MAX_TICKS) {
+            toast("Collection may still be running — refresh to check.", { icon: "⏱️" });
+            queryClient.invalidateQueries({ queryKey: ["agent-feed"] });
+            queryClient.invalidateQueries({ queryKey: ["agent-stats"] });
+            stopPolling();
+          }
+        } catch {
+          // Polling error — keep going
+        }
+      }, 10_000);
     },
     onError: () => toast.error("Failed. Check backend logs."),
   });
@@ -395,7 +620,36 @@ export default function AgentPage() {
         )}
       </div>
 
-      {/* Filters */}
+      {/* Source-type filter chips */}
+      {sourceTypes.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 mb-3">
+          <span className="text-[11px] text-white/30 font-medium mr-0.5">Sources:</span>
+          <button
+            onClick={() => { setSelectedSourceType(null); setPage(0); }}
+            className={`text-xs px-3 py-1.5 rounded-full border font-semibold transition-all flex items-center gap-1.5
+              ${!selectedSourceType ? "bg-brand-600 border-brand-600 text-white" : "border-white/[0.09] text-white/50 bg-white/[0.04] hover:border-white/20 hover:text-white"}`}
+          >
+            All
+          </button>
+          {sourceTypes.map(st => {
+            const cfg = SOURCE_TYPE_CONFIG[st];
+            if (!cfg) return null;
+            const Icon = cfg.icon;
+            return (
+              <button key={st}
+                onClick={() => { setSelectedSourceType(st === selectedSourceType ? null : st); setPage(0); }}
+                className={`text-xs px-3 py-1.5 rounded-full border font-semibold transition-all flex items-center gap-1.5
+                  ${selectedSourceType === st ? "bg-brand-600 border-brand-600 text-white" : "border-white/[0.09] text-white/50 bg-white/[0.04] hover:border-white/20 hover:text-white"}`}
+              >
+                <Icon size={11} className={selectedSourceType === st ? "text-white" : cfg.color} />
+                {cfg.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Category + time filters */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <div className="flex items-center gap-1 text-xs text-white/35">
           <Filter size={11} /> Filter:
@@ -433,10 +687,14 @@ export default function AgentPage() {
         </div>
       </div>
 
+      {/* New items banner */}
+      <NewItemsBanner newCount={newItemsCount} onDismiss={handleDismissNewItems} />
+
       {total > 0 && !isLoading && (
         <p className="text-xs text-white/30 mb-3">
           {Math.min((page + 1) * PAGE_SIZE, total)} of {total} stories
           {selectedCategory && ` · ${CATEGORY_META[selectedCategory]?.label}`}
+          {selectedSourceType && ` · ${SOURCE_TYPE_CONFIG[selectedSourceType]?.label}`}
         </p>
       )}
 
@@ -445,9 +703,7 @@ export default function AgentPage() {
         <div className="space-y-3">
           {[1, 2, 3].map(i => (
             <div key={i} className="glass-card p-5 animate-pulse space-y-3">
-              <div className="flex gap-2"><div className="skeleton h-2 w-16" /><div className="skeleton h-2 w-24" /></div>
-              <div className="skeleton h-4 w-2/3" />
-              <div className="skeleton h-3 w-full opacity-60" />
+              <div className="flex gap-3"><div className="skeleton w-11 h-11 rounded-full shrink-0" /><div className="flex-1 space-y-2"><div className="skeleton h-2.5 w-3/4" /><div className="skeleton h-2 w-full" /><div className="skeleton h-2 w-2/3 opacity-60" /></div></div>
             </div>
           ))}
         </div>
@@ -472,7 +728,7 @@ export default function AgentPage() {
         <>
           <div className="space-y-3">
             {items.map(item => (
-              <ContentCard key={item.id} item={item} onGenerate={handleGenerate} />
+              <ContentCard key={item.id} item={item} onGenerate={handleGenerate} onViewOverview={setOverviewItem} />
             ))}
           </div>
 
@@ -500,6 +756,11 @@ export default function AgentPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* Root-Level Overview Modal */}
+      {overviewItem && (
+        <OverviewModal item={overviewItem} onClose={() => setOverviewItem(null)} />
       )}
     </div>
   );

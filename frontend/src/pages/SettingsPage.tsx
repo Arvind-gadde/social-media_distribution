@@ -64,7 +64,7 @@ export default function SettingsPage() {
   ).length;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-5 animate-fade-in">
+    <div className="mx-auto max-w-7xl space-y-5 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col gap-1 pt-1">
         <h1 className="text-2xl font-bold text-white tracking-tight">Settings</h1>

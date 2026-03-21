@@ -51,7 +51,9 @@ async def _call_llm(prompt: str, system: str = "", gemini_key: str = "", openai_
         except Exception as exc:
             logger.warning("openai_failed", error=str(exc))
 
-    raise RuntimeError("No LLM available — set GEMINI_API_KEY or OPENAI_API_KEY in .env")
+    # No LLM available — return empty to let callers degrade gracefully
+    logger.warning("no_llm_available", hint="Set GEMINI_API_KEY or OPENAI_API_KEY in .env")
+    return ""
 
 
 def _extract_json(text: str) -> dict | list:
@@ -105,16 +107,21 @@ Respond ONLY with JSON array:
     try:
         response = await _call_llm(prompt, gemini_key=gemini_key, openai_key=openai_key)
         scores = _extract_json(response)
-        if isinstance(scores, list):
+        if isinstance(scores, list) and len(scores) > 0:
             score_map = {s.get("index"): s for s in scores}
             for i, item in enumerate(items):
                 score_data = score_map.get(i + 1, {})
-                item["relevance_score"] = float(score_data.get("score", 0.3))
+                item["relevance_score"] = float(score_data.get("score", 0.5))
                 item["category"] = score_data.get("category", "other")
+        else:
+            # LLM returned empty or unparseable — assign sensible defaults
+            for item in items:
+                item["relevance_score"] = 0.5
+                item["category"] = "other"
     except Exception as exc:
         logger.warning("scoring_failed", error=str(exc))
         for item in items:
-            item["relevance_score"] = 0.4
+            item["relevance_score"] = 0.5
             item["category"] = "other"
     return items
 
@@ -136,12 +143,28 @@ Return ONLY this JSON:
     try:
         response = await _call_llm(prompt, gemini_key=gemini_key, openai_key=openai_key)
         parsed = _extract_json(response)
-        if isinstance(parsed, dict):
+        if isinstance(parsed, dict) and parsed.get("summary"):
             item["summary"] = parsed.get("summary", "")
             item["key_points"] = parsed.get("key_points", [])
+        else:
+            # LLM returned empty — create fallback from raw_content
+            _apply_fallback_summary(item)
     except Exception as exc:
         logger.warning("summarise_failed", title=item.get("title"), error=str(exc))
+        _apply_fallback_summary(item)
     return item
+
+
+def _apply_fallback_summary(item: dict) -> None:
+    """Create a basic summary from raw_content when LLM is unavailable."""
+    raw = (item.get("raw_content") or "").strip()
+    if raw:
+        # Clean and truncate to 300 chars for a readable brief
+        snippet = raw[:300].rsplit(" ", 1)[0] if len(raw) > 300 else raw
+        item["summary"] = snippet + ("…" if len(raw) > 300 else "")
+    elif item.get("title"):
+        item["summary"] = item["title"]
+    item.setdefault("key_points", [])
 
 
 PLATFORM_INSTRUCTIONS = {
