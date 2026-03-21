@@ -12,6 +12,7 @@ from sqlalchemy import select, func, and_, desc
 from app.api.deps import CurrentUser, DbSession, Cache
 from app.models.models import ContentItem, ContentCategory, ContentInsight, GeneratedPost
 from app.services.content_agent.hashtags import get_hashtags, format_hashtags
+from app.services.content_agent.normalization import normalize_generated_content
 from app.config import get_settings
 from app.exceptions import NotFoundError
 
@@ -213,8 +214,12 @@ async def generate_content(body: dict, current_user: CurrentUser, db: DbSession)
     platform = body.get("platform", "all")
     if not item_id:
         return JSONResponse({"error": "content_item_id required"}, status_code=400)
+    try:
+        item_uuid = uuid.UUID(str(item_id))
+    except ValueError:
+        return JSONResponse({"error": "invalid content_item_id"}, status_code=400)
 
-    result = await db.execute(select(ContentItem).where(ContentItem.id == uuid.UUID(str(item_id))))
+    result = await db.execute(select(ContentItem).where(ContentItem.id == item_uuid))
     item = result.scalar_one_or_none()
     if not item:
         raise NotFoundError("ContentItem", str(item_id))
@@ -251,19 +256,20 @@ async def generate_content(body: dict, current_user: CurrentUser, db: DbSession)
             generated[plat] = _post_to_dict(existing_post, item)
             continue
 
-        content = await ai_generate(item_dict, plat, gemini_key=gemini_key, openai_key=openai_key)
+        content = normalize_generated_content(
+            await ai_generate(item_dict, plat, gemini_key=gemini_key, openai_key=openai_key)
+        )
         curated = get_hashtags(item_dict["category"], plat.replace("_thread", "").replace("_script", ""), count=20)
-        ai_hashtags = content.get("hashtags") or []
-        merged_hashtags = list(dict.fromkeys(ai_hashtags + curated))[:20]
+        merged_hashtags = list(dict.fromkeys([*content["hashtags"], *curated]))[:20]
 
         post = GeneratedPost(
             content_item_id=item.id, user_id=current_user.id, platform=plat,
-            hook=content.get("hook", ""), caption=content.get("caption", ""),
+            hook=content["hook"], caption=content["caption"],
             hashtags=format_hashtags(merged_hashtags),
-            call_to_action=content.get("call_to_action", ""),
-            script_outline=content.get("script_outline", ""),
-            thread_tweets=content.get("thread_tweets", []),
-            engagement_tips=content.get("engagement_tips", []),
+            call_to_action=content["call_to_action"],
+            script_outline=content["script_outline"],
+            thread_tweets=content["thread_tweets"],
+            engagement_tips=content["engagement_tips"],
         )
         db.add(post)
         await db.flush()

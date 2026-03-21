@@ -10,6 +10,7 @@ import {
 import { generateCaption } from "../api/ai";
 import { createPost, getRecommendations } from "../api/posts";
 import { PLATFORMS, type PlatformMeta } from "../types";
+import { hasApiResponse } from "../lib/apiErrors";
 
 const TONES = ["casual", "professional", "funny", "inspirational", "educational"];
 const LANGUAGES = [
@@ -91,7 +92,11 @@ export default function UploadPage() {
       setCaption(res.data.caption);
       toast.success("Caption generated");
     },
-    onError: () => toast.error("AI generation failed"),
+    onError: (error) => {
+      if (!hasApiResponse(error)) {
+        toast.error("AI generation failed");
+      }
+    },
   });
 
   const uploadMutation = useMutation({
@@ -106,7 +111,11 @@ export default function UploadPage() {
       setScheduledAt("");
       setAiTopic("");
     },
-    onError: () => toast.error("Upload failed"),
+    onError: (error) => {
+      if (!hasApiResponse(error)) {
+        toast.error("Upload failed");
+      }
+    },
   });
 
   const onDrop = useCallback((accepted: File[]) => {
@@ -486,7 +495,7 @@ export default function UploadPage() {
           >
             Schedule (optional)
           </label>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <Calendar size={15} className="shrink-0 text-white/35" />
             <input
               id="schedule-at"

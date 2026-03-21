@@ -26,6 +26,8 @@ from typing import Any
 
 import structlog
 
+from app.services.content_agent.normalization import normalize_generated_content
+
 logger = structlog.get_logger(__name__)
 
 
@@ -421,19 +423,38 @@ async def generate_creative_content(
     Falls back to the legacy generator in agent.py if the platform has
     no dedicated creative generator here, preserving backward compatibility.
     """
+    from app.services.content_agent.agent import generate_content as legacy
+
     generator = _PLATFORM_GENERATORS.get(platform)
     if generator is None:
-        # Fall back to existing agent.py generator
-        from app.services.content_agent.agent import generate_content as legacy
         return await legacy(
             item, platform, gemini_key=gemini_key, openai_key=openai_key
         )
 
-    return await generator(
-        item,
-        anthropic_key=anthropic_key,
-        gemini_key=gemini_key,
-        openai_key=openai_key,
+    content = normalize_generated_content(
+        await generator(
+            item,
+            anthropic_key=anthropic_key,
+            gemini_key=gemini_key,
+            openai_key=openai_key,
+        )
+    )
+    has_meaningful_output = any(
+        [
+            content["hook"],
+            content["caption"],
+            content["call_to_action"],
+            content["script_outline"],
+            content["hashtags"],
+            content["thread_tweets"],
+        ]
+    )
+    if has_meaningful_output:
+        return content
+
+    logger.info("creative_generator_empty_fallback", platform=platform, item_id=item.get("id"))
+    return await legacy(
+        item, platform, gemini_key=gemini_key, openai_key=openai_key
     )
 
 

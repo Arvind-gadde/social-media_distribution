@@ -5,6 +5,7 @@ import api from "../api/client";
 import { useAuthStore } from "../store/authStore";
 import { PLATFORMS } from "../types";
 import { Bell, User, Link2, Shield, AlertCircle } from "lucide-react";
+import { hasApiResponse } from "../lib/apiErrors";
 
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
@@ -18,11 +19,9 @@ export default function SettingsPage() {
       const res = await api.get(`/platforms/${platformId}/oauth-url`);
       window.open(res.data.url, "_blank", "width=600,height=700");
     } catch (err: any) {
-      // Show the backend's human-readable message (e.g. "Set LINKEDIN_CLIENT_ID…")
-      const detail =
-        err?.response?.data?.detail ||
-        `Could not get OAuth URL for ${platformId}`;
-      toast.error(detail, { duration: 6000 });
+      if (!hasApiResponse(err)) {
+        toast.error(`Could not get OAuth URL for ${platformId}`, { duration: 6000 });
+      }
     } finally {
       setConnectingId(null);
     }
@@ -33,8 +32,10 @@ export default function SettingsPage() {
     try {
       await api.delete(`/platforms/${platformId}/disconnect`);
       toast.success(`Disconnected from ${platformId}`);
-    } catch {
-      toast.error("Disconnect failed");
+    } catch (error) {
+      if (!hasApiResponse(error)) {
+        toast.error("Disconnect failed");
+      }
     } finally {
       setDisconnectingId(null);
     }
@@ -79,7 +80,7 @@ export default function SettingsPage() {
             <User size={14} className="text-white/40" />
             <h2 className="text-xs font-semibold text-white/45 uppercase tracking-wide">Profile</h2>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className="relative shrink-0">
               <img
                 src={
@@ -110,7 +111,7 @@ export default function SettingsPage() {
               <Bell size={14} className="text-white/40" />
               <h2 className="text-xs font-semibold text-white/45 uppercase tracking-wide">Notifications</h2>
             </div>
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-semibold text-white">Push Notifications</p>
                 <p className="text-xs text-white/40 mt-0.5">Get notified when posts succeed or fail</p>
@@ -141,7 +142,7 @@ export default function SettingsPage() {
               <Shield size={14} className="text-white/40" />
               <h2 className="text-xs font-semibold text-white/45 uppercase tracking-wide">Security</h2>
             </div>
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-semibold text-white">Account Security</p>
                 <p className="text-xs text-white/40 mt-0.5">Your account is protected with secure authentication</p>
@@ -154,7 +155,7 @@ export default function SettingsPage() {
 
       {/* Connected Platforms — full width below the 2-col grid */}
       <div className="card overflow-hidden p-0">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.07]">
+        <div className="flex flex-col gap-3 border-b border-white/[0.07] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <Link2 size={14} className="text-white/40" />
             <div>

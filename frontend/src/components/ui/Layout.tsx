@@ -127,7 +127,7 @@ export default function Layout() {
   }, [mobileNavOpen]);
 
   return (
-    <div className="min-h-screen lg:grid lg:h-screen lg:grid-cols-[256px_minmax(0,1fr)] lg:overflow-hidden"
+    <div className="min-h-screen overflow-x-hidden lg:grid lg:h-screen lg:grid-cols-[256px_minmax(0,1fr)] lg:overflow-hidden"
       style={{
         backgroundImage: `
           radial-gradient(ellipse 80% 50% at 10% 5%, rgba(104,57,216,0.16), transparent),
@@ -199,8 +199,8 @@ export default function Layout() {
       </aside>
 
       {/* ── Main content area ── */}
-      <main className="relative overflow-y-auto p-4 lg:h-screen lg:p-8">
-        <div className="mx-auto max-w-7xl">
+      <main className="relative min-w-0 overflow-x-hidden overflow-y-auto p-4 lg:h-screen lg:p-8">
+        <div className="mx-auto min-w-0 max-w-7xl">
           <Outlet />
         </div>
       </main>

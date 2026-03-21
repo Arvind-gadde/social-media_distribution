@@ -13,6 +13,7 @@ import {
   type ContentItem, type GeneratedPost, type SourceType,
 } from "../api/agent";
 import { OverviewModal } from "../components/ui/OverviewModal";
+import { hasApiResponse } from "../lib/apiErrors";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -76,8 +77,8 @@ function ViralityRing({ score }: { score: number }) {
   const color = pct >= 70 ? "#10b981" : pct >= 45 ? "#f59e0b" : "#475569";
 
   return (
-    <div className="relative flex items-center justify-center w-11 h-11 shrink-0">
-      <svg width="44" height="44" viewBox="0 0 44 44" className="-rotate-90">
+    <div className="relative flex h-10 w-10 shrink-0 items-center justify-center sm:h-11 sm:w-11">
+      <svg width="44" height="44" viewBox="0 0 44 44" className="h-10 w-10 -rotate-90 sm:h-11 sm:w-11">
         <circle cx="22" cy="22" r={r} stroke="rgba(255,255,255,0.08)" strokeWidth="3" fill="none" />
         <circle cx="22" cy="22" r={r} stroke={color} strokeWidth="3" fill="none"
           strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" />
@@ -196,14 +197,14 @@ function GeneratedPanel({ post, platform }: { post: GeneratedPost; platform: str
   const fullText = [post.hook, post.caption, post.call_to_action].filter(Boolean).join("\n\n");
 
   return (
-    <div className="border border-white/[0.09] bg-white/[0.03] rounded-xl p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Icon size={13} className="text-white/50" />
-          <span className="text-sm font-semibold text-white">{cfg?.label || platform}</span>
+      <div className="border border-white/[0.09] bg-white/[0.03] rounded-xl p-4 space-y-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-2">
+            <Icon size={13} className="text-white/50" />
+            <span className="text-sm font-semibold text-white">{cfg?.label || platform}</span>
+          </div>
+          <CopyBtn text={`${fullText}\n\n${hashtags}`} label="Copy all" />
         </div>
-        <CopyBtn text={`${fullText}\n\n${hashtags}`} label="Copy all" />
-      </div>
 
       {post.hook && (
         <div>
@@ -213,11 +214,11 @@ function GeneratedPanel({ post, platform }: { post: GeneratedPost; platform: str
       )}
 
       {post.caption && (
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-[10px] font-semibold text-white/35 uppercase tracking-wider">Caption</p>
-            <CopyBtn text={post.caption} />
-          </div>
+          <div>
+            <div className="mb-1 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[10px] font-semibold text-white/35 uppercase tracking-wider">Caption</p>
+              <CopyBtn text={post.caption} />
+            </div>
           <p className="text-sm text-white/70 leading-relaxed">
             {showFull ? post.caption : post.caption.slice(0, 280)}
             {post.caption.length > 280 && (
@@ -234,24 +235,24 @@ function GeneratedPanel({ post, platform }: { post: GeneratedPost; platform: str
           <p className="text-[10px] font-semibold text-white/35 uppercase tracking-wider mb-2">
             Thread · {post.thread_tweets.length} tweets
           </p>
-          <div className="space-y-1.5">
-            {post.thread_tweets.map((tweet, i) => (
-              <div key={i} className="flex gap-2 bg-white/[0.04] rounded-lg p-2.5">
-                <span className="text-[11px] text-white/30 w-4 shrink-0 mt-0.5 font-mono">{i + 1}</span>
-                <p className="text-sm text-white/80 flex-1 leading-relaxed">{tweet}</p>
-                <CopyBtn text={tweet} />
-              </div>
-            ))}
+            <div className="space-y-1.5">
+              {post.thread_tweets.map((tweet, i) => (
+                <div key={i} className="flex flex-col gap-2 rounded-lg bg-white/[0.04] p-2.5 sm:flex-row">
+                  <span className="text-[11px] text-white/30 w-4 shrink-0 mt-0.5 font-mono">{i + 1}</span>
+                  <p className="text-sm text-white/80 flex-1 leading-relaxed">{tweet}</p>
+                  <CopyBtn text={tweet} />
+                </div>
+              ))}
           </div>
         </div>
       )}
 
       {platform === "youtube_script" && post.script_outline && (
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-[10px] font-semibold text-white/35 uppercase tracking-wider">Script outline</p>
-            <CopyBtn text={post.script_outline} />
-          </div>
+          <div>
+            <div className="mb-1 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[10px] font-semibold text-white/35 uppercase tracking-wider">Script outline</p>
+              <CopyBtn text={post.script_outline} />
+            </div>
           <pre className="text-xs text-white/60 whitespace-pre-wrap font-mono bg-white/[0.04] rounded-xl p-3 border border-white/[0.07] leading-relaxed text-wrap">
             {post.script_outline}
           </pre>
@@ -259,11 +260,11 @@ function GeneratedPanel({ post, platform }: { post: GeneratedPost; platform: str
       )}
 
       {post.hashtags?.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <p className="text-[10px] font-semibold text-white/35 uppercase tracking-wider flex items-center gap-1">
-              <Hash size={9} /> {post.hashtags.length} hashtags
-            </p>
+          <div>
+            <div className="mb-1.5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[10px] font-semibold text-white/35 uppercase tracking-wider flex items-center gap-1">
+                <Hash size={9} /> {post.hashtags.length} hashtags
+              </p>
             <CopyBtn text={hashtags} label="Copy tags" />
           </div>
           <div className="flex flex-wrap gap-1">
@@ -319,7 +320,7 @@ function ContentCard({ item, onGenerate, onViewOverview }: {
     <div className="glass-card overflow-hidden hover:border-white/[0.15] transition-all duration-200 p-0">
       <div className="p-5">
         {/* Row 1: Source + Category + Time + Badges */}
-        <div className="flex items-center gap-2 mb-3 flex-wrap">
+          <div className="mb-3 flex flex-wrap items-start gap-2">
           <SourceIcon sourceType={item.source_type} />
           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${meta.dot}`} />
           <span className="text-xs text-white/50 font-medium">{meta.label}</span>
@@ -327,7 +328,7 @@ function ContentCard({ item, onGenerate, onViewOverview }: {
           <span className="text-xs text-white/40">{item.source_label}</span>
           <span className="text-white/20">·</span>
           <span className="text-xs text-white/40">{timeAgo(item.published_at || item.fetched_at)}</span>
-          <div className="flex items-center gap-1.5 ml-auto flex-wrap justify-end">
+            <div className="flex w-full flex-wrap items-center gap-1.5 sm:ml-auto sm:w-auto sm:justify-end">
             {item.is_trending && (
               <span className="inline-flex items-center gap-1 text-[10px] text-amber-300 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-full font-semibold">
                 <TrendingUp size={9} /> Trending
@@ -365,7 +366,7 @@ function ContentCard({ item, onGenerate, onViewOverview }: {
 
         {/* Row 3: Key Points */}
         {item.key_points?.length > 0 && (
-          <ul className="mb-3 space-y-0.5 ml-14">
+            <ul className="mb-3 space-y-0.5 sm:ml-14">
             {item.key_points.slice(0, 3).map((pt, i) => (
               <li key={i} className="text-xs text-white/45 flex gap-1.5">
                 <span className="text-brand-400 shrink-0">›</span>{pt}
@@ -379,7 +380,7 @@ function ContentCard({ item, onGenerate, onViewOverview }: {
 
         {/* Row 4: Suggested angle + Sentiment */}
         {(item.suggested_angle || Object.keys(item.sentiment_breakdown).length > 0) && (
-          <div className="flex flex-wrap items-end gap-3 mb-3 ml-14">
+          <div className="mb-3 flex flex-col gap-3 sm:ml-14 sm:flex-row sm:flex-wrap sm:items-end">
             {item.suggested_angle && (
               <div className="flex-1 min-w-0 bg-white/[0.04] border border-white/[0.07] rounded-lg p-2.5">
                 <p className="text-[10px] text-white/35 uppercase tracking-wider mb-0.5 flex items-center gap-1">
@@ -393,17 +394,17 @@ function ContentCard({ item, onGenerate, onViewOverview }: {
         )}
 
         {/* Row 5: Generate buttons */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-1 ml-14">
+        <div className="flex flex-wrap items-stretch gap-1.5 pt-1 sm:ml-14 sm:items-center">
           <button onClick={() => onViewOverview(item)}
-            className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border border-brand-500/30 text-brand-300 bg-brand-500/10 hover:bg-brand-500/20 font-semibold transition-all mr-2">
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-brand-500/30 bg-brand-500/10 px-2.5 py-1.5 text-xs font-semibold text-brand-300 transition-all hover:bg-brand-500/20 sm:mr-2 sm:w-auto">
             <BookOpen size={11} />
             Overview
           </button>
           
-          <span className="text-[11px] text-white/30 font-medium mr-0.5">Generate:</span>
+          <span className="w-full text-[11px] font-medium text-white/30 sm:mr-0.5 sm:w-auto">Generate:</span>
           {PLATFORM_CONFIG.map(p => (
             <button key={p.key} onClick={() => handle(p.key)} disabled={!!generating}
-              className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border font-semibold transition-all
+              className={`flex items-center justify-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-all
                 ${generated[p.key] ? p.active : `border-white/[0.09] text-white/50 bg-white/[0.04] ${p.accent}`}
                 disabled:opacity-40 disabled:cursor-wait`}>
               <p.icon size={11} />
@@ -411,14 +412,14 @@ function ContentCard({ item, onGenerate, onViewOverview }: {
             </button>
           ))}
           <button onClick={() => handle("all")} disabled={!!generating}
-            className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg text-white font-semibold transition-all disabled:opacity-40 disabled:cursor-wait"
+            className="flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white transition-all disabled:cursor-wait disabled:opacity-40"
             style={{ background: "linear-gradient(135deg,#6272f1,#a855f7)" }}>
             <Sparkles size={11} />
             {generating === "all" ? "Generating…" : "All platforms"}
           </button>
           {hasGenerated && (
             <button onClick={() => setExpanded(!expanded)}
-              className="ml-auto flex items-center gap-1 text-xs text-brand-300 hover:text-brand-200 transition-colors">
+              className="flex w-full items-center justify-center gap-1 text-xs text-brand-300 transition-colors hover:text-brand-200 sm:ml-auto sm:w-auto sm:justify-end">
               {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
               {expanded ? "Hide" : "View"}
             </button>
@@ -442,7 +443,7 @@ function ContentCard({ item, onGenerate, onViewOverview }: {
 function NewItemsBanner({ newCount, onDismiss }: { newCount: number; onDismiss: () => void }) {
   if (newCount <= 0) return null;
   return (
-    <div className="relative flex items-center justify-between gap-3 rounded-xl border border-brand-500/30 px-4 py-3 mb-4 animate-slide-up overflow-hidden"
+    <div className="relative mb-4 flex flex-col items-start gap-3 overflow-hidden rounded-xl border border-brand-500/30 px-4 py-3 animate-slide-up sm:flex-row sm:items-center sm:justify-between"
       style={{ background: "linear-gradient(135deg, rgba(98,114,241,0.12), rgba(168,85,247,0.12))" }}>
       <div className="flex items-center gap-2.5">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-brand-500/20 shrink-0">
@@ -566,7 +567,11 @@ export default function AgentPage() {
         }
       }, 10_000);
     },
-    onError: () => toast.error("Failed. Check backend logs."),
+    onError: (error) => {
+      if (!hasApiResponse(error)) {
+        toast.error("Failed. Check backend logs.");
+      }
+    },
   });
 
   const generateMut = useMutation({
@@ -576,7 +581,11 @@ export default function AgentPage() {
       toast.success(`Generated for ${data.platforms_generated.length} platform(s)!`);
       queryClient.invalidateQueries({ queryKey: ["agent-stats"] });
     },
-    onError: () => toast.error("Generation failed. Check OPENAI_API_KEY."),
+    onError: (error) => {
+      if (!hasApiResponse(error)) {
+        toast.error("Generation failed. Check your connection.");
+      }
+    },
   });
 
   const handleGenerate = useCallback(async (id: string, platform: string) => {
@@ -596,7 +605,7 @@ export default function AgentPage() {
               </div>
               Content Intelligence
             </h1>
-            <p className="text-sm text-white/45 mt-1 ml-10">AI-curated tech news → ready-to-post · free sources only</p>
+            <p className="mt-1 text-sm text-white/45 sm:ml-10">AI-curated tech news → ready-to-post · free sources only</p>
           </div>
           <button
             onClick={() => triggerMut.mutate()}
@@ -671,13 +680,13 @@ export default function AgentPage() {
             {CATEGORY_META[cat]?.label || cat}
           </button>
         ))}
-        <div className="ml-auto flex items-center gap-2">
+        <div className="flex w-full items-center gap-2 sm:ml-auto sm:w-auto">
           <Clock size={11} className="text-white/35" />
-          <div className="flex rounded-xl overflow-hidden border border-white/[0.09]">
+          <div className="flex flex-1 overflow-x-auto rounded-xl border border-white/[0.09] sm:flex-none">
             {TIME_OPTIONS.map(opt => (
               <button key={opt.value}
                 onClick={() => { setHoursBack(opt.value); setPage(0); }}
-                className={`text-xs px-3 py-1.5 font-semibold transition-all border-r border-white/[0.09] last:border-r-0
+                className={`shrink-0 border-r border-white/[0.09] px-3 py-1.5 text-xs font-semibold transition-all last:border-r-0
                   ${hoursBack === opt.value ? "bg-brand-600 text-white" : "bg-white/[0.04] text-white/45 hover:bg-white/[0.08] hover:text-white"}`}
               >
                 {opt.label}
@@ -733,7 +742,7 @@ export default function AgentPage() {
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between pt-4">
+            <div className="flex flex-col gap-2 pt-4 sm:flex-row sm:items-center sm:justify-between">
               <button
                 onClick={() => setPage(p => Math.max(0, p - 1))}
                 disabled={page === 0}

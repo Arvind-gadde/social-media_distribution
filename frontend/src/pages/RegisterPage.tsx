@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Zap } from "lucide-react";
 import { getGoogleUrl, register } from "../api/auth";
 import { useAuthStore } from "../store/authStore";
+import { hasApiResponse } from "../lib/apiErrors";
 
 interface FormState {
   name: string;
@@ -50,8 +51,9 @@ export default function RegisterPage() {
       toast.success(`Welcome to ContentFlow, ${data.user.name}!`);
       navigate("/dashboard", { replace: true });
     } catch (err: any) {
-      const message = err.response?.data?.detail || err.response?.data?.message || "Registration failed. Please try again.";
-      toast.error(message);
+      if (!hasApiResponse(err)) {
+        toast.error("Registration failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -120,8 +122,10 @@ function GoogleButton() {
     try {
       const { data } = await getGoogleUrl();
       window.location.href = data.url;
-    } catch {
-      toast.error("Could not reach Google. Try again.");
+    } catch (error) {
+      if (!hasApiResponse(error)) {
+        toast.error("Could not reach Google. Try again.");
+      }
       setLoading(false);
     }
   };

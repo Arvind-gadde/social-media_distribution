@@ -64,7 +64,7 @@ export default function HistoryPage() {
   return (
     <div className="space-y-5 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between pt-1">
+      <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-white tracking-tight">Post History</h1>
           <p className="text-sm text-white/50">All your distributed content</p>
@@ -115,10 +115,10 @@ export default function HistoryPage() {
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
-                    <span className={`${STATUS_BADGE[post.status] || "badge-gray"} hidden xs:inline-flex`}>
+                    <span className={`${STATUS_BADGE[post.status] || "badge-gray"} hidden sm:inline-flex`}>
                       {post.status}
                     </span>
-                    <span className={`${STATUS_BADGE[post.status] || "badge-gray"} xs:hidden`}>
+                    <span className={`${STATUS_BADGE[post.status] || "badge-gray"} sm:hidden`}>
                       {post.status.slice(0, 3)}
                     </span>
                     {isOpen

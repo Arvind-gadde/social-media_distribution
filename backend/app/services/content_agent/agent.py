@@ -10,6 +10,8 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional
 import structlog
 
+from app.services.content_agent.normalization import normalize_generated_content
+
 logger = structlog.get_logger(__name__)
 
 
@@ -238,7 +240,7 @@ Return ONLY this JSON:
         logger.warning("generate_content_failed", platform=platform, error=str(exc))
         result["caption"] = f"📱 {item['title']}\n\n{summary}"
         result["hashtags"] = ["#AI", "#Technology", "#Innovation", "#TechNews", "#ArtificialIntelligence"]
-    return result
+    return normalize_generated_content(result)
 
 
 async def run_agent_pipeline(gemini_key: str = "", openai_key: str = "") -> dict:

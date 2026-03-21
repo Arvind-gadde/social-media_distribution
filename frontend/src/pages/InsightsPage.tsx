@@ -12,6 +12,7 @@ import {
   type EnrichedItem, type PipelineRun, type FlaggedClaim, type BrollAsset,
 } from "../api/insights";
 import { generateContent } from "../api/agent";
+import { hasApiResponse } from "../lib/apiErrors";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -39,8 +40,8 @@ function ViralityRing({ score }: { score: number }) {
   const color = pct >= 70 ? "#10b981" : pct >= 45 ? "#f59e0b" : "#475569";
 
   return (
-    <div className="relative flex items-center justify-center w-11 h-11 shrink-0">
-      <svg width="44" height="44" viewBox="0 0 44 44" className="-rotate-90">
+    <div className="relative flex h-10 w-10 shrink-0 items-center justify-center sm:h-11 sm:w-11">
+      <svg width="44" height="44" viewBox="0 0 44 44" className="h-10 w-10 -rotate-90 sm:h-11 sm:w-11">
         <circle cx="22" cy="22" r={r} stroke="rgba(255,255,255,0.08)" strokeWidth="3" fill="none" />
         <circle cx="22" cy="22" r={r} stroke={color} strokeWidth="3" fill="none"
           strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" />
@@ -175,10 +176,10 @@ function GapPickCard({ item, onGenerate }: { item: EnrichedItem; onGenerate: (id
 
       <BrollChips assets={item.broll_assets} />
 
-      <div className="flex items-center justify-between pt-1">
+      <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-end sm:justify-between">
         {item.insight && <SentimentBar breakdown={item.insight.sentiment_breakdown} />}
         <button onClick={() => onGenerate(item.id)}
-          className="ml-auto flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold text-white transition-all hover:brightness-110"
+          className="flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-all hover:brightness-110 sm:ml-auto sm:w-auto"
           style={{ background: "linear-gradient(135deg,#6272f1,#a855f7)" }}>
           <Zap size={11} /> Generate content <ChevronRight size={11} />
         </button>
@@ -211,7 +212,7 @@ function IntelFeedRow({ item }: { item: EnrichedItem }) {
                 </span>
               )}
               <span className="text-[10px] text-white/35">{item.source_label}</span>
-              <span className="text-[10px] text-white/25 ml-auto">{timeAgo(item.published_at || item.fetched_at)}</span>
+              <span className="w-full text-[10px] text-white/25 sm:ml-auto sm:w-auto">{timeAgo(item.published_at || item.fetched_at)}</span>
             </div>
             <p className="text-sm font-semibold text-white leading-snug line-clamp-2">{item.title}</p>
             {item.summary && !expanded && (
@@ -280,7 +281,7 @@ function PipelineRunRow({ run }: { run: PipelineRun }) {
 
   return (
     <div className="glass-card overflow-hidden p-0">
-      <button className="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-white/[0.03] transition-colors" onClick={() => setExpanded((v) => !v)}>
+      <button className="flex w-full flex-col gap-3 px-4 py-3 text-left transition-colors hover:bg-white/[0.03] sm:flex-row sm:items-center" onClick={() => setExpanded((v) => !v)}>
         <StatusIcon size={15} className={`shrink-0 ${s.color}`} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -288,12 +289,12 @@ function PipelineRunRow({ run }: { run: PipelineRun }) {
             <span className="text-xs text-white/35">{timeAgo(run.started_at)}</span>
             <span className="text-[10px] text-white/25 capitalize">via {run.triggered_by.replace("_", " ")}</span>
           </div>
-          <div className="flex items-center gap-3 mt-0.5 text-[10px] text-white/35">
+          <div className="mt-0.5 flex flex-wrap items-center gap-3 text-[10px] text-white/35">
             <span>{run.counts.fetched} fetched</span>
             <span>{run.counts.new} new</span>
             <span>{run.counts.gap_signals} gaps</span>
             {run.total_duration_s != null && (
-              <span className="ml-auto">{fmtSeconds(run.total_duration_s)} total</span>
+              <span className="sm:ml-auto">{fmtSeconds(run.total_duration_s)} total</span>
             )}
           </div>
         </div>
@@ -317,7 +318,7 @@ function PipelineRunRow({ run }: { run: PipelineRun }) {
             })}
           </div>
 
-          <div className="grid grid-cols-3 gap-2 text-[11px]">
+          <div className="grid grid-cols-2 gap-2 text-[11px] sm:grid-cols-3">
             {[
               ["Fetched", run.counts.fetched], ["New", run.counts.new], ["Scored", run.counts.scored],
               ["Fact-checked", run.counts.fact_checked], ["Generated", run.counts.generated], ["Gap signals", run.counts.gap_signals],
@@ -398,8 +399,10 @@ export default function InsightsPage() {
       await generateContent(itemId, "all");
       toast.success("Generation started! Switch to Agent tab to view.");
       navigate("/agent");
-    } catch {
-      toast.error("Generation failed.");
+    } catch (error) {
+      if (!hasApiResponse(error)) {
+        toast.error("Generation failed. Check your connection.");
+      }
     }
   };
 
@@ -419,7 +422,7 @@ export default function InsightsPage() {
               </div>
               Insights
             </h1>
-            <p className="text-sm text-white/45 mt-1 ml-10">Virality · Value gaps · Fact-check · Pipeline health</p>
+            <p className="mt-1 text-sm text-white/45 sm:ml-10">Virality · Value gaps · Fact-check · Pipeline health</p>
           </div>
         </div>
 
@@ -435,7 +438,7 @@ export default function InsightsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-0.5 border-b border-white/[0.08] mb-5">
+      <div className="mb-5 flex overflow-x-auto border-b border-white/[0.08]">
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -548,7 +551,7 @@ export default function InsightsPage() {
                 {feedItems.map((item) => <IntelFeedRow key={item.id} item={item} />)}
               </div>
               {feedTotalPages > 1 && (
-                <div className="flex items-center justify-between pt-4">
+                <div className="flex flex-col gap-2 pt-4 sm:flex-row sm:items-center sm:justify-between">
                   <button onClick={() => setFeedPage((p) => Math.max(0, p - 1))} disabled={feedPage === 0}
                     className="text-sm px-4 py-2 rounded-xl border border-white/[0.09] text-white/50 hover:bg-white/[0.07] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all">
                     ← Prev
@@ -571,7 +574,7 @@ export default function InsightsPage() {
       {activeTab === "pipeline" && (
         <>
           {runsData?.last_run_status && (
-            <div className={`flex items-center gap-3 rounded-xl border px-4 py-3 mb-4 ${
+            <div className={`mb-4 flex flex-col gap-3 rounded-xl border px-4 py-3 sm:flex-row sm:items-center ${
               runsData.last_run_status === "success" ? "bg-emerald-500/10 border-emerald-500/25"
               : runsData.last_run_status === "partial" ? "bg-amber-500/10 border-amber-500/25"
               : runsData.last_run_status === "failed" ? "bg-red-500/10 border-red-500/25"
@@ -585,7 +588,7 @@ export default function InsightsPage() {
                 {runsData.last_success_at && <p className="text-xs text-white/40">Last success {timeAgo(runsData.last_success_at)}</p>}
               </div>
               {stats && (
-                <div className="ml-auto text-right">
+                <div className="w-full text-left sm:ml-auto sm:w-auto sm:text-right">
                   <p className="text-xs text-white/35">Avg virality (24h)</p>
                   <p className="text-sm font-bold text-white">{Math.round(stats.avg_virality_24h * 100)}%</p>
                 </div>

@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Zap } from "lucide-react";
 import { getGoogleUrl, loginWithPassword } from "../api/auth";
 import { useAuthStore } from "../store/authStore";
+import { hasApiResponse } from "../lib/apiErrors";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -38,11 +39,9 @@ export default function LoginPage() {
       toast.success(`Welcome back, ${data.user.name}!`);
       navigate("/dashboard", { replace: true });
     } catch (err: any) {
-      const message =
-        err.response?.data?.detail ||
-        err.response?.data?.message ||
-        "Invalid email or password.";
-      toast.error(message);
+      if (!hasApiResponse(err)) {
+        toast.error("Invalid email or password.");
+      }
     } finally {
       setLoading(false);
     }
@@ -53,8 +52,10 @@ export default function LoginPage() {
     try {
       const { data } = await getGoogleUrl();
       window.location.href = data.url;
-    } catch {
-      toast.error("Could not reach Google. Try again.");
+    } catch (error) {
+      if (!hasApiResponse(error)) {
+        toast.error("Could not reach Google. Try again.");
+      }
       setGoogleLoading(false);
     }
   };

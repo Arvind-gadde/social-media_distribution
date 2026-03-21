@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../api/client";
 import { useAuthStore } from "../store/authStore";
+import { hasApiResponse } from "../lib/apiErrors";
 
 export default function OAuthCallbackPage() {
   const [params] = useSearchParams();
@@ -43,11 +44,9 @@ export default function OAuthCallbackPage() {
         navigate("/dashboard", { replace: true });
       })
       .catch((err) => {
-        const message =
-          err.response?.data?.detail ||
-          err.response?.data?.message ||
-          "Authentication failed. Please try again.";
-        toast.error(message);
+        if (!hasApiResponse(err)) {
+          toast.error("Authentication failed. Please try again.");
+        }
         navigate("/login", { replace: true });
       })
       .finally(() => setLoading(false));
