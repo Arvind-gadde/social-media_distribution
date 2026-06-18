@@ -48,6 +48,9 @@ prometheus-client==0.21.0
 sentry-sdk[fastapi]==2.18.0
 posthog==3.7.4
 
+# ── LLM Observability — Langfuse (optional, opt-in via env) ───────────────
+langfuse==2.60.0
+
 # ── LangChain & LangGraph ─────────────────────────────────────────────────
 # All versions verified mutually compatible
 langgraph==0.2.74

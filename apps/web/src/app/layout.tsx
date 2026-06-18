@@ -38,8 +38,16 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <CommandBarContext.Provider value={commandBar}>
-      {!isAuthPage && <Navigation />}
-      {children}
+      {!isAuthPage ? (
+        <div className="flex h-screen">
+          <Navigation />
+          <main className="flex-1 ml-56 overflow-y-auto">
+            {children}
+          </main>
+        </div>
+      ) : (
+        children
+      )}
       <Toaster />
       {!isAuthPage && <CommandBar isOpen={isOpen} onClose={close} commands={defaultCommands} />}
     </CommandBarContext.Provider>

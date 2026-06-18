@@ -28,6 +28,8 @@ from typing import Any
 
 import structlog
 
+from app.integrations.llm.observability import trace_llm_call
+
 logger = structlog.get_logger(__name__)
 
 
@@ -44,10 +46,24 @@ class TaskType(str, Enum):
     TOOL_USE = "tool_use"             # Structured tool calls
 
 
+class Tier(str, Enum):
+    """Cost/capability tier — abstract over specific model names.
+
+    Routing roughly follows the 70/20/10 split from the blueprint:
+      CHEAP    — bulk extract/classify/summarize. ~70% of calls.
+      MID      — drafting / repurposing.          ~20% of calls.
+      FRONTIER — strategy / multi-step reasoning. ~10% of calls.
+    """
+    CHEAP = "cheap"
+    MID = "mid"
+    FRONTIER = "frontier"
+
+
 class Provider(str, Enum):
     OPENAI = "openai"
     GEMINI = "gemini"
     ANTHROPIC = "anthropic"
+    OPENROUTER = "openrouter"
 
 
 @dataclass
@@ -108,6 +124,52 @@ MODELS: dict[str, ModelConfig] = {
         cost_per_1m_output=4.00,
         max_tokens=8192,
     ),
+    "claude-3-5-sonnet": ModelConfig(
+        provider=Provider.ANTHROPIC,
+        model_name="claude-3-5-sonnet-latest",
+        cost_per_1m_input=3.00,
+        cost_per_1m_output=15.00,
+        max_tokens=8192,
+    ),
+    # OpenRouter — single API key, many cheap-tier models (DeepSeek, Llama, Qwen).
+    # Prices are approximate 2026 spot prices; OpenRouter updates dynamically.
+    "openrouter/deepseek-v3": ModelConfig(
+        provider=Provider.OPENROUTER,
+        model_name="deepseek/deepseek-chat",
+        cost_per_1m_input=0.14,
+        cost_per_1m_output=0.28,
+        max_tokens=8192,
+    ),
+    "openrouter/llama-3.3-70b": ModelConfig(
+        provider=Provider.OPENROUTER,
+        model_name="meta-llama/llama-3.3-70b-instruct",
+        cost_per_1m_input=0.13,
+        cost_per_1m_output=0.40,
+        max_tokens=8192,
+    ),
+}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Tier → ordered model chain. Used by complete(tier=...) for cost-aware routing
+# decoupled from specific model names.
+# ─────────────────────────────────────────────────────────────────────────────
+
+TIER_CHAINS: dict[Tier, list[str]] = {
+    Tier.CHEAP: [
+        "gemini-2.0-flash",
+        "openrouter/deepseek-v3",
+        "gpt-4o-mini",
+    ],
+    Tier.MID: [
+        "gpt-4o-mini",
+        "claude-3-5-haiku",
+        "gemini-2.0-flash",
+    ],
+    Tier.FRONTIER: [
+        "gpt-4o",
+        "claude-3-5-sonnet",
+    ],
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -166,6 +228,9 @@ class LLMProvider:
         openai_key: str = "",
         gemini_key: str = "",
         anthropic_key: str = "",
+        openrouter_key: str = "",
+        openrouter_base_url: str = "https://openrouter.ai/api/v1",
+        anthropic_prompt_caching: bool = True,
     ) -> None:
         self._keys: dict[Provider, str] = {}
         if openai_key:
@@ -174,6 +239,10 @@ class LLMProvider:
             self._keys[Provider.GEMINI] = gemini_key
         if anthropic_key:
             self._keys[Provider.ANTHROPIC] = anthropic_key
+        if openrouter_key:
+            self._keys[Provider.OPENROUTER] = openrouter_key
+        self._openrouter_base_url = openrouter_base_url
+        self._anthropic_prompt_caching = anthropic_prompt_caching
 
     @property
     def available_providers(self) -> set[Provider]:
@@ -194,27 +263,55 @@ class LLMProvider:
             )
         return chain
 
+    def _get_tier_chain(self, tier: Tier) -> list[ModelConfig]:
+        """Resolve a Tier to a model chain filtered by available API keys."""
+        model_names = TIER_CHAINS.get(tier, [])
+        chain: list[ModelConfig] = []
+        for name in model_names:
+            config = MODELS.get(name)
+            if config and config.provider in self._keys:
+                chain.append(config)
+        if not chain:
+            raise ValueError(
+                f"No LLM provider available for tier '{tier.value}'. "
+                f"Available providers: {self.available_providers}"
+            )
+        return chain
+
     async def complete(
         self,
-        task_type: TaskType,
-        messages: list[dict[str, str]],
+        task_type: TaskType | None = None,
+        messages: list[dict[str, str]] | None = None,
         workspace_id: uuid.UUID | None = None,
         *,
+        tier: Tier | None = None,
         temperature: float | None = None,
         max_tokens: int | None = None,
         json_mode: bool = False,
         model_override: str | None = None,
+        cache_system_prompt: bool = False,
         db_session=None,
     ) -> LLMResponse:
         """Route a completion request to the best available model.
 
-        Tries models in priority order with automatic fallback.
-        Tracks cost and latency for observability.
+        Exactly one of ``task_type``, ``tier``, or ``model_override`` selects
+        the model chain. Tries models in priority order with automatic
+        fallback. Tracks cost and latency for observability.
 
         Args:
+            tier: Cost/capability tier. Cheaper than naming a model when the
+                caller only cares about cheap/mid/frontier.
+            cache_system_prompt: When True and the provider supports it
+                (currently Anthropic), mark the system prompt with
+                ``cache_control`` for prompt-cache reuse.
             db_session: Optional AsyncSession. If provided, writes
                 UsageMeter entries and checks budget compliance.
         """
+        if messages is None:
+            raise ValueError("messages is required")
+        if not any((task_type, tier, model_override)):
+            raise ValueError("must pass task_type, tier, or model_override")
+
         # Budget pre-check
         if db_session and workspace_id:
             from app.services.usage_service import UsageService
@@ -228,81 +325,107 @@ class LLMProvider:
 
         if model_override and model_override in MODELS:
             chain = [MODELS[model_override]]
+        elif tier is not None:
+            chain = self._get_tier_chain(tier)
         else:
+            assert task_type is not None
             chain = self._get_model_chain(task_type)
 
         last_error: Exception | None = None
+        route_label = (
+            tier.value if tier else (task_type.value if task_type else "override")
+        )
 
         for model_config in chain:
             for attempt in range(MAX_RETRIES + 1):
-                try:
-                    start_time = time.monotonic()
-                    response = await self._call_provider(
-                        model_config=model_config,
-                        messages=messages,
-                        temperature=temperature or model_config.temperature,
-                        max_tokens=max_tokens or model_config.max_tokens,
-                        json_mode=json_mode,
-                    )
-                    elapsed_ms = int((time.monotonic() - start_time) * 1000)
+                with trace_llm_call(
+                    name=f"llm.complete.{route_label}",
+                    model=model_config.model_name,
+                    provider=model_config.provider.value,
+                    task_type=task_type.value if task_type else None,
+                    workspace_id=str(workspace_id) if workspace_id else None,
+                    input_messages=messages,
+                    metadata={
+                        "tier": tier.value if tier else None,
+                        "attempt": attempt + 1,
+                        "cache_system_prompt": cache_system_prompt,
+                    },
+                ) as trace:
+                    try:
+                        start_time = time.monotonic()
+                        response = await self._call_provider(
+                            model_config=model_config,
+                            messages=messages,
+                            temperature=temperature or model_config.temperature,
+                            max_tokens=max_tokens or model_config.max_tokens,
+                            json_mode=json_mode,
+                            cache_system_prompt=cache_system_prompt,
+                        )
+                        elapsed_ms = int((time.monotonic() - start_time) * 1000)
 
-                    cost = _calculate_cost(
-                        model_config, response["tokens_in"], response["tokens_out"],
-                    )
+                        cost = _calculate_cost(
+                            model_config, response["tokens_in"], response["tokens_out"],
+                        )
 
-                    result = LLMResponse(
-                        content=response["content"],
-                        provider=model_config.provider.value,
-                        model=model_config.model_name,
-                        tokens_in=response["tokens_in"],
-                        tokens_out=response["tokens_out"],
-                        cost_usd=cost,
-                        latency_ms=elapsed_ms,
-                    )
+                        result = LLMResponse(
+                            content=response["content"],
+                            provider=model_config.provider.value,
+                            model=model_config.model_name,
+                            tokens_in=response["tokens_in"],
+                            tokens_out=response["tokens_out"],
+                            cost_usd=cost,
+                            latency_ms=elapsed_ms,
+                        )
 
-                    logger.info(
-                        "llm_call_success",
-                        provider=result.provider,
-                        model=result.model,
-                        task=task_type.value,
-                        tokens_in=result.tokens_in,
-                        tokens_out=result.tokens_out,
-                        cost_usd=result.cost_usd,
-                        latency_ms=result.latency_ms,
-                        workspace_id=str(workspace_id) if workspace_id else None,
-                    )
+                        trace["output"] = result.content
+                        trace["tokens_in"] = result.tokens_in
+                        trace["tokens_out"] = result.tokens_out
+                        trace["cost_usd"] = result.cost_usd
 
-                    # Record usage if session available
-                    if db_session and workspace_id:
-                        from app.services.usage_service import UsageService
-                        usage_svc = UsageService(db_session)
-                        await usage_svc.record_llm_usage(
-                            workspace_id=workspace_id,
+                        logger.info(
+                            "llm_call_success",
                             provider=result.provider,
                             model=result.model,
+                            route=route_label,
                             tokens_in=result.tokens_in,
                             tokens_out=result.tokens_out,
                             cost_usd=result.cost_usd,
+                            latency_ms=result.latency_ms,
+                            workspace_id=str(workspace_id) if workspace_id else None,
                         )
 
-                    return result
+                        # Record usage if session available
+                        if db_session and workspace_id:
+                            from app.services.usage_service import UsageService
+                            usage_svc = UsageService(db_session)
+                            await usage_svc.record_llm_usage(
+                                workspace_id=workspace_id,
+                                provider=result.provider,
+                                model=result.model,
+                                tokens_in=result.tokens_in,
+                                tokens_out=result.tokens_out,
+                                cost_usd=result.cost_usd,
+                            )
 
-                except Exception as exc:
-                    last_error = exc
-                    logger.warning(
-                        "llm_call_failed",
-                        provider=model_config.provider.value,
-                        model=model_config.model_name,
-                        task=task_type.value,
-                        attempt=attempt + 1,
-                        error=str(exc),
-                    )
-                    if attempt < MAX_RETRIES:
-                        delay = RETRY_BASE_DELAY_S * (2 ** attempt)
-                        await asyncio.sleep(delay)
+                        return result
+
+                    except Exception as exc:
+                        last_error = exc
+                        trace["error"] = exc
+                        logger.warning(
+                            "llm_call_failed",
+                            provider=model_config.provider.value,
+                            model=model_config.model_name,
+                            route=route_label,
+                            attempt=attempt + 1,
+                            error=str(exc),
+                        )
+                        if attempt < MAX_RETRIES:
+                            delay = RETRY_BASE_DELAY_S * (2 ** attempt)
+                            await asyncio.sleep(delay)
 
         raise RuntimeError(
-            f"All LLM providers failed for task '{task_type.value}'. "
+            f"All LLM providers failed for route '{route_label}'. "
             f"Last error: {last_error}"
         )
 
@@ -313,6 +436,7 @@ class LLMProvider:
         temperature: float,
         max_tokens: int,
         json_mode: bool,
+        cache_system_prompt: bool = False,
     ) -> dict[str, Any]:
         """Dispatch to the appropriate provider SDK."""
         if model_config.provider == Provider.OPENAI:
@@ -325,7 +449,15 @@ class LLMProvider:
             )
         elif model_config.provider == Provider.ANTHROPIC:
             return await self._call_anthropic(
-                model_config, messages, temperature, max_tokens,
+                model_config,
+                messages,
+                temperature,
+                max_tokens,
+                cache_system_prompt=cache_system_prompt,
+            )
+        elif model_config.provider == Provider.OPENROUTER:
+            return await self._call_openrouter(
+                model_config, messages, temperature, max_tokens, json_mode,
             )
         else:
             raise ValueError(f"Unknown provider: {model_config.provider}")
@@ -422,8 +554,15 @@ class LLMProvider:
         messages: list[dict[str, str]],
         temperature: float,
         max_tokens: int,
+        cache_system_prompt: bool = False,
     ) -> dict[str, Any]:
-        """Call Anthropic Claude API."""
+        """Call Anthropic Claude API.
+
+        When ``cache_system_prompt`` is True (and prompt caching is enabled
+        on the provider), the system message is sent as a structured block
+        with ``cache_control={"type": "ephemeral"}`` so repeated calls with
+        the same system prompt cost ~10% of the original on cached input.
+        """
         from anthropic import AsyncAnthropic
 
         client = AsyncAnthropic(api_key=self._keys[Provider.ANTHROPIC])
@@ -444,14 +583,63 @@ class LLMProvider:
             "temperature": temperature,
         }
         if system_msg:
-            kwargs["system"] = system_msg
+            if cache_system_prompt and self._anthropic_prompt_caching:
+                kwargs["system"] = [
+                    {
+                        "type": "text",
+                        "text": system_msg,
+                        "cache_control": {"type": "ephemeral"},
+                    }
+                ]
+            else:
+                kwargs["system"] = system_msg
 
         response = await client.messages.create(**kwargs)
 
+        # Treat cached input as input_tokens for cost accounting; the SDK
+        # exposes cache_read_input_tokens separately when caching is active.
+        tokens_in = response.usage.input_tokens
+        cache_read = getattr(response.usage, "cache_read_input_tokens", 0) or 0
+        cache_write = getattr(response.usage, "cache_creation_input_tokens", 0) or 0
+
         return {
             "content": response.content[0].text if response.content else "",
-            "tokens_in": response.usage.input_tokens,
+            "tokens_in": tokens_in + cache_read + cache_write,
             "tokens_out": response.usage.output_tokens,
+        }
+
+    async def _call_openrouter(
+        self,
+        model_config: ModelConfig,
+        messages: list[dict[str, str]],
+        temperature: float,
+        max_tokens: int,
+        json_mode: bool,
+    ) -> dict[str, Any]:
+        """Call OpenRouter via OpenAI-compatible Chat Completions API."""
+        from openai import AsyncOpenAI
+
+        client = AsyncOpenAI(
+            api_key=self._keys[Provider.OPENROUTER],
+            base_url=self._openrouter_base_url,
+        )
+
+        kwargs: dict[str, Any] = {
+            "model": model_config.model_name,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+        }
+        if json_mode:
+            kwargs["response_format"] = {"type": "json_object"}
+
+        response = await client.chat.completions.create(**kwargs)
+        choice = response.choices[0]
+
+        return {
+            "content": choice.message.content or "",
+            "tokens_in": response.usage.prompt_tokens if response.usage else 0,
+            "tokens_out": response.usage.completion_tokens if response.usage else 0,
         }
 
 
@@ -459,10 +647,36 @@ def create_llm_provider(
     openai_key: str = "",
     gemini_key: str = "",
     anthropic_key: str = "",
+    openrouter_key: str = "",
+    openrouter_base_url: str = "https://openrouter.ai/api/v1",
+    anthropic_prompt_caching: bool = True,
 ) -> LLMProvider:
     """Factory function for creating LLMProvider from config."""
     return LLMProvider(
         openai_key=openai_key,
         gemini_key=gemini_key,
         anthropic_key=anthropic_key,
+        openrouter_key=openrouter_key,
+        openrouter_base_url=openrouter_base_url,
+        anthropic_prompt_caching=anthropic_prompt_caching,
+    )
+
+
+def create_llm_provider_from_settings() -> LLMProvider:
+    """Wire LLMProvider straight from app settings.
+
+    Centralizes provider construction so call sites do not have to thread
+    every key through. Use this in new code; keep ``create_llm_provider``
+    for explicit/test wiring.
+    """
+    from app.config import get_settings
+
+    settings = get_settings()
+    return create_llm_provider(
+        openai_key=settings.OPENAI_API_KEY,
+        gemini_key=settings.GEMINI_API_KEY,
+        anthropic_key=settings.ANTHROPIC_API_KEY,
+        openrouter_key=settings.OPENROUTER_API_KEY,
+        openrouter_base_url=settings.OPENROUTER_BASE_URL,
+        anthropic_prompt_caching=settings.ANTHROPIC_PROMPT_CACHING,
     )

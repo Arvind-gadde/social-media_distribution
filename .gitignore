@@ -1,0 +1,306 @@
+# ============================================================
+# ENVIRONMENT & SECRETS
+# ============================================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+*.env
+backend/.env
+backend/.env.local
+apps/web/.env
+apps/web/.env.local
+apps/mobile/.env
+apps/mobile/.env.local
+
+# Secrets and credentials
+*.pem
+*.key
+*.p8
+*.p12
+*.jks
+*.mobileprovision
+secrets/
+.secrets/
+credentials.json
+service-account.json
+
+# ============================================================
+# DEPENDENCIES
+# ============================================================
+node_modules/
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ============================================================
+# VIRTUAL ENVIRONMENTS
+# ============================================================
+venv/
+.venv/
+ENV/
+env/
+backend/.venv/
+backend/venv/
+.virtualenv/
+
+# ============================================================
+# BUILD OUTPUTS
+# ============================================================
+build/
+dist/
+out/
+.next/
+.turbo/
+*.tsbuildinfo
+
+# Expo
+.expo/
+.expo-shared/
+web-build/
+*.orig.*
+
+# Python builds
+*.egg-info/
+.eggs/
+*.egg
+build/
+develop-eggs/
+dist/
+downloads/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.manifest
+*.spec
+
+# ============================================================
+# TESTING & COVERAGE
+# ============================================================
+coverage/
+.coverage
+.coverage.*
+*.lcov
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+junit.xml
+test-results/
+
+# ============================================================
+# LOGS & DEBUGGING
+# ============================================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+logs/
+*.log.*
+
+# Python logs
+celerybeat-schedule
+celerybeat.pid
+
+# ============================================================
+# DATABASES
+# ============================================================
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+db.sqlite3
+db.sqlite3-journal
+local.db
+
+# PostgreSQL
+*.dump
+*.sql.gz
+
+# ============================================================
+# CACHES & TEMPORARY FILES
+# ============================================================
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+*.tmp
+*.temp
+tmp/
+temp/
+.DS_Store
+Thumbs.db
+
+# Python cache
+*.pyc
+.Python
+__pycache__/
+
+# ============================================================
+# IDEs & EDITORS
+# ============================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# ============================================================
+# MEDIA & UPLOADS
+# ============================================================
+uploads/
+media/
+static/media/
+public/uploads/
+*.mp4
+*.mov
+*.avi
+*.mkv
+# Allow sample/demo media if needed
+!public/demo-*.mp4
+
+# ============================================================
+# DOCKER
+# ============================================================
+docker-compose.override.yml
+.dockerignore
+
+# ============================================================
+# MONITORING & ANALYTICS
+# ============================================================
+.sentry-*
+sentry.properties
+
+# ============================================================
+# PACKAGE MANAGER LOCKS (optional - uncomment if needed)
+# ============================================================
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# ============================================================
+# ALEMBIC (Database Migrations)
+# ============================================================
+# Keep migration files but ignore local migration state
+backend/alembic/versions/__pycache__/
+
+# ============================================================
+# MISC
+# ============================================================
+.turbo
+.vercel
+.netlify
+.firebase/
+.firebaserc
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+*.old
+*~
+
+# ============================================================
+# PROJECT SPECIFIC
+# ============================================================
+# Scraped data cache
+scraped_data/
+cache/
+.cache/
+
+# Vector DB data (Qdrant)
+qdrant_data/
+qdrant_storage/
+
+# Meilisearch data
+meili_data/
+
+# Redis dumps
+dump.rdb
+
+# Celery
+celerybeat-schedule.db
+
+# FFmpeg temp files
+ffmpeg_temp/
+video_processing/
+
+# AI model cache
+.transformers/
+.huggingface/
+model_cache/
+
+# Generated contracts/documents
+generated_contracts/
+generated_docs/
+
+# Local development overrides
+local_settings.py
+local_config.json
+
+# ============================================================
+# DOCUMENTATION & REPORTS
+# ============================================================
+# Keep implementation docs but ignore temp reports
+*_TEMP.md
+*_DRAFT.md
+".claude/worktrees" 
+
+.kiro/
+.claude/
+.reasearch-improvements/

@@ -61,6 +61,23 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
+    OPENROUTER_API_KEY: str = ""
+    OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
+
+    # ── LLM Routing ──────────────────────────────────────────────────────
+    # Allow callers to route by abstract tier (cheap/mid/frontier) instead
+    # of naming a model. Useful for cost-aware experiments.
+    LLM_TIER_CHEAP_MODEL: str = "gemini-2.0-flash"
+    LLM_TIER_MID_MODEL: str = "gpt-4o-mini"
+    LLM_TIER_FRONTIER_MODEL: str = "gpt-4o"
+    # Enable Anthropic prompt caching on system blocks (no-op if backend lacks support)
+    ANTHROPIC_PROMPT_CACHING: bool = True
+
+    # ── LLM Observability — Langfuse ──────────────────────────────────────
+    # Leave empty to disable. Self-hostable; supports cloud (us/eu) regions.
+    LANGFUSE_PUBLIC_KEY: str = ""
+    LANGFUSE_SECRET_KEY: str = ""
+    LANGFUSE_HOST: str = "https://cloud.langfuse.com"
 
     # ── Platforms ─────────────────────────────────────────────────────────
     INSTAGRAM_APP_ID: str = ""
@@ -158,8 +175,21 @@ class Settings(BaseSettings):
         return bool(self.OPENAI_API_KEY)
 
     @property
+    def has_openrouter(self) -> bool:
+        return bool(self.OPENROUTER_API_KEY)
+
+    @property
     def has_any_ai(self) -> bool:
-        return self.has_anthropic or self.has_gemini or self.has_openai
+        return (
+            self.has_anthropic
+            or self.has_gemini
+            or self.has_openai
+            or self.has_openrouter
+        )
+
+    @property
+    def has_langfuse(self) -> bool:
+        return bool(self.LANGFUSE_PUBLIC_KEY and self.LANGFUSE_SECRET_KEY)
 
     @property
     def has_s3(self) -> bool:
