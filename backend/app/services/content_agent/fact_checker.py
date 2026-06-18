@@ -92,7 +92,7 @@ async def _call_llm(
         try:
             url = (
                 "https://generativelanguage.googleapis.com/v1beta/models/"
-                f"gemini-1.5-flash:generateContent?key={gemini_key}"
+                f"gemini-2.0-flash:generateContent?key={gemini_key}"
             )
             async with httpx.AsyncClient(timeout=30) as client:
                 resp = await client.post(

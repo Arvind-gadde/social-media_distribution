@@ -43,7 +43,10 @@ def _clear_auth_cookies(response: Response) -> None:
 
 
 def _user_json(user) -> dict:
-    return UserResponse.model_validate(user).model_dump(mode="json")
+    """Convert User model to UserResponse dict with connected_platforms."""
+    user_dict = UserResponse.model_validate(user).model_dump(mode="json")
+    # connected_platforms defaults to [] in schema, which is fine for new users
+    return user_dict
 
 
 def _auth_response(user, access: str, refresh: str, status_code: int = 200) -> Response:
@@ -68,6 +71,9 @@ async def register(body: RegisterRequest, auth_service: AuthSvc) -> Response:
         email=body.email,
         password=body.password,
         name=body.name,
+        username=body.username,
+        timezone=body.timezone or "UTC",
+        locale=body.locale or "en",
     )
     access, refresh = auth_service.issue_tokens(user)
     return _auth_response(user, access, refresh, status_code=201)

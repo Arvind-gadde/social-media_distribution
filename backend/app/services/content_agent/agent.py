@@ -21,7 +21,7 @@ async def _call_llm(prompt: str, system: str = "", gemini_key: str = "", openai_
             import httpx
             url = (
                 f"https://generativelanguage.googleapis.com/v1beta/models/"
-                f"gemini-1.5-flash:generateContent?key={gemini_key}"
+                f"gemini-2.0-flash:generateContent?key={gemini_key}"
             )
             payload = {
                 "contents": [{"parts": [{"text": f"{system}\n\n{prompt}" if system else prompt}]}],

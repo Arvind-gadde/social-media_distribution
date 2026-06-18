@@ -6,7 +6,34 @@ import os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from app.db.session import Base
-from app.models.models import User, Post  # noqa — registers models
+
+# Register ALL models with Base.metadata for migration auto-generation
+from app.models.models import User  # noqa: F401
+from app.domains.control.models import (  # noqa: F401
+    Workspace, WorkspaceMembership, Niche, WorkspaceNiche,
+    SocialAccount, AuditLog, UsageMeter,
+    BudgetPolicy, OutboxEvent, WebhookReceipt,
+)
+from app.domains.intelligence.models import (  # noqa: F401
+    SourceRegistry, SourceDocument, SourceDocumentInsight,
+    WorkspaceInsight, Trend, CompetitorProfile, CompetitorObservation,
+    AgentRun, AgentStep,
+    PromptCatalog, PromptVersion, ProviderPolicy,
+    AgentConfig, AgentInsight,
+)
+from app.domains.execution.models import (  # noqa: F401
+    ContentProject, ContentVariant, ContentAsset,
+    PublishJob, PublishAttempt, CreatorGoal, GoalCheckIn,
+    ApprovalRequest, Notification, AnalyticsFact,
+    MediaEdit,
+)
+from app.domains.business.models import (  # noqa: F401
+    DMInbox, Collaboration, ContractDraft,
+)
+from app.domains.notifications.models import (  # noqa: F401
+    DeviceToken,
+)
+
 from app.config import get_settings
 
 settings = get_settings()

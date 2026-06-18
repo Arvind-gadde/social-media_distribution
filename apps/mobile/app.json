@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "ContentFlow",
+    "slug": "contentflow",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "contentflow",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.contentflow.app",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Use Face ID to securely access your ContentFlow account."
+      }
+    },
+    "android": {
+      "package": "com.contentflow.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0F172A"
+      },
+      "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT"]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-local-authentication"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

@@ -90,7 +90,7 @@ async def _call_creative_llm(
         try:
             url = (
                 "https://generativelanguage.googleapis.com/v1beta/models/"
-                f"gemini-1.5-flash:generateContent?key={gemini_key}"
+                f"gemini-2.0-flash:generateContent?key={gemini_key}"
             )
             import httpx as _httpx
             async with _httpx.AsyncClient(timeout=30) as client:

@@ -32,3 +32,8 @@ def configure_logging(debug: bool = False) -> None:
     if not debug:
         logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
         logging.getLogger("httpx").setLevel(logging.WARNING)
+
+
+def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:
+    """Return a structlog logger bound to the given name."""
+    return structlog.get_logger(name)

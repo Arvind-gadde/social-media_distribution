@@ -5,6 +5,7 @@ from __future__ import annotations
 import structlog
 import httpx
 import bcrypt
+from sqlalchemy import select
 
 from app.config import get_settings
 from app.core.security import (
@@ -55,22 +56,83 @@ class AuthService:
 
     # ── Email / Password Auth ─────────────────────────────────────────────
 
-    async def register(self, email: str, password: str, name: str) -> User:
+    async def register(
+        self, 
+        email: str, 
+        password: str, 
+        name: str,
+        username: str | None = None,
+        timezone: str = "UTC",
+        locale: str = "en"
+    ) -> User:
         """
         Create a new user with email/password credentials.
-        Raises ConflictError if email is already taken.
+        Raises ConflictError if email or username is already taken.
+        
+        Also creates a default workspace for the user.
         """
+        # Check for duplicate email
         existing = await self._user_repo.get_by_email(email.lower())
         if existing:
             raise ConflictError("An account with this email already exists")
+        
+        # Check for duplicate username if provided
+        if username:
+            result = await self._user_repo._db.execute(
+                select(User).where(User.username == username.lower())
+            )
+            if result.scalar_one_or_none():
+                raise ConflictError("This username is already taken")
+        
+        # Generate username from email if not provided
+        if not username:
+            username = email.split('@')[0].lower()
+            base_username = username
+            for counter in range(1, 1000):
+                result = await self._user_repo._db.execute(
+                    select(User).where(User.username == username)
+                )
+                if not result.scalar_one_or_none():
+                    break
+                username = f"{base_username}{counter}"
+            else:
+                import secrets
+                username = f"{base_username}{secrets.token_hex(4)}"
 
         user = User(
             email=email.lower(),
+            username=username.lower(),
             name=name,
             password_hash=self.hash_password(password),
+            timezone=timezone,
+            locale=locale,
+            email_verified=False,
         )
         user = await self._user_repo.save(user)
-        logger.info("user_registered", user_id=str(user.id), email=email)
+        
+        # Create default workspace for new user
+        from app.domains.control.models import Workspace, WorkspaceMembership, WorkspaceRole, InviteStatus
+        from datetime import datetime, timezone as tz
+        
+        workspace = Workspace(
+            name=f"{name}'s Workspace",
+            slug=f"{username}-workspace-{str(user.id)[:8]}",
+            owner_id=user.id,
+        )
+        self._user_repo._db.add(workspace)
+        await self._user_repo._db.flush()
+        
+        membership = WorkspaceMembership(
+            workspace_id=workspace.id,
+            user_id=user.id,
+            role=WorkspaceRole.OWNER,
+            invite_status=InviteStatus.ACTIVE,
+            joined_at=datetime.now(tz.utc),
+        )
+        self._user_repo._db.add(membership)
+        await self._user_repo._db.commit()
+        
+        logger.info("user_registered", user_id=str(user.id), email=email, username=username, workspace_id=str(workspace.id))
         return user
 
     async def login(self, email: str, password: str) -> User:

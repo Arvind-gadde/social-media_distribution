@@ -295,7 +295,7 @@ async def _fetch_linkedin(source: Source, client: httpx.AsyncClient) -> list[Raw
 async def collect_all(youtube_api_key: str = "") -> dict:
     import asyncio
     from app.db.session import AsyncSessionLocal
-    from app.models.models import ContentItem
+    from app.domains.intelligence.models import SourceDocument
     from sqlalchemy import select
 
     sources = get_all_sources()
@@ -332,12 +332,18 @@ async def collect_all(youtube_api_key: str = "") -> dict:
         for item in all_items:
             if not item.url or not item.title:
                 continue
+            # Dedup by URL
             exists = await db.execute(
-                select(ContentItem.id).where(ContentItem.source_url == item.url).limit(1)
+                select(SourceDocument.id).where(SourceDocument.source_url == item.url).limit(1)
             )
             if exists.scalar_one_or_none():
                 continue
-            db.add(ContentItem(
+            # Compute dedup hash for content-level dedup
+            dedup_hash = hashlib.sha256(
+                f"{item.title}:{item.url}".encode()
+            ).hexdigest()
+
+            db.add(SourceDocument(
                 source_key=item.source.key,
                 source_label=item.source.label,
                 source_url=item.url,
@@ -346,9 +352,11 @@ async def collect_all(youtube_api_key: str = "") -> dict:
                 author=item.author,
                 published_at=item.published_at,
                 is_processed=False,
+                dedup_hash=dedup_hash,
             ))
             new_count += 1
         await db.commit()
 
     logger.info("collection_complete", new_items=new_count, total_fetched=len(all_items))
     return {"fetched": len(all_items), "new": new_count}
+

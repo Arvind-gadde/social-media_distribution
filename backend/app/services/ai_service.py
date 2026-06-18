@@ -284,7 +284,7 @@ class AIService:
         import google.generativeai as genai  # type: ignore[import]
 
         genai.configure(api_key=self._gemini_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-2.0-flash")
 
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(

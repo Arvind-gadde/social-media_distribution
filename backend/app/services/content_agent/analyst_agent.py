@@ -238,7 +238,7 @@ def _build_llm_caller(
                 full_prompt = f"{system}\n\n{prompt}" if system else prompt
                 url = (
                     "https://generativelanguage.googleapis.com/v1beta/models/"
-                    f"gemini-1.5-flash:generateContent?key={gemini_key}"
+                    f"gemini-2.0-flash:generateContent?key={gemini_key}"
                 )
                 payload_g = {
                     "contents": [{"parts": [{"text": full_prompt}]}],

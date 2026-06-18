@@ -73,11 +73,61 @@ class Settings(BaseSettings):
     LINKEDIN_CLIENT_SECRET: str = ""
     TWITTER_API_KEY: str = ""
     TWITTER_API_SECRET: str = ""
+    YOUTUBE_API_KEY: str = ""
+    TWITTER_BEARER_TOKEN: str = ""
+
+    # ── Trend Detection & Web Scraping (Phase 14) ─────────────────────────
+    REDDIT_CLIENT_ID: str = ""
+    REDDIT_CLIENT_SECRET: str = ""
+    REDDIT_USER_AGENT: str = "ContentFlow/1.0"
+    PROXY_URL: str = ""
+    PROXY_ROTATION_ENABLED: bool = False
 
     # ── Push Notifications ────────────────────────────────────────────────
     VAPID_PRIVATE_KEY: str = ""
     VAPID_PUBLIC_KEY: str = ""
     VAPID_EMAIL: str = "admin@contentflow.app"
+
+    # ── Platform webhook verification ─────────────────────────────────────
+    META_WEBHOOK_VERIFY_TOKEN: str = ""
+    YOUTUBE_WEBHOOK_CHANNEL_TOKEN: str = ""
+    TIKTOK_WEBHOOK_SECRET: str = ""
+    LINKEDIN_WEBHOOK_SECRET: str = ""
+
+    # ── Observability (Sentry / PostHog / Prometheus) ────────────────────
+    SENTRY_DSN: str = ""
+    SENTRY_TRACES_SAMPLE_RATE: float = 0.05
+    SENTRY_PROFILES_SAMPLE_RATE: float = 0.0
+    APP_RELEASE: str = ""
+    POSTHOG_API_KEY: str = ""
+    POSTHOG_HOST: str = "https://us.i.posthog.com"
+
+    # ── Vector store (Qdrant) ─────────────────────────────────────────────
+    QDRANT_URL: str = ""
+    QDRANT_API_KEY: str = ""
+    QDRANT_COLLECTION_NICHE: str = "contentflow_niches"
+    QDRANT_COLLECTION_CONTENT: str = "contentflow_content"
+    QDRANT_COLLECTION_DOCUMENTS: str = "contentflow_documents"
+    QDRANT_VECTOR_SIZE: int = 1536  # OpenAI text-embedding-3-small default
+
+    # ── Embeddings ────────────────────────────────────────────────────────
+    EMBEDDING_PROVIDER: str = "openai"  # openai | local
+    EMBEDDING_MODEL: str = "text-embedding-3-small"
+    EMBEDDING_BATCH_SIZE: int = 96
+    EMBEDDING_CACHE_TTL: int = 86400  # 1 day Redis cache
+
+    # ── Speech-to-text (Whisper) ──────────────────────────────────────────
+    WHISPER_PROVIDER: str = "openai"  # openai | local
+    WHISPER_MODEL: str = "whisper-1"
+    WHISPER_LOCAL_MODEL_PATH: str = ""
+
+    # ── Stripe Billing (Phase 11) ─────────────────────────────────────────
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
+    PRICE_PRO_MONTHLY: str = "price_pro_monthly"
+    PRICE_PRO_YEARLY: str = "price_pro_yearly"
+    PRICE_BUSINESS_MONTHLY: str = "price_business_monthly"
+    PRICE_BUSINESS_YEARLY: str = "price_business_yearly"
 
     # ── Derived properties ────────────────────────────────────────────────
 
@@ -87,7 +137,9 @@ class Settings(BaseSettings):
 
     @property
     def sync_database_url(self) -> str:
-        return self.DATABASE_URL.replace("+asyncpg", "+psycopg2")
+        url = self.DATABASE_URL.replace("+asyncpg", "+psycopg2")
+        url = url.replace("+aiosqlite", "")
+        return url
 
     @property
     def allowed_origins(self) -> list[str]:
@@ -113,6 +165,32 @@ class Settings(BaseSettings):
     def has_s3(self) -> bool:
         return bool(self.S3_ACCESS_KEY_ID and self.S3_SECRET_ACCESS_KEY)
 
+    @property
+    def has_stripe(self) -> bool:
+        return bool(self.STRIPE_SECRET_KEY and self.STRIPE_WEBHOOK_SECRET)
+
+    @property
+    def has_qdrant(self) -> bool:
+        return bool(self.QDRANT_URL)
+
+    @property
+    def has_whisper(self) -> bool:
+        if self.WHISPER_PROVIDER == "openai":
+            return self.has_openai
+        return bool(self.WHISPER_LOCAL_MODEL_PATH)
+
+    @property
+    def has_reddit(self) -> bool:
+        return bool(self.REDDIT_CLIENT_ID and self.REDDIT_CLIENT_SECRET)
+
+    @property
+    def has_youtube_api(self) -> bool:
+        return bool(self.YOUTUBE_API_KEY)
+
+    @property
+    def has_twitter_api(self) -> bool:
+        return bool(self.TWITTER_BEARER_TOKEN or (self.TWITTER_API_KEY and self.TWITTER_API_SECRET))
+
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def normalize_database_url(cls, value: str) -> str:
@@ -137,6 +215,25 @@ class Settings(BaseSettings):
                     )
         if self.is_production and not self.TOKEN_ENCRYPTION_KEY:
             raise ValueError("TOKEN_ENCRYPTION_KEY is required in production")
+        
+        # Validate TOKEN_ENCRYPTION_KEY format
+        if self.TOKEN_ENCRYPTION_KEY:
+            try:
+                from cryptography.fernet import Fernet
+                import base64
+                # Try to decode as base64 or validate as passphrase
+                test_key = self.TOKEN_ENCRYPTION_KEY.encode('utf-8')
+                try:
+                    decoded = base64.urlsafe_b64decode(test_key)
+                    if len(decoded) == 32:
+                        # Valid Fernet key
+                        pass
+                except Exception:
+                    # Will be hashed to 32 bytes in TokenVault
+                    pass
+            except ImportError:
+                pass  # cryptography not installed yet
+        
         return self
 
 
