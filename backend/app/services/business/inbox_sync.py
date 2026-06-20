@@ -59,9 +59,13 @@ async def sync_workspace_dms(
             # Store new messages
             for msg in messages:
                 # Check if already exists
+                # Dedup MUST be scoped to this social account — two workspaces
+                # (or two accounts) can legitimately share a platform_message_id
+                # namespace, so a platform-only filter would drop workspace B's
+                # message because workspace A already stored that id (data loss).
                 existing = await db.execute(
-                    select(DMInbox).where(
-                        DMInbox.platform == account.platform,
+                    select(DMInbox.id).where(
+                        DMInbox.social_account_id == account.id,
                         DMInbox.platform_message_id == msg.get("id"),
                     )
                 )

@@ -1,37 +1,82 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useRouter } from "expo-router";
-import { useAuth } from "@/lib/auth";
+import { useEffect, useState } from 'react';
+import { StyleSheet, Switch, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/lib/auth';
+import { AppButton } from '@/components/ui/AppButton';
+import { AppCard } from '@/components/ui/AppCard';
+import { COLORS, SPACE, TYPE } from '@/lib/theme';
 
 export default function SettingsScreen() {
-  const router = useRouter();
-  const signOut = useAuth((s) => s.signOut);
-  const session = useAuth((s) => s.session);
+  const router            = useRouter();
+  const signOut           = useAuth((s) => s.signOut);
+  const session           = useAuth((s) => s.session);
+  const biometricEnabled  = useAuth((s) => s.biometricEnabled);
+  const enableBiometric   = useAuth((s) => s.enableBiometric);
+  const disableBiometric  = useAuth((s) => s.disableBiometric);
+  const biometricAvailable = useAuth((s) => s.biometricAvailable);
+
+  const [available, setAvailable] = useState(false);
+  const [working, setWorking]     = useState(false);
+
+  useEffect(() => {
+    biometricAvailable().then(setAvailable);
+  }, [biometricAvailable]);
+
+  async function toggleBiometric(next: boolean) {
+    setWorking(true);
+    try {
+      if (next) await enableBiometric();
+      else await disableBiometric();
+    } finally {
+      setWorking(false);
+    }
+  }
 
   async function handleSignOut() {
     await signOut();
-    router.replace("/(auth)/login");
+    router.replace('/(auth)/login');
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Settings</Text>
-      <View style={styles.card}>
-        <Text style={styles.label}>Signed in as</Text>
-        <Text style={styles.value}>{session?.email ?? "—"}</Text>
-      </View>
-      <Pressable style={styles.dangerBtn} onPress={handleSignOut}>
-        <Text style={styles.dangerText}>Sign out</Text>
-      </Pressable>
+    <View style={s.container}>
+      <Text style={s.title}>Settings</Text>
+
+      <AppCard>
+        <Text style={s.cardLabel}>Signed in as</Text>
+        <Text style={s.cardValue}>{session?.email ?? '—'}</Text>
+      </AppCard>
+
+      {available && (
+        <AppCard>
+          <View style={s.row}>
+            <View style={s.rowText}>
+              <Text style={s.cardValue}>Biometric unlock</Text>
+              <Text style={s.cardHint}>Require Face ID / fingerprint to open the app</Text>
+            </View>
+            <Switch
+              value={biometricEnabled}
+              onValueChange={toggleBiometric}
+              disabled={working}
+              trackColor={{ true: COLORS.primary, false: COLORS.dark.border }}
+              thumbColor={COLORS.dark.text}
+            />
+          </View>
+        </AppCard>
+      )}
+
+      <AppButton variant="danger" onPress={handleSignOut} style={{ marginTop: SPACE.md }}>
+        Sign out
+      </AppButton>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#020617" },
-  title: { color: "#F8FAFC", fontSize: 24, fontWeight: "700", marginBottom: 16 },
-  card: { backgroundColor: "#0F172A", padding: 16, borderRadius: 12, marginBottom: 24 },
-  label: { color: "#94A3B8", marginBottom: 4 },
-  value: { color: "#F8FAFC", fontSize: 16, fontWeight: "600" },
-  dangerBtn: { backgroundColor: "#1E293B", borderRadius: 12, paddingVertical: 14, alignItems: "center" },
-  dangerText: { color: "#FCA5A5", fontWeight: "600" },
+const s = StyleSheet.create({
+  container: { flex: 1, padding: SPACE.xl, backgroundColor: COLORS.dark.bg },
+  title:     { ...TYPE.title, color: COLORS.dark.text, marginBottom: SPACE.lg },
+  cardLabel: { color: COLORS.dark.textSecondary, marginBottom: SPACE.xs, fontSize: 13 },
+  cardValue: { color: COLORS.dark.text, fontSize: 16, fontWeight: '600' },
+  cardHint:  { color: COLORS.dark.textSecondary, fontSize: 12, marginTop: 2 },
+  row:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: SPACE.lg },
+  rowText:   { flex: 1 },
 });

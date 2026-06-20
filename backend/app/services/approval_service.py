@@ -95,22 +95,28 @@ class ApprovalService:
         decided_by: str,
         decision: str,
         reason: Optional[str] = None,
+        workspace_id: Optional[uuid.UUID] = None,
     ) -> ApprovalRequest:
         """Make a decision on an approval request.
-        
+
         Args:
             approval_id: Approval request ID
             decided_by: User ID making the decision
             decision: "approved" or "rejected"
             reason: Reason for the decision
-        
+            workspace_id: When provided, the approval must belong to this
+                workspace or a 404 is raised. Prevents cross-tenant IDOR on
+                the mutating decision path.
+
         Returns:
             Updated ApprovalRequest instance
-        
+
         Raises:
             HTTPException: If approval not found or already decided
         """
         query = select(ApprovalRequest).where(ApprovalRequest.id == approval_id)
+        if workspace_id is not None:
+            query = query.where(ApprovalRequest.workspace_id == workspace_id)
         result = await self.db.execute(query)
         approval = result.scalar_one_or_none()
         

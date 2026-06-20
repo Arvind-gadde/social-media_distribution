@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.runtime.context import RunContext
 from app.domains.intelligence.models import WorkspaceInsight, InsightType
 from app.domains.execution.models import ContentVariant
-from app.services.llm.provider import create_llm_provider, TaskType
+from app.integrations.llm.provider import create_llm_provider_from_settings, TaskType
 from app.services.niche.content_index import find_similar, index_variants
 
 log = structlog.get_logger(__name__)
@@ -105,11 +105,7 @@ async def analyze_niche(ctx: RunContext) -> dict:
         
         # Generate AI insights
         try:
-            provider = await create_llm_provider(
-                task_type=TaskType.ANALYSIS,
-                workspace_id=ctx.workspace_id,
-                db_session=db
-            )
+            provider = create_llm_provider_from_settings()
             
             prompt = f"""Analyze this creator's content performance data:
 
@@ -144,7 +140,7 @@ Be specific and actionable."""
                 workspace_id=ctx.workspace_id,
                 insight_type=InsightType.NICHE_ANALYSIS,
                 title="Niche Performance Analysis",
-                body=response.text,
+                body=response.content,
                 priority=7,
                 metadata_={
                     "pillar_analysis": pillar_analysis[:5],

@@ -1,41 +1,44 @@
-/**
- * Security & Privacy Settings Page
- * 
- * Manage password, 2FA, and privacy settings
- */
-
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Shield, RefreshCw, AlertTriangle } from 'lucide-react';
 import { useCurrentUser, useChangePassword } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Alert } from '@/components/ui/alert';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Spinner } from '@/components/ui/spinner';
+import {
+  Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage,
+} from '@/components/ui/breadcrumb';
+
+const inputCls = 'w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-gray-50 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/24';
+const selectCls = 'rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500/24';
+
+const ToggleSwitch = ({ defaultChecked }: { defaultChecked?: boolean }) => (
+  <label className="relative inline-flex items-center cursor-pointer">
+    <input type="checkbox" className="sr-only peer" defaultChecked={defaultChecked} />
+    <div className="w-11 h-6 bg-gray-300 dark:bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600" />
+  </label>
+);
 
 export default function SecuritySettingsPage() {
-  const router = useRouter();
   const { data: userData, isLoading, error } = useCurrentUser();
   const changePassword = useChangePassword();
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [passwordForm, setPasswordForm] = useState({
-    current_password: '',
-    new_password: '',
-    confirm_password: '',
-  });
+  const [passwordForm, setPasswordForm] = useState({ current_password: '', new_password: '', confirm_password: '' });
 
   const handleChangePassword = async () => {
     if (passwordForm.new_password !== passwordForm.confirm_password) {
       alert('New passwords do not match');
       return;
     }
-
     if (passwordForm.new_password.length < 8) {
       alert('Password must be at least 8 characters');
       return;
     }
-
     try {
       await changePassword.mutateAsync({
         current_password: passwordForm.current_password,
@@ -43,271 +46,184 @@ export default function SecuritySettingsPage() {
       });
       setShowPasswordModal(false);
       setPasswordForm({ current_password: '', new_password: '', confirm_password: '' });
-    } catch (error) {
-      console.error('Failed to change password:', error);
-    }
+    } catch (e) { console.error(e); }
   };
 
-  // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tech mx-auto mb-4" />
-              <p className="text-muted-foreground">Loading security settings...</p>
-            </div>
-          </div>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Spinner size="lg" color="primary" />
       </div>
     );
   }
 
-  // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-background p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="text-error text-5xl mb-4">⚠️</div>
-              <h2 className="text-2xl font-bold mb-2">Failed to load security settings</h2>
-              <p className="text-muted-foreground mb-4">
-                {error instanceof Error ? error.message : 'Something went wrong'}
-              </p>
-              <Button onClick={() => window.location.reload()}>Retry</Button>
-            </div>
-          </div>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <EmptyState
+          icon={<Shield />}
+          iconColor="error"
+          title="Failed to load security settings"
+          description={error instanceof Error ? error.message : 'Something went wrong'}
+          actions={<Button onClick={() => window.location.reload()} leadingIcon={<RefreshCw className="h-4 w-4" />}>Retry</Button>}
+        />
       </div>
     );
   }
 
-  const user = userData?.user;
-
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <Button variant="outline" onClick={() => router.push('/settings')} className="mb-4">
-            ← Back to Settings
-          </Button>
-          <h1 className="text-4xl font-bold gradient-text">Security & Privacy</h1>
-          <p className="text-muted-foreground mt-2">
-            Manage your account security and privacy settings
-          </p>
-        </div>
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 space-y-8 animate-fade-in">
+        <header>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem><BreadcrumbLink href="/settings">Settings</BreadcrumbLink></BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem><BreadcrumbPage>Security & Privacy</BreadcrumbPage></BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <div className="mt-4 space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">Security & Privacy</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Manage your account security and privacy settings.</p>
+          </div>
+        </header>
 
-        {/* Password */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Password</CardTitle>
-          </CardHeader>
+        <Card>
+          <CardHeader><CardTitle>Password</CardTitle></CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-medium">Change Password</div>
-                <div className="text-sm text-muted-foreground">
-                  Keep your account secure with a strong password
-                </div>
+                <p className="font-medium text-sm text-gray-900 dark:text-gray-50">Change Password</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Keep your account secure with a strong password</p>
               </div>
-              <Button onClick={() => setShowPasswordModal(true)}>
-                Change Password
-              </Button>
+              <Button variant="primary" onClick={() => setShowPasswordModal(true)}>Change Password</Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Two-Factor Authentication - Coming in Phase 20 */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Two-Factor Authentication</CardTitle>
-          </CardHeader>
+        <Card>
+          <CardHeader><CardTitle>Two-Factor Authentication</CardTitle></CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <div className="font-medium">2FA Status</div>
+                  <p className="font-medium text-sm text-gray-900 dark:text-gray-50">2FA Status</p>
                   <Badge variant="warning">Not Configured</Badge>
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  Two-factor authentication will be available in Phase 20
-                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Two-factor authentication will be available in Phase 20</p>
               </div>
-              <Button variant="outline" disabled>
-                Coming Soon
-              </Button>
+              <Button variant="secondary" disabled>Coming Soon</Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Active Sessions - Coming in Phase 20 */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Active Sessions</CardTitle>
-          </CardHeader>
+        <Card>
+          <CardHeader><CardTitle>Active Sessions</CardTitle></CardHeader>
           <CardContent>
             <div className="text-center py-8">
-              <div className="text-4xl mb-4">🔐</div>
-              <p className="text-muted-foreground mb-4">
-                Session management will be available in Phase 20
-              </p>
-              <p className="text-sm text-muted-foreground">
-                You can currently log out from the main menu
-              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Session management will be available in Phase 20</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500">You can currently log out from the main menu</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Privacy Settings */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Privacy Settings</CardTitle>
-          </CardHeader>
+        <Card>
+          <CardHeader><CardTitle>Privacy Settings</CardTitle></CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+              <div className="flex items-center justify-between py-4 first:pt-0">
                 <div>
-                  <div className="font-medium">Profile Visibility</div>
-                  <div className="text-sm text-muted-foreground">
-                    Control who can see your profile
-                  </div>
+                  <p className="font-medium text-sm text-gray-900 dark:text-gray-50">Profile Visibility</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Control who can see your profile</p>
                 </div>
-                <select className="px-3 py-2 bg-surface rounded-md border border-input">
+                <select className={selectCls}>
                   <option>Public</option>
                   <option>Private</option>
                   <option>Team Only</option>
                 </select>
               </div>
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between py-4">
                 <div>
-                  <div className="font-medium">Analytics Sharing</div>
-                  <div className="text-sm text-muted-foreground">
-                    Share anonymous usage data to improve the platform
-                  </div>
+                  <p className="font-medium text-sm text-gray-900 dark:text-gray-50">Analytics Sharing</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Share anonymous usage data to improve the platform</p>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" defaultChecked />
-                  <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tech"></div>
-                </label>
+                <ToggleSwitch defaultChecked />
               </div>
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between py-4 last:pb-0">
                 <div>
-                  <div className="font-medium">Marketing Emails</div>
-                  <div className="text-sm text-muted-foreground">
-                    Receive updates about new features and tips
-                  </div>
+                  <p className="font-medium text-sm text-gray-900 dark:text-gray-50">Marketing Emails</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Receive updates about new features and tips</p>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" defaultChecked />
-                  <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tech"></div>
-                </label>
+                <ToggleSwitch defaultChecked />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Data Export */}
         <Card>
-          <CardHeader>
-            <CardTitle>Data Management</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Data Management</CardTitle></CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+              <div className="flex items-center justify-between py-4 first:pt-0">
                 <div>
-                  <div className="font-medium">Export Your Data</div>
-                  <div className="text-sm text-muted-foreground">
-                    Download a copy of all your data
-                  </div>
+                  <p className="font-medium text-sm text-gray-900 dark:text-gray-50">Export Your Data</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Download a copy of all your data</p>
                 </div>
-                <Button variant="outline">
-                  Request Export
-                </Button>
+                <Button variant="secondary">Request Export</Button>
               </div>
-
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between py-4 last:pb-0">
                 <div>
-                  <div className="font-medium text-error">Delete All Data</div>
-                  <div className="text-sm text-muted-foreground">
-                    Permanently delete all your data from our servers
-                  </div>
+                  <p className="font-medium text-sm text-error-700 dark:text-error-400">Delete All Data</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Permanently delete all your data from our servers</p>
                 </div>
-                <Button variant="outline" className="text-error border-error">
-                  Delete Data
-                </Button>
+                <Button variant="destructive">Delete Data</Button>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Change Password Modal */}
         {showPasswordModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <Card className="w-full max-w-md">
-              <CardHeader>
-                <CardTitle>Change Password</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Current Password
-                    </label>
+              <CardHeader><CardTitle>Change Password</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                {[
+                  { label: 'Current Password', key: 'current_password' as const, hint: undefined },
+                  { label: 'New Password', key: 'new_password' as const, hint: 'Must be at least 8 characters' },
+                  { label: 'Confirm New Password', key: 'confirm_password' as const, hint: undefined },
+                ].map(({ label, key, hint }) => (
+                  <div key={key}>
+                    <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
                     <input
                       type="password"
-                      value={passwordForm.current_password}
-                      onChange={(e) => setPasswordForm({ ...passwordForm, current_password: e.target.value })}
-                      className="w-full px-3 py-2 bg-surface rounded-md border border-input focus:outline-none focus:ring-2 focus:ring-tech"
+                      value={passwordForm[key]}
+                      onChange={(e) => setPasswordForm({ ...passwordForm, [key]: e.target.value })}
+                      className={inputCls}
                     />
+                    {hint && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{hint}</p>}
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      New Password
-                    </label>
-                    <input
-                      type="password"
-                      value={passwordForm.new_password}
-                      onChange={(e) => setPasswordForm({ ...passwordForm, new_password: e.target.value })}
-                      className="w-full px-3 py-2 bg-surface rounded-md border border-input focus:outline-none focus:ring-2 focus:ring-tech"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Must be at least 8 characters
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Confirm New Password
-                    </label>
-                    <input
-                      type="password"
-                      value={passwordForm.confirm_password}
-                      onChange={(e) => setPasswordForm({ ...passwordForm, confirm_password: e.target.value })}
-                      className="w-full px-3 py-2 bg-surface rounded-md border border-input focus:outline-none focus:ring-2 focus:ring-tech"
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      className="flex-1"
-                      onClick={handleChangePassword}
-                      disabled={changePassword.isPending || !passwordForm.current_password || !passwordForm.new_password}
-                    >
-                      {changePassword.isPending ? 'Updating...' : 'Update Password'}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setShowPasswordModal(false);
-                        setPasswordForm({ current_password: '', new_password: '', confirm_password: '' });
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
+                ))}
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    variant="primary"
+                    className="flex-1"
+                    onClick={handleChangePassword}
+                    disabled={changePassword.isPending || !passwordForm.current_password || !passwordForm.new_password}
+                    loading={changePassword.isPending}
+                  >
+                    {changePassword.isPending ? 'Updating...' : 'Update Password'}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setShowPasswordModal(false);
+                      setPasswordForm({ current_password: '', new_password: '', confirm_password: '' });
+                    }}
+                  >
+                    Cancel
+                  </Button>
                 </div>
               </CardContent>
             </Card>

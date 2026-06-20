@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, CurrentWorkspace
 from app.domains.business.models import (
     Collaboration, CollaborationStatus, ContractDraft, DMCategory, DMInbox,
 )
@@ -104,6 +104,7 @@ class PipelineResponse(BaseModel):
 async def get_dm_inbox(
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
+    workspace: CurrentWorkspace,
     category: Annotated[DMCategory | None, Query()] = None,
     is_read: Annotated[bool | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
@@ -116,7 +117,7 @@ async def get_dm_inbox(
     - is_read: Filter by read status
     """
     query = select(DMInbox).where(
-        DMInbox.workspace_id == current_user.workspace_id,
+        DMInbox.workspace_id == workspace.id,
     )
     
     if category:
@@ -158,12 +159,13 @@ async def mark_dm_read(
     dm_id: uuid.UUID,
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
+    workspace: CurrentWorkspace,
 ):
     """Mark DM as read."""
     result = await db.execute(
         select(DMInbox).where(
             DMInbox.id == dm_id,
-            DMInbox.workspace_id == current_user.workspace_id,
+            DMInbox.workspace_id == workspace.id,
         )
     )
     dm = result.scalar_one_or_none()
@@ -181,10 +183,11 @@ async def mark_dm_read(
 async def sync_inbox(
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
+    workspace: CurrentWorkspace,
 ):
     """Manually trigger DM sync for workspace."""
     ctx = RunContext(
-        workspace_id=current_user.workspace_id,
+        workspace_id=workspace.id,
         actor_id=str(current_user.id),
         trigger="manual",
         correlation_id=str(uuid.uuid4()),
@@ -198,10 +201,11 @@ async def sync_inbox(
 async def evaluate_inbox(
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
+    workspace: CurrentWorkspace,
 ):
     """Manually trigger AI evaluation of unread DMs."""
     ctx = RunContext(
-        workspace_id=current_user.workspace_id,
+        workspace_id=workspace.id,
         actor_id=str(current_user.id),
         trigger="manual",
         correlation_id=str(uuid.uuid4()),
@@ -215,11 +219,12 @@ async def evaluate_inbox(
 async def get_pipeline(
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
+    workspace: CurrentWorkspace,
 ):
     """Get Kanban-style pipeline view of all collaborations."""
     result = await db.execute(
         select(Collaboration).where(
-            Collaboration.workspace_id == current_user.workspace_id,
+            Collaboration.workspace_id == workspace.id,
         ).order_by(Collaboration.created_at.desc())
     )
     collabs = result.scalars().all()
@@ -269,12 +274,13 @@ async def get_collaboration(
     collab_id: uuid.UUID,
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
+    workspace: CurrentWorkspace,
 ):
     """Get collaboration details."""
     result = await db.execute(
         select(Collaboration).where(
             Collaboration.id == collab_id,
-            Collaboration.workspace_id == current_user.workspace_id,
+            Collaboration.workspace_id == workspace.id,
         )
     )
     collab = result.scalar_one_or_none()
@@ -304,10 +310,11 @@ async def generate_contract_endpoint(
     collab_id: uuid.UUID,
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
+    workspace: CurrentWorkspace,
 ):
     """Generate AI contract draft for collaboration."""
     ctx = RunContext(
-        workspace_id=current_user.workspace_id,
+        workspace_id=workspace.id,
         actor_id=str(current_user.id),
         trigger="manual",
         correlation_id=str(uuid.uuid4()),
@@ -333,12 +340,13 @@ async def get_contract(
     contract_id: uuid.UUID,
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
+    workspace: CurrentWorkspace,
 ):
     """Get contract details."""
     result = await db.execute(
         select(ContractDraft).where(
             ContractDraft.id == contract_id,
-            ContractDraft.workspace_id == current_user.workspace_id,
+            ContractDraft.workspace_id == workspace.id,
         )
     )
     contract = result.scalar_one_or_none()

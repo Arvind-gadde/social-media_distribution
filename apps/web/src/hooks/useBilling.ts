@@ -13,6 +13,7 @@ import {
   type PortalRequest,
 } from '@contentflow/api-client';
 import { toast } from '@/lib/toast';
+import { safeRedirectUrl } from '@/lib/safe-redirect';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // QUERY KEYS
@@ -44,8 +45,7 @@ export function useCreateCheckout() {
   return useMutation({
     mutationFn: (data: CheckoutRequest) => createCheckoutSession(data),
     onSuccess: (response) => {
-      // Redirect to Stripe checkout
-      window.location.href = response.url;
+      window.location.href = safeRedirectUrl(response.url, '/settings/billing');
     },
     onError: (error: Error) => {
       toast.error(`Failed to create checkout: ${error.message}`);
@@ -60,8 +60,7 @@ export function useCreatePortal() {
   return useMutation({
     mutationFn: (data: PortalRequest) => createPortalSession(data),
     onSuccess: (response) => {
-      // Redirect to Stripe portal
-      window.location.href = response.url;
+      window.location.href = safeRedirectUrl(response.url, '/settings/billing');
     },
     onError: (error: Error) => {
       toast.error(`Failed to open billing portal: ${error.message}`);

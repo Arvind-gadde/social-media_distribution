@@ -1,47 +1,32 @@
-/**
- * Goals & Accountability Page
- * 
- * Goal tracking with iOS-style activity rings and progress charts
- * Now with real-time milestone notifications!
- */
-
 'use client';
 
 import { useState } from 'react';
+import { Target, RefreshCw } from 'lucide-react';
 import { useGoalsList, useCreateCheckIn } from '@/hooks/useGoals';
 import { useLiveGoalMilestones } from '@/hooks/useWebSocketEvents';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Spinner } from '@/components/ui/spinner';
 import { GoalRings } from '@/components/goals/GoalRings';
-import { formatDate } from '@/lib/utils';
+import { formatDate, cn } from '@/lib/utils';
 import type { Goal } from '@contentflow/api-client';
 
 export default function GoalsPage() {
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
   const [checkInValue, setCheckInValue] = useState('');
 
-  // Fetch goals
-  const { data, isLoading, error, refetch } = useGoalsList({
-    status: 'active',
-  });
-
-  // Real-time milestone notifications
+  const { data, isLoading, error, refetch } = useGoalsList({ status: 'active' });
   const { isConnected, milestones } = useLiveGoalMilestones();
-
   const createCheckIn = useCreateCheckIn();
 
-  // Handle check-in
   const handleCheckIn = async (goalId: string) => {
     if (!checkInValue) return;
-
     try {
       await createCheckIn.mutateAsync({
         goalId,
-        data: {
-          value_at_checkin: Number(checkInValue),
-          note: 'Manual check-in',
-        },
+        data: { value_at_checkin: Number(checkInValue), note: 'Manual check-in' },
       });
       setCheckInValue('');
       setSelectedGoal(null);
@@ -52,12 +37,8 @@ export default function GoalsPage() {
     }
   };
 
-  // Get status color
-  const getStatusColor = (isOnTrack: boolean) => {
-    return isOnTrack ? '#10b981' : '#f59e0b';
-  };
+  const getStatusColor = (isOnTrack: boolean) => (isOnTrack ? '#7f56d9' : '#f59e0b');
 
-  // Get goal type icon
   const getGoalIcon = (goalType: string) => {
     const icons: Record<string, string> = {
       content_count: '📝',
@@ -69,38 +50,28 @@ export default function GoalsPage() {
     return icons[goalType] || '🎯';
   };
 
-  // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tech mx-auto mb-4" />
-              <p className="text-muted-foreground">Loading goals...</p>
-            </div>
-          </div>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Spinner size="lg" color="primary" />
       </div>
     );
   }
 
-  // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-background p-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="text-error text-5xl mb-4">⚠️</div>
-              <h2 className="text-2xl font-bold mb-2">Failed to load goals</h2>
-              <p className="text-muted-foreground mb-4">
-                {error instanceof Error ? error.message : 'Something went wrong'}
-              </p>
-              <Button onClick={() => refetch()}>Retry</Button>
-            </div>
-          </div>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <EmptyState
+          icon={<Target />}
+          iconColor="error"
+          title="Failed to load goals"
+          description={error instanceof Error ? error.message : 'Something went wrong'}
+          actions={
+            <Button onClick={() => refetch()} leadingIcon={<RefreshCw className="h-4 w-4" />}>
+              Retry
+            </Button>
+          }
+        />
       </div>
     );
   }
@@ -108,38 +79,37 @@ export default function GoalsPage() {
   const goals = data?.items || [];
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold mb-2 gradient-text">Goals & Progress</h1>
-              <p className="text-muted-foreground">
-                Track your creator goals and stay accountable
-              </p>
-            </div>
-            
-            {/* Live indicator */}
-            <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
-              <span className="text-sm text-muted-foreground">
-                {isConnected ? 'Live' : 'Offline'}
-              </span>
-              {milestones.length > 0 && (
-                <Badge variant="success" className="ml-2">
-                  🎉 {milestones.length} milestone{milestones.length > 1 ? 's' : ''}!
-                </Badge>
-              )}
-            </div>
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 space-y-8 animate-fade-in">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
+              Goals &amp; Progress
+            </h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Track your creator goals and stay accountable.
+            </p>
           </div>
-        </div>
+          <div className="flex items-center gap-2">
+            <div className={cn('h-2 w-2 rounded-full', isConnected ? 'bg-success-500 animate-pulse' : 'bg-gray-400')} />
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {isConnected ? 'Live' : 'Offline'}
+            </span>
+            {milestones.length > 0 && (
+              <Badge variant="success" className="ml-2">
+                🎉 {milestones.length} milestone{milestones.length > 1 ? 's' : ''}!
+              </Badge>
+            )}
+          </div>
+        </header>
 
-        {/* Goals Grid */}
         {goals.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {goals.map((goal: Goal) => (
-              <Card key={goal.id} className="card-hover">
+              <Card
+                key={goal.id}
+                className="flex flex-col transition-all duration-200 hover:scale-[1.02] hover:shadow-lg"
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">
                     <span className="text-3xl">{getGoalIcon(goal.goal_type)}</span>
@@ -149,13 +119,12 @@ export default function GoalsPage() {
                   </div>
                   <CardTitle className="text-lg">{goal.title}</CardTitle>
                   {goal.description && (
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                       {goal.description}
                     </p>
                   )}
                 </CardHeader>
-                <CardContent>
-                  {/* Progress Ring */}
+                <CardContent className="flex-1 flex flex-col">
                   <div className="flex justify-center mb-6">
                     <GoalRings
                       progress={goal.progress_pct}
@@ -164,50 +133,50 @@ export default function GoalsPage() {
                     />
                   </div>
 
-                  {/* Stats */}
-                  <div className="space-y-3 text-sm">
+                  <div className="space-y-3 text-sm flex-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Progress</span>
-                      <span className="font-medium">
+                      <span className="text-gray-500 dark:text-gray-400">Progress</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-50">
                         {goal.current_value} / {goal.target_value} {goal.unit}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Period</span>
-                      <span className="font-medium capitalize">{goal.period}</span>
+                      <span className="text-gray-500 dark:text-gray-400">Period</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-50 capitalize">
+                        {goal.period}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Days Left</span>
-                      <span className="font-medium">{goal.days_remaining} days</span>
+                      <span className="text-gray-500 dark:text-gray-400">Days Left</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-50">
+                        {goal.days_remaining} days
+                      </span>
                     </div>
                     {goal.streak_count > 0 && (
                       <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Streak</span>
-                        <span className="font-medium">🔥 {goal.streak_count} days</span>
+                        <span className="text-gray-500 dark:text-gray-400">Streak</span>
+                        <span className="font-medium text-gray-900 dark:text-gray-50">
+                          🔥 {goal.streak_count} days
+                        </span>
                       </div>
                     )}
                   </div>
 
-                  {/* Actions */}
                   <div className="mt-6 space-y-2">
                     <Button
+                      variant="primary"
                       className="w-full"
                       size="sm"
                       onClick={() => setSelectedGoal(goal)}
                     >
                       Check In Progress
                     </Button>
-                    <Button
-                      className="w-full"
-                      size="sm"
-                      variant="outline"
-                    >
+                    <Button variant="secondary" className="w-full" size="sm">
                       View History
                     </Button>
                   </div>
 
-                  {/* Dates */}
-                  <div className="mt-4 pt-4 border-t border-border text-xs text-muted-foreground">
+                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-400">
                     <div className="flex justify-between">
                       <span>Started: {formatDate(goal.starts_at)}</span>
                       <span>Ends: {formatDate(goal.ends_at)}</span>
@@ -218,53 +187,49 @@ export default function GoalsPage() {
             ))}
           </div>
         ) : (
-          <Card>
-            <CardContent className="py-12">
-              <div className="text-center">
-                <div className="text-6xl mb-4">🎯</div>
-                <h3 className="text-xl font-semibold mb-2">No active goals</h3>
-                <p className="text-muted-foreground mb-6">
-                  Set your first goal to start tracking your progress
-                </p>
-                <Button>Create Your First Goal</Button>
-              </div>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={<Target />}
+            iconColor="brand"
+            iconSize="lg"
+            title="No active goals"
+            description="Set your first goal to start tracking your progress."
+            actions={<Button variant="primary">Create Your First Goal</Button>}
+          />
         )}
 
-        {/* Check-in Modal */}
         {selectedGoal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <Card className="w-full max-w-md">
               <CardHeader>
                 <CardTitle>Check In Progress</CardTitle>
-                <p className="text-sm text-muted-foreground">{selectedGoal.title}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{selectedGoal.title}</p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium mb-2 block">
+                    <label className="text-sm font-medium mb-2 block text-gray-700 dark:text-gray-300">
                       Current Value ({selectedGoal.unit})
                     </label>
                     <input
                       type="number"
-                      className="w-full px-3 py-2 bg-surface rounded-md border border-input"
+                      className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500/24"
                       placeholder={`Enter ${selectedGoal.unit}...`}
                       value={checkInValue}
                       onChange={(e) => setCheckInValue(e.target.value)}
                     />
                   </div>
-
                   <div className="flex gap-2">
                     <Button
+                      variant="primary"
                       className="flex-1"
                       onClick={() => handleCheckIn(selectedGoal.id)}
                       disabled={!checkInValue || createCheckIn.isPending}
+                      loading={createCheckIn.isPending}
                     >
                       {createCheckIn.isPending ? 'Updating...' : 'Update Progress'}
                     </Button>
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       onClick={() => {
                         setSelectedGoal(null);
                         setCheckInValue('');

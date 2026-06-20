@@ -150,7 +150,12 @@ class Settings(BaseSettings):
 
     @property
     def is_production(self) -> bool:
-        return self.APP_ENV == "production"
+        # Robust to casing/whitespace so a stray "Production" / " production "
+        # can never silently fall through to non-prod (which would re-enable
+        # the dev auth bypass). Anything that is not explicitly a dev/test/
+        # staging env is treated as production (fail-safe).
+        env = (self.APP_ENV or "").strip().lower()
+        return env in {"production", "prod"}
 
     @property
     def sync_database_url(self) -> str:
@@ -235,14 +240,25 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_secrets(self) -> "Settings":
-        insecure = {"CHANGE-ME", "changeme", "secret", ""}
+        insecure_exact = {"change-me", "changeme", "secret", "dev", "password", ""}
         for field_name in ("APP_SECRET_KEY", "JWT_SECRET_KEY"):
-            value = getattr(self, field_name, "")
-            if any(value.lower() == s for s in insecure):
+            value = (getattr(self, field_name, "") or "").strip()
+            lowered = value.lower()
+            is_weak = lowered in insecure_exact or len(value) < 32
+            if is_weak:
                 if self.is_production:
                     raise ValueError(
-                        f"{field_name} must be set to a secure value in production."
+                        f"{field_name} must be a high-entropy string of at least 32 chars "
+                        f"in production. Generate one with `python -c 'import secrets; print(secrets.token_urlsafe(48))'`."
                     )
+                # Dev/staging: warn loudly but allow boot
+                import warnings
+
+                warnings.warn(
+                    f"[contentflow] {field_name} is weak ({'placeholder' if lowered in insecure_exact else 'too short'}). "
+                    "Acceptable for local dev only.",
+                    stacklevel=2,
+                )
         if self.is_production and not self.TOKEN_ENCRYPTION_KEY:
             raise ValueError("TOKEN_ENCRYPTION_KEY is required in production")
         

@@ -473,7 +473,7 @@ class LLMProvider:
         """Call OpenAI Chat Completions API."""
         from openai import AsyncOpenAI
 
-        client = AsyncOpenAI(api_key=self._keys[Provider.OPENAI])
+        client = AsyncOpenAI(api_key=self._keys[Provider.OPENAI], timeout=30.0, max_retries=2)
 
         kwargs: dict[str, Any] = {
             "model": model_config.model_name,
@@ -532,10 +532,13 @@ class LLMProvider:
                 system_instruction=system_instruction,
             )
 
-        response = await asyncio.to_thread(
-            model.generate_content,
-            gemini_messages if gemini_messages else messages[0]["content"],
-            generation_config=generation_config,
+        response = await asyncio.wait_for(
+            asyncio.to_thread(
+                model.generate_content,
+                gemini_messages if gemini_messages else messages[0]["content"],
+                generation_config=generation_config,
+            ),
+            timeout=30,
         )
 
         # Token counting from Gemini response
@@ -565,7 +568,7 @@ class LLMProvider:
         """
         from anthropic import AsyncAnthropic
 
-        client = AsyncAnthropic(api_key=self._keys[Provider.ANTHROPIC])
+        client = AsyncAnthropic(api_key=self._keys[Provider.ANTHROPIC], timeout=30.0, max_retries=2)
 
         # Extract system message
         system_msg = ""

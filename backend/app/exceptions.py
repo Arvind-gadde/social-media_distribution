@@ -24,6 +24,13 @@ class NotFoundError(AppError):
         super().__init__(detail, "NOT_FOUND", 404)
 
 
+class ConfigurationError(AppError):
+    """Raised at boot or first-use when required configuration is missing."""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message, "CONFIGURATION_ERROR", 500)
+
+
 class AuthenticationError(AppError):
     def __init__(self, message: str = "Authentication required") -> None:
         super().__init__(message, "AUTHENTICATION_ERROR", 401)

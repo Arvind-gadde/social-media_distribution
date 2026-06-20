@@ -212,6 +212,56 @@ class UsageService:
         
         return exceeded, details
 
+    async def check_budget(self, workspace_id: uuid.UUID) -> dict:
+        """Budget pre-check used by the LLM provider before a completion.
+
+        Returns ``{hard_stop, current_spend, budget_limit}``. ``hard_stop`` is
+        True only when the workspace has an active budget policy with
+        ``hard_stop_on_budget`` set AND the LLM spend has exceeded the limit —
+        i.e. further spend should be refused (cost-DoS / wallet-drain guard).
+        """
+        exceeded, details = await self.check_budget_exceeded(workspace_id)
+        if not details:
+            return {"hard_stop": False, "current_spend": 0.0, "budget_limit": 0.0}
+        llm = details.get("llm", {})
+        return {
+            "hard_stop": bool(details.get("hard_stop")) and bool(llm.get("exceeded")),
+            "current_spend": float(llm.get("current", 0.0)),
+            "budget_limit": float(llm.get("budget", 0.0)),
+        }
+
+    async def record_llm_usage(
+        self,
+        workspace_id: uuid.UUID,
+        provider: str,
+        model: str,
+        tokens_in: int,
+        tokens_out: int,
+        cost_usd: float,
+        source_run_id: Optional[uuid.UUID] = None,
+    ) -> None:
+        """Persist one LLM call as input/output token meters (durable cost)."""
+        await self.record_usage(
+            workspace_id=workspace_id,
+            meter_type="llm_tokens_in",
+            quantity=float(tokens_in),
+            provider=provider,
+            model=model,
+            source_run_id=source_run_id,
+            source_type="llm_call",
+            cost_usd=cost_usd * 0.3,
+        )
+        await self.record_usage(
+            workspace_id=workspace_id,
+            meter_type="llm_tokens_out",
+            quantity=float(tokens_out),
+            provider=provider,
+            model=model,
+            source_run_id=source_run_id,
+            source_type="llm_call",
+            cost_usd=cost_usd * 0.7,
+        )
+
 
 # Convenience functions for common usage tracking
 

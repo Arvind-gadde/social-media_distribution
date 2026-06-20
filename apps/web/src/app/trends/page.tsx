@@ -1,18 +1,17 @@
-/**
- * Trends Dashboard Page
- * 
- * Displays trending content with heat scores and velocity tracking
- */
-
 'use client';
 
 import { useState } from 'react';
+import { TrendingUp, RefreshCw, Zap } from 'lucide-react';
 import { useTrends, useTrendStats, useCreateContentFromTrend } from '@/hooks/useTrends';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { formatRelativeTime, formatCompactNumber } from '@/lib/utils';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Spinner } from '@/components/ui/spinner';
+import { formatRelativeTime, formatCompactNumber, cn } from '@/lib/utils';
 import type { Trend } from '@contentflow/api-client';
+
+const selectCls = 'rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500/24';
 
 export default function TrendsPage() {
   const [page, setPage] = useState(1);
@@ -23,7 +22,6 @@ export default function TrendsPage() {
   });
   const [selectedTrend, setSelectedTrend] = useState<Trend | null>(null);
 
-  // Fetch data
   const { data, isLoading, error, refetch } = useTrends({
     page,
     page_size: 12,
@@ -35,72 +33,53 @@ export default function TrendsPage() {
   const { data: stats } = useTrendStats();
   const createContent = useCreateContentFromTrend();
 
-  // Get heat color based on score
   const getHeatColor = (score: number) => {
-    if (score >= 80) return 'text-error';
-    if (score >= 60) return 'text-warning';
-    if (score >= 40) return 'text-tech';
-    return 'text-muted-foreground';
+    if (score >= 80) return 'text-error-600 dark:text-error-400';
+    if (score >= 60) return 'text-warning-600 dark:text-warning-400';
+    if (score >= 40) return 'text-brand-600 dark:text-brand-400';
+    return 'text-gray-500 dark:text-gray-400';
   };
 
-  // Get status badge variant
-  const getStatusVariant = (status: string): 'success' | 'warning' | 'error' | 'default' => {
+  const getStatusVariant = (status: string): 'success' | 'warning' | 'error' | 'gray' => {
     if (status === 'rising') return 'success';
     if (status === 'peak') return 'warning';
     if (status === 'declining') return 'error';
-    return 'default';
+    return 'gray';
   };
 
-  // Handle create content
   const handleCreateContent = async (trendId: string, title: string) => {
     try {
-      await createContent.mutateAsync({
-        trendId,
-        data: {
-          title,
-          content_type: 'reel',
-        },
-      });
+      await createContent.mutateAsync({ trendId, data: { title, content_type: 'reel' } });
       alert('Content project created successfully!');
       setSelectedTrend(null);
-    } catch (error) {
-      console.error('Failed to create content:', error);
+    } catch (e) {
+      console.error('Failed to create content:', e);
       alert('Failed to create content');
     }
   };
 
-  // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tech mx-auto mb-4" />
-              <p className="text-muted-foreground">Loading trends...</p>
-            </div>
-          </div>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Spinner size="lg" color="primary" />
       </div>
     );
   }
 
-  // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-background p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="text-error text-5xl mb-4">⚠️</div>
-              <h2 className="text-2xl font-bold mb-2">Failed to load trends</h2>
-              <p className="text-muted-foreground mb-4">
-                {error instanceof Error ? error.message : 'Something went wrong'}
-              </p>
-              <Button onClick={() => refetch()}>Retry</Button>
-            </div>
-          </div>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <EmptyState
+          icon={<TrendingUp />}
+          iconColor="error"
+          title="Failed to load trends"
+          description={error instanceof Error ? error.message : 'Something went wrong'}
+          actions={
+            <Button onClick={() => refetch()} leadingIcon={<RefreshCw className="h-4 w-4" />}>
+              Retry
+            </Button>
+          }
+        />
       </div>
     );
   }
@@ -109,204 +88,152 @@ export default function TrendsPage() {
   const hasMore = data?.has_more || false;
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 gradient-text">🔥 Trending Now</h1>
-          <p className="text-muted-foreground">
-            Real-time trend detection across all platforms
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 space-y-8 animate-fade-in">
+        <header className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
+            Trending Now
+          </h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Real-time trend detection across all platforms.
           </p>
-        </div>
+        </header>
 
-        {/* Stats Grid */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-sm text-muted-foreground mb-1">Active Trends</div>
-                <div className="text-3xl font-bold">{stats.total_active}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-sm text-muted-foreground mb-1">Avg Score</div>
-                <div className="text-3xl font-bold">{stats.average_score.toFixed(1)}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-sm text-muted-foreground mb-1">Rising</div>
-                <div className="text-3xl font-bold text-success">
-                  {stats.status_counts.rising || 0}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-sm text-muted-foreground mb-1">Peak</div>
-                <div className="text-3xl font-bold text-warning">
-                  {stats.status_counts.peak || 0}
-                </div>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { label: 'Active Trends', value: stats.total_active, color: '' },
+              { label: 'Avg Score', value: stats.average_score.toFixed(1), color: '' },
+              { label: 'Rising', value: stats.status_counts.rising ?? 0, color: 'text-success-600 dark:text-success-400' },
+              { label: 'Peak', value: stats.status_counts.peak ?? 0, color: 'text-warning-600 dark:text-warning-400' },
+            ].map((stat) => (
+              <Card key={stat.label} className="p-5">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{stat.label}</p>
+                <p className={cn('text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-50', stat.color)}>
+                  {stat.value}
+                </p>
+              </Card>
+            ))}
           </div>
         )}
 
         {/* Filters */}
-        <Card className="mb-6">
+        <Card>
           <CardContent className="pt-6">
-            <div className="flex flex-wrap gap-4">
-              <select
-                className="px-3 py-2 bg-surface rounded-md text-sm border border-input"
-                value={filters.status}
-                onChange={(e) => setFilters({ ...filters, status: e.target.value as any })}
-              >
+            <div className="flex flex-wrap gap-3 items-center">
+              <select className={selectCls} value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value as any })}>
                 <option value="">All Status</option>
                 <option value="rising">Rising</option>
                 <option value="peak">Peak</option>
                 <option value="declining">Declining</option>
                 <option value="evergreen">Evergreen</option>
               </select>
-
-              <select
-                className="px-3 py-2 bg-surface rounded-md text-sm border border-input"
-                value={filters.platform}
-                onChange={(e) => setFilters({ ...filters, platform: e.target.value })}
-              >
+              <select className={selectCls} value={filters.platform} onChange={(e) => setFilters({ ...filters, platform: e.target.value })}>
                 <option value="">All Platforms</option>
                 <option value="instagram">Instagram</option>
                 <option value="tiktok">TikTok</option>
                 <option value="youtube">YouTube</option>
                 <option value="twitter">Twitter</option>
               </select>
-
-              <select
-                className="px-3 py-2 bg-surface rounded-md text-sm border border-input"
-                value={filters.min_score}
-                onChange={(e) => setFilters({ ...filters, min_score: Number(e.target.value) })}
-              >
+              <select className={selectCls} value={filters.min_score} onChange={(e) => setFilters({ ...filters, min_score: Number(e.target.value) })}>
                 <option value="0">All Scores</option>
                 <option value="50">50+ Score</option>
                 <option value="70">70+ Score</option>
                 <option value="80">80+ Score</option>
               </select>
-
               {(filters.status || filters.platform || filters.min_score > 0) && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setFilters({ status: '', platform: '', min_score: 0 })}
-                >
-                  Clear Filters
+                <Button variant="tertiary" size="sm" onClick={() => setFilters({ status: '', platform: '', min_score: 0 })}>
+                  Clear
                 </Button>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Trends Grid */}
         {trends.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {trends.map((trend: Trend) => (
-              <Card key={trend.id} className="card-hover cursor-pointer" onClick={() => setSelectedTrend(trend)}>
+              <Card
+                key={trend.id}
+                className="flex flex-col cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:shadow-lg"
+                onClick={() => setSelectedTrend(trend)}
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">
-                    <Badge variant={getStatusVariant(trend.status)}>
-                      {trend.status}
-                    </Badge>
-                    <div className={`text-2xl font-bold ${getHeatColor(trend.trend_score)}`}>
+                    <Badge variant={getStatusVariant(trend.status)}>{trend.status}</Badge>
+                    <span className={cn('text-2xl font-bold', getHeatColor(trend.trend_score))}>
                       {trend.trend_score.toFixed(0)}
-                    </div>
+                    </span>
                   </div>
-                  <CardTitle className="text-lg line-clamp-2">{trend.title}</CardTitle>
+                  <CardTitle className="text-base line-clamp-2">{trend.title}</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-1 flex flex-col">
                   {trend.description && (
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">
                       {trend.description}
                     </p>
                   )}
-                  
-                  <div className="space-y-2 text-sm">
+                  <div className="space-y-2 text-sm flex-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Platform</span>
-                      <span className="font-medium">{trend.platform || 'Global'}</span>
+                      <span className="text-gray-500 dark:text-gray-400">Platform</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-50">{trend.platform || 'Global'}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Velocity</span>
-                      <span className="font-medium">{trend.trend_velocity.toFixed(1)}/hr</span>
+                      <span className="text-gray-500 dark:text-gray-400">Velocity</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-50">{trend.trend_velocity.toFixed(1)}/hr</span>
                     </div>
                     {trend.started_at && (
                       <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Started</span>
-                        <span className="font-medium">{formatRelativeTime(trend.started_at)}</span>
+                        <span className="text-gray-500 dark:text-gray-400">Started</span>
+                        <span className="font-medium text-gray-900 dark:text-gray-50">{formatRelativeTime(trend.started_at)}</span>
                       </div>
                     )}
                   </div>
-
                   {trend.hashtags && trend.hashtags.length > 0 && (
                     <div className="mt-4 flex flex-wrap gap-2">
                       {trend.hashtags.slice(0, 3).map((tag, i) => (
-                        <span key={i} className="text-xs text-tech">#{tag}</span>
+                        <span key={i} className="text-xs text-brand-600 dark:text-brand-400">#{tag}</span>
                       ))}
                     </div>
                   )}
-
                   <Button
+                    variant="primary"
                     className="w-full mt-4"
                     size="sm"
+                    leadingIcon={<Zap className="h-3.5 w-3.5" />}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleCreateContent(trend.id, `Content based on: ${trend.title}`);
                     }}
                     disabled={createContent.isPending}
                   >
-                    Create Content →
+                    Create Content
                   </Button>
                 </CardContent>
               </Card>
             ))}
           </div>
         ) : (
-          <Card>
-            <CardContent className="py-12">
-              <div className="text-center">
-                <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-semibold mb-2">No trends found</h3>
-                <p className="text-muted-foreground">
-                  {filters.status || filters.platform || filters.min_score > 0
-                    ? 'Try adjusting your filters'
-                    : 'Agents are scanning for trends. Check back soon!'}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={<TrendingUp />}
+            iconColor="brand"
+            title="No trends found"
+            description={
+              filters.status || filters.platform || filters.min_score > 0
+                ? 'Try adjusting your filters.'
+                : 'Agents are scanning for trends. Check back soon!'
+            }
+          />
         )}
 
-        {/* Pagination */}
         {trends.length > 0 && (
-          <div className="flex items-center justify-between mt-6">
-            <p className="text-sm text-muted-foreground">
-              Page {page} • {data?.total || 0} total trends
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Page {page} · {data?.total ?? 0} total trends
             </p>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(page - 1)}
-                disabled={page === 1}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(page + 1)}
-                disabled={!hasMore}
-              >
-                Next
-              </Button>
+              <Button variant="secondary" size="sm" onClick={() => setPage((p) => p - 1)} disabled={page === 1}>Previous</Button>
+              <Button variant="secondary" size="sm" onClick={() => setPage((p) => p + 1)} disabled={!hasMore}>Next</Button>
             </div>
           </div>
         )}

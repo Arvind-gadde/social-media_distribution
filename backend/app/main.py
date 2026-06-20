@@ -9,9 +9,10 @@ from app.config import get_settings
 from app.core.logging import configure_logging
 from app.core.middleware import (
     RateLimitMiddleware, RequestIDMiddleware, SecurityHeadersMiddleware,
-    app_exception_handler, unhandled_exception_handler,
+    app_exception_handler, unhandled_exception_handler, validation_exception_handler,
 )
 from app.exceptions import AppError
+from fastapi.exceptions import RequestValidationError
 from app.api.v1 import auth, ai, analytics, platforms, notifications, agent, oauth, mfa
 from app.api.v1 import workspaces, social_accounts, approvals, analytics_api, business, billing
 from app.api.v1 import content_projects, workspace_insights
@@ -72,18 +73,35 @@ app = FastAPI(
     redoc_url=None,
 )
 
-if getattr(settings, "DEV_BYPASS_AUTH", False):
+if not settings.is_production and getattr(settings, "DEV_BYPASS_AUTH", False):
     from app.core.dev_bypass import DevAuthBypassMiddleware, _DEV_USER_ID
     app.add_middleware(DevAuthBypassMiddleware)
 
-# CORS must be added FIRST (last in execution order due to middleware stack)
+# CORS must be added FIRST (last in execution order due to middleware stack).
+# Wildcards removed — explicit method/header allow-list keeps the attack
+# surface minimal even if a CORS bypass is later discovered in the framework.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
+    allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=[
+        "Authorization",
+        "Content-Type",
+        "Accept",
+        "X-Correlation-ID",
+        "X-Request-ID",
+        "X-Workspace-Id",
+        "X-CSRF-Token",
+    ],
+    expose_headers=[
+        "X-Correlation-ID",
+        "X-Request-ID",
+        "X-RateLimit-Limit",
+        "X-RateLimit-Remaining",
+        "X-RateLimit-Reset",
+    ],
+    max_age=600,
 )
 # Phase 12: Add correlation ID middleware
 app.add_middleware(CorrelationIDMiddleware)
@@ -91,6 +109,7 @@ app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RateLimitMiddleware)
 app.add_middleware(RequestIDMiddleware)
 
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(AppError, app_exception_handler)
 app.add_exception_handler(Exception, unhandled_exception_handler)
 

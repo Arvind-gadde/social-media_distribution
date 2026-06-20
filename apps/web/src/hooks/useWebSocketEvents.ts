@@ -4,7 +4,7 @@
  * React hook for real-time agent events via WebSocket
  */
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getWebSocketClient, type AgentEvent, type AgentEventType } from '@/lib/websocket';
 import { toast } from '@/lib/toast';
@@ -50,8 +50,11 @@ export function useWebSocketEvents(options: UseWebSocketEventsOptions = {}) {
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
   const [lastEvent, setLastEvent] = useState<AgentEvent | null>(null);
   const [events, setEvents] = useState<AgentEvent[]>([]);
-  
-  const unsubscribersRef = useRef<(() => void)[]>([]);
+
+  // Stable dependency: an inline or default `eventTypes` array is a new
+  // reference every render; keying on its joined value stops the subscribe
+  // effect from tearing down and re-registering listeners on every render.
+  const eventTypesKey = eventTypes.join(',');
 
   /**
    * Handle incoming agent event
@@ -142,9 +145,9 @@ export function useWebSocketEvents(options: UseWebSocketEventsOptions = {}) {
    * Subscribe to specific event type
    */
   const subscribe = useCallback((eventType: AgentEventType, handler: (event: AgentEvent) => void) => {
-    const unsubscribe = wsClient.on(eventType, handler);
-    unsubscribersRef.current.push(unsubscribe);
-    return unsubscribe;
+    // Caller owns the returned unsubscribe (see useLiveInsights etc.); do NOT
+    // also track it in a shared ref that other effects would wholesale-clear.
+    return wsClient.on(eventType, handler);
   }, [wsClient]);
 
   /**
@@ -179,34 +182,28 @@ export function useWebSocketEvents(options: UseWebSocketEventsOptions = {}) {
     if (autoConnect) {
       connect();
     }
-
-    return () => {
-      // Cleanup subscriptions
-      unsubscribersRef.current.forEach(unsub => unsub());
-      unsubscribersRef.current = [];
-    };
   }, [autoConnect, connect]);
 
   // Subscribe to event types
   useEffect(() => {
+    const localUnsubs: (() => void)[] = [];
     if (eventTypes.length === 0) {
       // Subscribe to all events
-      const unsubscribe = wsClient.on('*', handleEvent);
-      unsubscribersRef.current.push(unsubscribe);
+      localUnsubs.push(wsClient.on('*', handleEvent));
     } else {
       // Subscribe to specific event types
-      eventTypes.forEach(eventType => {
-        const unsubscribe = wsClient.on(eventType, handleEvent);
-        unsubscribersRef.current.push(unsubscribe);
+      eventTypes.forEach((eventType) => {
+        localUnsubs.push(wsClient.on(eventType, handleEvent));
       });
     }
 
     return () => {
-      // Cleanup subscriptions
-      unsubscribersRef.current.forEach(unsub => unsub());
-      unsubscribersRef.current = [];
+      // Tear down ONLY this effect's own listeners — not a shared array that
+      // other effects and the public subscribe() also write to.
+      localUnsubs.forEach((unsub) => unsub());
     };
-  }, [eventTypes, handleEvent, wsClient]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventTypesKey, handleEvent, wsClient]);
 
   return {
     // Connection

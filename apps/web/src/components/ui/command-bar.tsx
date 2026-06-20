@@ -112,14 +112,14 @@ export function CommandBar({ isOpen, onClose, commands }: CommandBarProps) {
       className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-start justify-center pt-[20vh] px-4"
       onClick={handleBackdropClick}
     >
-      <div className="w-full max-w-2xl bg-surface rounded-lg shadow-2xl border border-border overflow-hidden">
+      <div className="w-full max-w-2xl bg-popover rounded-xl shadow-2xl border border-border overflow-hidden">
         {/* Search Input */}
         <div className="flex items-center border-b border-border px-4">
           <span className="text-muted-foreground text-xl mr-3">🔍</span>
           <input
             type="text"
             className="flex-1 bg-transparent py-4 text-lg outline-none placeholder:text-muted-foreground"
-            placeholder="Search commands..."
+            placeholder="Search pages, actions..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -155,8 +155,8 @@ export function CommandBar({ isOpen, onClose, commands }: CommandBarProps) {
                         className={cn(
                           'w-full flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors',
                           isSelected
-                            ? 'bg-tech/20 text-tech'
-                            : 'hover:bg-surface-hover text-foreground'
+                            ? 'bg-primary/15 text-primary'
+                            : 'hover:bg-secondary text-foreground'
                         )}
                         onClick={() => {
                           cmd.action();
@@ -231,52 +231,23 @@ export function useCommandBar() {
   const defaultCommands: CommandItem[] = useMemo(
     () => [
       // Navigation
-      {
-        id: 'nav-home',
-        label: 'Home',
-        description: 'Go to home page',
-        icon: '🏠',
-        category: 'Navigation',
-        keywords: ['home', 'dashboard'],
-        action: () => router.push('/'),
-      },
-      {
-        id: 'nav-insights',
-        label: 'Insights',
-        description: 'View agent insights',
-        icon: '💡',
-        category: 'Navigation',
-        keywords: ['insights', 'agent', 'notifications'],
-        action: () => router.push('/insights'),
-      },
-      {
-        id: 'nav-trends',
-        label: 'Trends',
-        description: 'Browse trending content',
-        icon: '📈',
-        category: 'Navigation',
-        keywords: ['trends', 'trending', 'viral'],
-        action: () => router.push('/trends'),
-      },
-      {
-        id: 'nav-goals',
-        label: 'Goals',
-        description: 'Track your goals',
-        icon: '🎯',
-        category: 'Navigation',
-        keywords: ['goals', 'progress', 'accountability'],
-        action: () => router.push('/goals'),
-      },
+      { id: 'nav-home',        label: 'Home',         description: 'Go to dashboard',            icon: '🏠', category: 'Navigate', keywords: ['home', 'dashboard'],                   action: () => router.push('/') },
+      { id: 'nav-content',     label: 'Content',      description: 'Manage your content',         icon: '📄', category: 'Navigate', keywords: ['content', 'posts', 'articles'],        action: () => router.push('/content') },
+      { id: 'nav-ideas',       label: 'Ideas',        description: 'Browse content ideas',        icon: '✨', category: 'Navigate', keywords: ['ideas', 'inspiration', 'brainstorm'],  action: () => router.push('/content/ideas') },
+      { id: 'nav-create',      label: 'Create',       description: 'Create new content',          icon: '✏️', category: 'Navigate', keywords: ['create', 'write', 'new', 'post'],      action: () => router.push('/content/create') },
+      { id: 'nav-schedule',    label: 'Schedule',     description: 'View content calendar',       icon: '📅', category: 'Navigate', keywords: ['schedule', 'calendar', 'plan'],        action: () => router.push('/schedule') },
+      { id: 'nav-analytics',   label: 'Analytics',    description: 'View performance metrics',    icon: '📊', category: 'Navigate', keywords: ['analytics', 'stats', 'metrics'],       action: () => router.push('/analytics') },
+      { id: 'nav-insights',    label: 'AI Insights',  description: 'View agent insights',         icon: '💡', category: 'Navigate', keywords: ['insights', 'ai', 'agent'],             action: () => router.push('/insights') },
+      { id: 'nav-trends',      label: 'Trends',       description: 'Browse trending content',     icon: '📈', category: 'Navigate', keywords: ['trends', 'trending', 'viral'],         action: () => router.push('/trends') },
+      { id: 'nav-news',        label: 'News',         description: 'Latest industry news',        icon: '📰', category: 'Navigate', keywords: ['news', 'articles', 'updates'],         action: () => router.push('/news') },
+      { id: 'nav-competitors', label: 'Competitors',  description: 'Track competitor activity',   icon: '🔍', category: 'Navigate', keywords: ['competitors', 'rivals', 'compare'],    action: () => router.push('/competitors') },
+      { id: 'nav-inbox',       label: 'Inbox',        description: 'View messages & replies',     icon: '📬', category: 'Navigate', keywords: ['inbox', 'messages', 'dm', 'replies'],  action: () => router.push('/inbox') },
+      { id: 'nav-goals',       label: 'Goals',        description: 'Track your goals',            icon: '🎯', category: 'Navigate', keywords: ['goals', 'progress', 'targets'],        action: () => router.push('/goals') },
+      { id: 'nav-settings',    label: 'Settings',     description: 'Manage account settings',     icon: '⚙️', category: 'Navigate', keywords: ['settings', 'account', 'profile'],      action: () => router.push('/settings') },
       // Actions
-      {
-        id: 'action-refresh',
-        label: 'Refresh Page',
-        description: 'Reload current page',
-        icon: '🔄',
-        category: 'Actions',
-        keywords: ['refresh', 'reload'],
-        action: () => window.location.reload(),
-      },
+      { id: 'act-create',      label: 'New Content',  description: 'Start creating content now',  icon: '✏️', category: 'Actions',  keywords: ['new', 'create', 'write'],              action: () => router.push('/content/create') },
+      { id: 'act-goal',        label: 'New Goal',     description: 'Set a new content goal',      icon: '🎯', category: 'Actions',  keywords: ['goal', 'new', 'target'],               action: () => router.push('/goals') },
+      { id: 'act-refresh',     label: 'Refresh',      description: 'Reload current page',         icon: '🔄', category: 'Actions',  keywords: ['refresh', 'reload'],                   action: () => window.location.reload() },
     ],
     [router]
   );

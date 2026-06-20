@@ -1,90 +1,48 @@
-/**
- * Settings Overview Page
- * 
- * Main settings hub with navigation to all settings sections
- */
-
-'use client';
-
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { User, Link2, Bot, CreditCard, Bell, Shield } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+
+const sections = [
+  { href: '/settings/profile', icon: User, label: 'Profile', description: 'Manage your personal information and preferences' },
+  { href: '/settings/accounts', icon: Link2, label: 'Connected Accounts', description: 'Manage your social media platform connections' },
+  { href: '/settings/agents', icon: Bot, label: 'AI Agents', description: 'Configure and customize your AI agents' },
+  { href: '/settings/billing', icon: CreditCard, label: 'Billing & Subscription', description: 'Manage your subscription and payment methods' },
+  { href: '/settings/security', icon: Shield, label: 'Security & Privacy', description: 'Password, 2FA, and privacy settings' },
+  { href: '/settings/notifications', icon: Bell, label: 'Notifications', description: 'Control how and when you receive notifications' },
+];
 
 export default function SettingsPage() {
-  const settingsSections = [
-    {
-      id: 'profile',
-      title: 'Profile Settings',
-      description: 'Manage your personal information and preferences',
-      icon: '👤',
-      href: '/settings/profile',
-    },
-    {
-      id: 'accounts',
-      title: 'Connected Accounts',
-      description: 'Manage your social media platform connections',
-      icon: '🔗',
-      href: '/settings/accounts',
-    },
-    {
-      id: 'agents',
-      title: 'AI Agents',
-      description: 'Configure and customize your AI agents',
-      icon: '🤖',
-      href: '/settings/agents',
-    },
-    {
-      id: 'billing',
-      title: 'Billing & Subscription',
-      description: 'Manage your subscription and payment methods',
-      icon: '💳',
-      href: '/settings/billing',
-    },
-    {
-      id: 'security',
-      title: 'Security & Privacy',
-      description: 'Password, 2FA, and privacy settings',
-      icon: '🔒',
-      href: '/settings/security',
-    },
-    {
-      id: 'notifications',
-      title: 'Notifications',
-      description: 'Control how and when you receive notifications',
-      icon: '🔔',
-      href: '/settings/notifications',
-    },
-  ];
-
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold gradient-text">Settings</h1>
-          <p className="text-muted-foreground mt-2">
-            Manage your account and preferences
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 space-y-8 animate-fade-in">
+        <header className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
+            Settings
+          </h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Manage your account and preferences.
           </p>
-        </div>
+        </header>
 
-        {/* Settings Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {settingsSections.map(section => (
-            <Link key={section.id} href={section.href}>
-              <Card className="card-hover h-full">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <span className="text-4xl">{section.icon}</span>
-                    <CardTitle className="text-lg">{section.title}</CardTitle>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {sections.map((s) => {
+            const Icon = s.icon;
+            return (
+              <Link key={s.href} href={s.href}>
+                <Card className="group flex items-start gap-4 p-5 hover:border-brand-300 dark:hover:border-brand-700 transition-colors cursor-pointer h-full">
+                  <div className="shrink-0 rounded-lg bg-brand-50 dark:bg-brand-950/40 p-2.5">
+                    <Icon className="h-5 w-5 text-brand-600 dark:text-brand-400" />
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    {section.description}
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-gray-50 group-hover:text-brand-700 dark:group-hover:text-brand-300 transition-colors">
+                      {s.label}
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{s.description}</p>
+                  </div>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </div>

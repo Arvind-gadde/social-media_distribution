@@ -4,6 +4,7 @@ Phase 14: Real Agent Implementation
 
 Provides a unified interface for calling OpenAI, Anthropic, and Google Gemini APIs.
 """
+import asyncio
 import structlog
 from typing import Literal
 try:
@@ -63,12 +64,12 @@ class LLMClient:
     def __init__(self):
         """Initialize all LLM clients."""
         if AsyncOpenAI:
-            self.openai = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+            self.openai = AsyncOpenAI(api_key=settings.OPENAI_API_KEY, timeout=30.0, max_retries=2)
         else:
             self.openai = None
-        
+
         if AsyncAnthropic:
-            self.anthropic = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
+            self.anthropic = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY, timeout=30.0, max_retries=2)
         else:
             self.anthropic = None
         
@@ -267,12 +268,15 @@ class LLMClient:
         )
         
         # Generate
-        response = await gemini_model.generate_content_async(
-            gemini_messages,
-            generation_config=genai.GenerationConfig(
-                temperature=temperature,
-                max_output_tokens=max_tokens,
+        response = await asyncio.wait_for(
+            gemini_model.generate_content_async(
+                gemini_messages,
+                generation_config=genai.GenerationConfig(
+                    temperature=temperature,
+                    max_output_tokens=max_tokens,
+                ),
             ),
+            timeout=30,
         )
         
         content = response.text

@@ -1,37 +1,28 @@
-/**
- * Competitors Overview Page
- * 
- * Track and analyze competitor performance
- */
-
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Search, Plus, RefreshCw, X } from 'lucide-react';
 import { useCompetitorsList, useAddCompetitor, useRemoveCompetitor } from '@/hooks/useCompetitors';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Spinner } from '@/components/ui/spinner';
+import { cn } from '@/lib/utils';
+
+const inputCls = 'w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-gray-50 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/24';
 
 export default function CompetitorsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newCompetitor, setNewCompetitor] = useState({
-    platform: 'instagram',
-    username: '',
-  });
+  const [newCompetitor, setNewCompetitor] = useState({ platform: 'instagram', username: '' });
 
-  // Fetch competitors
   const { data, isLoading, error, refetch } = useCompetitorsList();
   const addCompetitor = useAddCompetitor();
   const removeCompetitor = useRemoveCompetitor();
 
-  // Handle add competitor
   const handleAddCompetitor = async () => {
-    if (!newCompetitor.username) {
-      alert('Please enter a username');
-      return;
-    }
-
+    if (!newCompetitor.username) { alert('Please enter a username'); return; }
     try {
       await addCompetitor.mutateAsync({
         platform: newCompetitor.platform as any,
@@ -39,335 +30,184 @@ export default function CompetitorsPage() {
       });
       setShowAddModal(false);
       setNewCompetitor({ platform: 'instagram', username: '' });
-    } catch (error) {
-      console.error('Failed to add competitor:', error);
+    } catch (e) {
+      console.error('Failed to add competitor:', e);
       alert('Failed to add competitor');
     }
   };
 
-  const formatNumberLegacy = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+  const formatNumber = (num: number) => {
+    if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
+    if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
     return num.toString();
   };
 
-  const getPlatformIconLegacy = (platform: string) => {
-    const icons: Record<string, string> = {
-      instagram: '📷',
-      youtube: '▶️',
-      tiktok: '🎵',
-      twitter: '🐦',
-      linkedin: '💼',
-    };
-    return icons[platform.toLowerCase()] || '📱';
+  const getPlatformIcon = (platform: string) => {
+    const icons: Record<string, string> = { Instagram: '📷', YouTube: '▶️', TikTok: '🎵', Twitter: '🐦', LinkedIn: '💼', instagram: '📷', youtube: '▶️', tiktok: '🎵', twitter: '🐦', linkedin: '💼' };
+    return icons[platform] || '📱';
   };
 
-  // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tech mx-auto mb-4" />
-              <p className="text-muted-foreground">Loading competitors...</p>
-            </div>
-          </div>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Spinner size="lg" color="primary" />
       </div>
     );
   }
 
-  // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-background p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="text-error text-5xl mb-4">⚠️</div>
-              <h2 className="text-2xl font-bold mb-2">Failed to load competitors</h2>
-              <p className="text-muted-foreground mb-4">
-                {error instanceof Error ? error.message : 'Something went wrong'}
-              </p>
-              <Button onClick={() => refetch()}>Retry</Button>
-            </div>
-          </div>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <EmptyState
+          icon={<Search />}
+          iconColor="error"
+          title="Failed to load competitors"
+          description={error instanceof Error ? error.message : 'Something went wrong'}
+          actions={<Button onClick={() => refetch()} leadingIcon={<RefreshCw className="h-4 w-4" />}>Retry</Button>}
+        />
       </div>
     );
   }
 
   const competitors = data?.items || [];
 
-  // Mock data - will be replaced with real API calls
-  const mockCompetitors = [
-    {
-      id: '1',
-      username: 'techcreator',
-      displayName: 'Tech Creator',
-      platform: 'Instagram',
-      followers: 25000,
-      avgEngagement: 0.0567,
-      postingFrequency: 4.5,
-      lastPost: '2 hours ago',
-      trend: 'up',
-      avatar: '👨‍💻',
-    },
-    {
-      id: '2',
-      username: 'aiexplainer',
-      displayName: 'AI Explainer',
-      platform: 'YouTube',
-      followers: 18500,
-      avgEngagement: 0.0823,
-      postingFrequency: 2.0,
-      lastPost: '1 day ago',
-      trend: 'up',
-      avatar: '🤖',
-    },
-    {
-      id: '3',
-      username: 'contentpro',
-      displayName: 'Content Pro',
-      platform: 'TikTok',
-      followers: 52000,
-      avgEngagement: 0.0445,
-      postingFrequency: 6.0,
-      lastPost: '5 hours ago',
-      trend: 'down',
-      avatar: '🎬',
-    },
+  const statCards = [
+    { label: 'Tracked', value: competitors.length },
+    { label: 'Combined Followers', value: formatNumber(competitors.reduce((s: number, c: any) => s + (c.followers_count || 0), 0)) },
+    { label: 'Avg Engagement', value: `${competitors.length > 0 ? (competitors.reduce((s: number, c: any) => s + (c.avg_engagement_rate || 0), 0) / competitors.length * 100).toFixed(2) : 0}%` },
+    { label: 'Avg Posts/Week', value: competitors.length > 0 ? (competitors.reduce((s: number, c: any) => s + (c.posting_frequency || 0), 0) / competitors.length).toFixed(1) : '0' },
   ];
 
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
-  };
-
-  const getPlatformIcon = (platform: string) => {
-    const icons: Record<string, string> = {
-      Instagram: '📷',
-      YouTube: '▶️',
-      TikTok: '🎵',
-      Twitter: '🐦',
-      LinkedIn: '💼',
-    };
-    return icons[platform] || '📱';
-  };
-
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-4xl font-bold gradient-text">Competitor Intelligence</h1>
-              <p className="text-muted-foreground mt-2">
-                Track competitors and learn from their success
-              </p>
-            </div>
-            <Button onClick={() => setShowAddModal(true)}>
-              <span className="mr-2">+</span>
-              Add Competitor
-            </Button>
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 space-y-8 animate-fade-in">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
+              Competitor Intelligence
+            </h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Track competitors and learn from their success.
+            </p>
           </div>
+          <Button variant="primary" leadingIcon={<Plus className="h-4 w-4" />} onClick={() => setShowAddModal(true)}>
+            Add Competitor
+          </Button>
+        </header>
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-2xl font-bold">{competitors.length}</div>
-                <div className="text-sm text-muted-foreground">Tracked Competitors</div>
-              </CardContent>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {statCards.map((s) => (
+            <Card key={s.label} className="p-5">
+              <p className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">{s.value}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{s.label}</p>
             </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-2xl font-bold">
-                  {formatNumber(competitors.reduce((sum: number, c: any) => sum + (c.followers_count || 0), 0))}
-                </div>
-                <div className="text-sm text-muted-foreground">Combined Followers</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-2xl font-bold">
-                  {competitors.length > 0 
-                    ? (competitors.reduce((sum: number, c: any) => sum + (c.avg_engagement_rate || 0), 0) / competitors.length * 100).toFixed(2)
-                    : 0}%
-                </div>
-                <div className="text-sm text-muted-foreground">Avg Engagement</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-2xl font-bold">
-                  {competitors.length > 0
-                    ? (competitors.reduce((sum: number, c: any) => sum + (c.posting_frequency || 0), 0) / competitors.length).toFixed(1)
-                    : 0}
-                </div>
-                <div className="text-sm text-muted-foreground">Avg Posts/Week</div>
-              </CardContent>
-            </Card>
-          </div>
+          ))}
         </div>
 
-        {/* Competitors List */}
         <div className="space-y-4">
           {competitors.length > 0 ? competitors.map((competitor: any) => (
-            <Card key={competitor.id} className="card-hover">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-4 flex-1">
-                    {/* Avatar */}
-                    <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center text-3xl">
+            <Card key={competitor.id} className="transition-all duration-150 hover:shadow-sm">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-4 flex-1 min-w-0">
+                    <div className="h-14 w-14 shrink-0 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-2xl overflow-hidden">
                       {competitor.avatar_url ? (
-                        <img src={competitor.avatar_url} alt={competitor.display_name} className="w-full h-full rounded-full" />
-                      ) : (
-                        '👤'
-                      )}
+                        <img src={competitor.avatar_url} alt={competitor.display_name} className="w-full h-full object-cover" />
+                      ) : '👤'}
                     </div>
-
-                    {/* Info */}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold">{competitor.display_name || competitor.platform_username}</h3>
-                        <Badge variant="default">
-                          {getPlatformIcon(competitor.platform)} {competitor.platform}
-                        </Badge>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-50 truncate">
+                          {competitor.display_name || competitor.platform_username}
+                        </h3>
+                        <Badge variant="gray">{getPlatformIcon(competitor.platform)} {competitor.platform}</Badge>
                       </div>
-                      <div className="text-sm text-muted-foreground mb-4">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
                         @{competitor.platform_username}
-                      </div>
-
-                      {/* Stats */}
-                      <div className="grid grid-cols-4 gap-6">
-                        <div>
-                          <div className="text-sm text-muted-foreground">Followers</div>
-                          <div className="text-lg font-semibold">{formatNumber(competitor.followers_count || 0)}</div>
-                        </div>
-                        <div>
-                          <div className="text-sm text-muted-foreground">Engagement</div>
-                          <div className="text-lg font-semibold">{((competitor.avg_engagement_rate || 0) * 100).toFixed(2)}%</div>
-                        </div>
-                        <div>
-                          <div className="text-sm text-muted-foreground">Posts/Week</div>
-                          <div className="text-lg font-semibold">{competitor.posting_frequency || 0}</div>
-                        </div>
-                        <div>
-                          <div className="text-sm text-muted-foreground">Last Tracked</div>
-                          <div className="text-lg font-semibold">
-                            {competitor.last_tracked_at 
-                              ? new Date(competitor.last_tracked_at).toLocaleDateString()
-                              : 'Never'
-                            }
+                      </p>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                        {[
+                          { label: 'Followers', value: formatNumber(competitor.followers_count || 0) },
+                          { label: 'Engagement', value: `${((competitor.avg_engagement_rate || 0) * 100).toFixed(2)}%` },
+                          { label: 'Posts/Week', value: String(competitor.posting_frequency || 0) },
+                          { label: 'Last Tracked', value: competitor.last_tracked_at ? new Date(competitor.last_tracked_at).toLocaleDateString() : 'Never' },
+                        ].map((stat) => (
+                          <div key={stat.label}>
+                            <p className="text-gray-500 dark:text-gray-400">{stat.label}</p>
+                            <p className="font-semibold text-gray-900 dark:text-gray-50 mt-0.5">{stat.value}</p>
                           </div>
-                        </div>
+                        ))}
                       </div>
                     </div>
                   </div>
-
-                  {/* Actions */}
-                  <div className="flex gap-2">
-                    <Link href={`/competitors/${competitor.id}`}>
-                      <Button variant="outline" size="sm">
-                        View Details
-                      </Button>
-                    </Link>
-                    <Button 
-                      variant="outline" 
+                  <div className="flex gap-2 shrink-0">
+                    <Button asChild variant="secondary" size="sm"><Link href={`/competitors/${competitor.id}`}>View</Link></Button>
+                    <Button
+                      variant="tertiary"
                       size="sm"
+                      leadingIcon={<X className="h-4 w-4" />}
+                      disabled={removeCompetitor.isPending}
                       onClick={async () => {
                         if (confirm('Remove this competitor?')) {
-                          try {
-                            await removeCompetitor.mutateAsync(competitor.id);
-                          } catch (error) {
-                            console.error('Failed to remove:', error);
-                          }
+                          try { await removeCompetitor.mutateAsync(competitor.id); } catch (e) { console.error(e); }
                         }
                       }}
-                      disabled={removeCompetitor.isPending}
-                    >
-                      ✕
-                    </Button>
+                    />
                   </div>
                 </div>
               </CardContent>
             </Card>
           )) : (
-            <Card>
-              <CardContent className="py-12">
-                <div className="text-center">
-                  <div className="text-6xl mb-4">🔍</div>
-                  <h3 className="text-xl font-semibold mb-2">No competitors tracked yet</h3>
-                  <p className="text-muted-foreground mb-6">
-                    Start tracking competitors to learn from their success
-                  </p>
-                  <Button onClick={() => setShowAddModal(true)}>
-                    Add Your First Competitor
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={<Search />}
+              iconColor="brand"
+              title="No competitors tracked yet"
+              description="Start tracking competitors to learn from their success."
+              actions={
+                <Button variant="primary" leadingIcon={<Plus className="h-4 w-4" />} onClick={() => setShowAddModal(true)}>
+                  Add Your First Competitor
+                </Button>
+              }
+            />
           )}
         </div>
 
-        {/* Add Competitor Modal */}
         {showAddModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <Card className="w-full max-w-md">
               <CardHeader>
                 <CardTitle>Add Competitor</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Platform
-                    </label>
-                    <select 
-                      className="w-full px-3 py-2 bg-surface rounded-md border border-input"
-                      value={newCompetitor.platform}
-                      onChange={(e) => setNewCompetitor({ ...newCompetitor, platform: e.target.value })}
-                    >
-                      <option value="instagram">Instagram</option>
-                      <option value="youtube">YouTube</option>
-                      <option value="tiktok">TikTok</option>
-                      <option value="twitter">Twitter</option>
-                      <option value="linkedin">LinkedIn</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full px-3 py-2 bg-surface rounded-md border border-input"
-                      placeholder="@username"
-                      value={newCompetitor.username}
-                      onChange={(e) => setNewCompetitor({ ...newCompetitor, username: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button 
-                      className="flex-1"
-                      onClick={handleAddCompetitor}
-                      disabled={addCompetitor.isPending}
-                    >
-                      {addCompetitor.isPending ? 'Adding...' : 'Add Competitor'}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowAddModal(false)}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Platform</label>
+                  <select
+                    className={inputCls}
+                    value={newCompetitor.platform}
+                    onChange={(e) => setNewCompetitor({ ...newCompetitor, platform: e.target.value })}
+                  >
+                    <option value="instagram">Instagram</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="tiktok">TikTok</option>
+                    <option value="twitter">Twitter</option>
+                    <option value="linkedin">LinkedIn</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
+                  <input
+                    type="text"
+                    className={inputCls}
+                    placeholder="@username"
+                    value={newCompetitor.username}
+                    onChange={(e) => setNewCompetitor({ ...newCompetitor, username: e.target.value })}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="primary" className="flex-1" onClick={handleAddCompetitor} disabled={addCompetitor.isPending} loading={addCompetitor.isPending}>
+                    {addCompetitor.isPending ? 'Adding...' : 'Add Competitor'}
+                  </Button>
+                  <Button variant="secondary" onClick={() => setShowAddModal(false)}>Cancel</Button>
                 </div>
               </CardContent>
             </Card>

@@ -82,6 +82,13 @@ async def register(body: RegisterRequest, auth_service: AuthSvc) -> Response:
 @router.post("/login")
 async def login(body: LoginRequest, auth_service: AuthSvc) -> Response:
     user = await auth_service.login(email=body.email, password=body.password)
+    # Enforce MFA when the account has it enabled — password alone must not
+    # grant a session (the MFA enrollment would otherwise be bypassable).
+    if getattr(user, "mfa_enabled", False) and user.mfa_secret:
+        if not body.mfa_code:
+            return JSONResponse({"mfa_required": True}, status_code=200)
+        if not await auth_service.verify_mfa(user, body.mfa_code):
+            raise AuthenticationError("Invalid MFA code")
     access, refresh = auth_service.issue_tokens(user)
     return _auth_response(user, access, refresh)
 
@@ -113,23 +120,41 @@ async def google_callback(code: str, state: str, auth_service: AuthSvc) -> Respo
 # ── Token management ──────────────────────────────────────────────────────
 
 @router.post("/refresh")
-async def refresh_token(request: Request, auth_service: AuthSvc) -> Response:
+async def refresh_token(request: Request, auth_service: AuthSvc, cache: Cache) -> Response:
     raw = request.cookies.get(_REFRESH_COOKIE)
     if not raw:
         raise AuthenticationError("No refresh token")
 
     payload = decode_token(raw, expected_type="refresh")
     user_id = payload.get("sub")
+    if not user_id:
+        raise AuthenticationError("Invalid refresh token: missing subject")
+
+    jti = payload.get("jti")
+    # Rotation with reuse detection: a refresh jti we have already revoked means
+    # the token was replayed (likely stolen) — refuse and force a fresh login.
+    if jti and await cache.is_jti_blacklisted(jti):
+        raise AuthenticationError("Refresh token has been revoked. Please sign in again.")
 
     from app.repositories.repositories import UserRepository
     from app.db.session import AsyncSessionLocal
     import uuid
 
+    try:
+        uid = uuid.UUID(user_id)
+    except (ValueError, TypeError):
+        raise AuthenticationError("Invalid refresh token subject")
+
     async with AsyncSessionLocal() as db:
         repo = UserRepository(db)
-        user = await repo.get_by_id(uuid.UUID(user_id))
+        user = await repo.get_by_id(uid)
         if not user or not user.is_active:
             raise AuthenticationError("User not found or inactive")
+
+    # Revoke the presented refresh token before issuing the rotated pair, so a
+    # stolen copy cannot be reused (and trips the reuse-detection check above).
+    if jti:
+        await cache.blacklist_jti(jti, settings.JWT_REFRESH_EXPIRE_DAYS * 86400)
 
     access  = create_access_token(user_id)
     refresh = create_refresh_token(user_id)
@@ -148,6 +173,17 @@ async def logout(request: Request, current_user: CurrentUser, cache: Cache) -> R
             jti = payload.get("jti")
             if jti:
                 await cache.blacklist_jti(jti, settings.JWT_ACCESS_EXPIRE_MINUTES * 60)
+        except Exception:
+            pass
+    # Also revoke the refresh token so logout actually ends the session — an
+    # un-revoked refresh token stays valid for its full multi-day lifetime.
+    raw_refresh = request.cookies.get(_REFRESH_COOKIE)
+    if raw_refresh:
+        try:
+            rpayload = decode_token(raw_refresh, expected_type="refresh")
+            rjti = rpayload.get("jti")
+            if rjti:
+                await cache.blacklist_jti(rjti, settings.JWT_REFRESH_EXPIRE_DAYS * 86400)
         except Exception:
             pass
     resp = Response(status_code=204)

@@ -1,172 +1,337 @@
 /**
- * Home Page - Dashboard Overview
+ * Home Page - Dashboard Overview (Untitled UI)
  */
 
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Link from 'next/link';
+import {
+  ArrowUpRight,
+  ArrowDownRight,
+  Lightbulb,
+  Plus,
+  Settings,
+  Target,
+  TrendingUp,
+} from 'lucide-react';
+import type { Goal, AgentInsight } from '@contentflow/api-client';
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { EmptyState, FeaturedIcon } from '@/components/ui/empty-state';
+import { SkeletonCard } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+
 import { useGoalsList } from '@/hooks/useGoals';
 import { useAgentInsights } from '@/hooks/useAgents';
 import { useTrends } from '@/hooks/useTrends';
+import { useCurrentUser } from '@/hooks/useAuth';
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+function getFirstName(
+  user: { display_name?: string | null; name?: string | null; email?: string } | null | undefined
+): string {
+  if (!user) return 'there';
+  const candidate =
+    (user.display_name && user.display_name.trim()) ||
+    (user.name && user.name.trim()) ||
+    (user.email && user.email.split('@')[0]) ||
+    '';
+  if (!candidate) return 'there';
+  return candidate.split(/\s+/)[0];
+}
+
+type TileColor = 'brand' | 'info' | 'warning' | 'success';
+
+interface KpiCardProps {
+  label: string;
+  value: number | string;
+  deltaLabel: string;
+  deltaDirection: 'up' | 'down' | 'flat';
+}
+
+function KpiCard({ label, value, deltaLabel, deltaDirection }: KpiCardProps) {
+  const isUp = deltaDirection === 'up';
+  const isDown = deltaDirection === 'down';
+
+  return (
+    <Card className="p-6 flex flex-col gap-4">
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{label}</p>
+      </div>
+      <div className="flex items-end justify-between gap-3">
+        <span className="text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
+          {value}
+        </span>
+        <span
+          className={cn(
+            'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
+            isUp && 'bg-success-50 text-success-700 dark:bg-success-900/30 dark:text-success-300',
+            isDown && 'bg-error-50 text-error-700 dark:bg-error-900/30 dark:text-error-300',
+            !isUp &&
+              !isDown &&
+              'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+          )}
+        >
+          {isUp && <ArrowUpRight className="h-3 w-3" aria-hidden="true" />}
+          {isDown && <ArrowDownRight className="h-3 w-3" aria-hidden="true" />}
+          {deltaLabel}
+        </span>
+      </div>
+      {/* Sparkline placeholder */}
+      <div className="mt-1 h-4 rounded-md bg-brand-100 dark:bg-brand-900/40" aria-hidden="true" />
+    </Card>
+  );
+}
+
+// ─── Page ───────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
   const router = useRouter();
 
-  // Check authentication
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        router.push('/login');
-      }
-    }
-  }, [router]);
+  // Auth enforced by middleware.ts — unauthenticated users redirect at edge.
+  const { data: userData } = useCurrentUser();
+  const {
+    data: goalsData,
+    isLoading: goalsLoading,
+  } = useGoalsList({ status: 'active', page_size: 3 });
+  const {
+    data: insightsData,
+    isLoading: insightsLoading,
+  } = useAgentInsights({ is_read: false, page_size: 5 });
+  const {
+    data: trendsData,
+    isLoading: trendsLoading,
+  } = useTrends({ page_size: 3 });
 
-  // Fetch data
-  const { data: goalsData } = useGoalsList({ status: 'active', page_size: 3 });
-  const { data: insightsData } = useAgentInsights({ is_read: false, page_size: 5 });
-  const { data: trendsData } = useTrends({ page_size: 3 });
+  const goals: Goal[] = goalsData?.items ?? [];
+  const insights: AgentInsight[] = insightsData?.items ?? [];
+  const trendsCount = trendsData?.items?.length ?? 0;
 
-  const goals = goalsData?.items || [];
-  const insights = insightsData?.items || [];
-  const trends = trendsData?.items || [];
+  const firstName = getFirstName(userData?.user);
+
+  const quickActions: Array<{
+    label: string;
+    icon: React.ReactNode;
+    color: TileColor;
+    href: string;
+  }> = [
+    { label: 'Create goal', icon: <Target />, color: 'brand', href: '/goals' },
+    { label: 'View trends', icon: <TrendingUp />, color: 'warning', href: '/trends' },
+    { label: 'AI insights', icon: <Lightbulb />, color: 'info', href: '/insights' },
+    { label: 'Settings', icon: <Settings />, color: 'success', href: '/settings' },
+  ];
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 gradient-text">Welcome to ContentFlow</h1>
-          <p className="text-muted-foreground">
-            Your AI-powered creator operating system
-          </p>
-        </div>
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 space-y-8 animate-fade-in">
+        {/* Page header */}
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-1.5">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
+              Welcome back, {firstName}
+            </h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Here&apos;s what&apos;s happening with your content today.
+            </p>
+          </div>
+          <div className="flex-shrink-0">
+            <Button asChild size="md" leadingIcon={<Plus className="h-4 w-4" />}>
+              <Link href="/content/create">Create</Link>
+            </Button>
+          </div>
+        </header>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="card-hover cursor-pointer" onClick={() => router.push('/goals')}>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-muted-foreground">Active Goals</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{goals.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">Track your progress</p>
-            </CardContent>
-          </Card>
+        {/* KPI row */}
+        <section
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          aria-label="Key metrics"
+        >
+          <KpiCard
+            label="Active goals"
+            value={goals.length}
+            deltaLabel="+12%"
+            deltaDirection="up"
+          />
+          <KpiCard
+            label="New insights"
+            value={insights.length}
+            deltaLabel="+8%"
+            deltaDirection="up"
+          />
+          <KpiCard
+            label="Trending now"
+            value={trendsCount}
+            deltaLabel="Active"
+            deltaDirection="up"
+          />
+          <KpiCard
+            label="Posts this week"
+            value={0}
+            deltaLabel="Schedule"
+            deltaDirection="flat"
+          />
+        </section>
 
-          <Card className="card-hover cursor-pointer" onClick={() => router.push('/insights')}>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-muted-foreground">New Insights</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{insights.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">From your AI agents</p>
-            </CardContent>
-          </Card>
-
-          <Card className="card-hover cursor-pointer" onClick={() => router.push('/trends')}>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-muted-foreground">Trending Now</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{trends.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">Hot topics in your niche</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Goals */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Recent Goals</CardTitle>
-                <Button variant="ghost" size="sm" onClick={() => router.push('/goals')}>
-                  View All →
-                </Button>
+        {/* Two-column grid */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Recent goals */}
+          <Card className="flex flex-col">
+            <CardHeader className="flex-row items-start justify-between space-y-0 gap-3">
+              <div className="space-y-1">
+                <CardTitle>Recent goals</CardTitle>
+                <CardDescription>Your active targets and progress.</CardDescription>
               </div>
+              <Button asChild variant="link-color" size="sm" className="shrink-0">
+                <Link href="/goals">View all</Link>
+              </Button>
             </CardHeader>
-            <CardContent>
-              {goals.length > 0 ? (
+            <CardContent className="flex-1">
+              {goalsLoading ? (
                 <div className="space-y-3">
-                  {goals.slice(0, 3).map((goal: any) => (
-                    <div key={goal.id} className="flex items-center justify-between p-3 bg-surface rounded-lg">
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{goal.title}</p>
-                        <p className="text-xs text-muted-foreground">{goal.progress_pct}% complete</p>
+                  <SkeletonCard showAvatar={false} lines={1} />
+                  <SkeletonCard showAvatar={false} lines={1} />
+                </div>
+              ) : goals.length > 0 ? (
+                <ul className="space-y-4">
+                  {goals.slice(0, 3).map((goal) => {
+                    const pct = Math.max(0, Math.min(100, Math.round(goal.progress_pct ?? 0)));
+                    return (
+                      <li key={goal.id} className="space-y-2">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                            {goal.title}
+                          </p>
+                          <span className="text-xs font-medium text-gray-600 dark:text-gray-400 shrink-0">
+                            {pct}%
+                          </span>
+                        </div>
+                        <div
+                          className="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800"
+                          role="progressbar"
+                          aria-valuenow={pct}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-label={`${goal.title} progress`}
+                        >
+                          <div
+                            className="h-full rounded-full bg-brand-600 transition-all"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <EmptyState
+                  icon={<Target />}
+                  iconColor="brand"
+                  title="No active goals"
+                  description="Set a target to start tracking your progress."
+                  actions={
+                    <Button onClick={() => router.push('/goals')} size="sm">
+                      Create your first goal
+                    </Button>
+                  }
+                />
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Latest insights */}
+          <Card className="flex flex-col">
+            <CardHeader className="flex-row items-start justify-between space-y-0 gap-3">
+              <div className="space-y-1">
+                <CardTitle>Latest insights</CardTitle>
+                <CardDescription>Fresh signals from your AI agents.</CardDescription>
+              </div>
+              <Button asChild variant="link-color" size="sm" className="shrink-0">
+                <Link href="/insights">View all</Link>
+              </Button>
+            </CardHeader>
+            <CardContent className="flex-1">
+              {insightsLoading ? (
+                <div className="space-y-3">
+                  <SkeletonCard showAvatar={false} lines={2} />
+                  <SkeletonCard showAvatar={false} lines={2} />
+                </div>
+              ) : insights.length > 0 ? (
+                <ul className="space-y-4">
+                  {insights.slice(0, 3).map((insight) => (
+                    <li key={insight.id} className="flex items-start gap-3">
+                      <span
+                        className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand-600"
+                        aria-hidden="true"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                          {insight.title}
+                        </p>
+                        <p className="mt-0.5 text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+                          {insight.body}
+                        </p>
                       </div>
-                      <div className="text-2xl">{goal.progress_pct >= 75 ? '🔥' : '🎯'}</div>
-                    </div>
+                    </li>
                   ))}
-                </div>
+                </ul>
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground mb-4">No active goals</p>
-                  <Button size="sm" onClick={() => router.push('/goals')}>Create Your First Goal</Button>
-                </div>
+                <EmptyState
+                  icon={<Lightbulb />}
+                  iconColor="brand"
+                  title="No new insights"
+                  description="Your agents will surface findings here as they run."
+                />
               )}
             </CardContent>
           </Card>
+        </section>
 
-          {/* Recent Insights */}
+        {/* Quick actions */}
+        <section>
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Latest Insights</CardTitle>
-                <Button variant="ghost" size="sm" onClick={() => router.push('/insights')}>
-                  View All →
-                </Button>
-              </div>
+              <CardTitle>Quick actions</CardTitle>
+              <CardDescription>Jump straight into the most common tasks.</CardDescription>
             </CardHeader>
             <CardContent>
-              {insights.length > 0 ? (
-                <div className="space-y-3">
-                  {insights.slice(0, 3).map((insight: any) => (
-                    <div key={insight.id} className="p-3 bg-surface rounded-lg">
-                      <p className="font-medium text-sm mb-1">{insight.title}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-2">{insight.body}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">No new insights</p>
-                </div>
-              )}
+              {trendsLoading ? null : null}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {quickActions.map((action) => (
+                  <button
+                    key={action.href}
+                    type="button"
+                    onClick={() => router.push(action.href)}
+                    className={cn(
+                      'group flex flex-col items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white p-4 text-center',
+                      'transition-all duration-150 hover:border-brand-300 hover:bg-brand-50/40 hover:shadow-sm',
+                      'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/24',
+                      'dark:border-gray-800 dark:bg-gray-900 dark:hover:border-brand-700 dark:hover:bg-brand-900/20'
+                    )}
+                  >
+                    <FeaturedIcon
+                      size="md"
+                      color={action.color}
+                      icon={action.icon}
+                      className="transition-transform duration-150 group-hover:-translate-y-0.5"
+                    />
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {action.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Quick Actions */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Button variant="outline" className="h-20 flex-col gap-2" onClick={() => router.push('/goals')}>
-                <span className="text-2xl">🎯</span>
-                <span className="text-sm">Create Goal</span>
-              </Button>
-              <Button variant="outline" className="h-20 flex-col gap-2" onClick={() => router.push('/trends')}>
-                <span className="text-2xl">🔥</span>
-                <span className="text-sm">View Trends</span>
-              </Button>
-              <Button variant="outline" className="h-20 flex-col gap-2" onClick={() => router.push('/insights')}>
-                <span className="text-2xl">💡</span>
-                <span className="text-sm">AI Insights</span>
-              </Button>
-              <Button variant="outline" className="h-20 flex-col gap-2">
-                <span className="text-2xl">⚙️</span>
-                <span className="text-sm">Settings</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        </section>
       </div>
     </div>
   );

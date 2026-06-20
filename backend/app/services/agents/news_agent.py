@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.runtime.context import RunContext
 from app.domains.intelligence.models import WorkspaceInsight, InsightType
-from app.services.llm.provider import create_llm_provider, TaskType
+from app.integrations.llm.provider import create_llm_provider_from_settings, TaskType
 
 log = structlog.get_logger(__name__)
 
@@ -82,11 +82,7 @@ async def fetch_news(ctx: RunContext) -> dict:
         # Generate AI briefing
         if articles:
             try:
-                provider = await create_llm_provider(
-                    task_type=TaskType.ANALYSIS,
-                    workspace_id=ctx.workspace_id,
-                    db_session=db
-                )
+                provider = create_llm_provider_from_settings()
                 
                 articles_summary = "\n".join([
                     f"- {a['title']} ({a['niche']})"
@@ -116,7 +112,7 @@ Keep it concise and actionable. Format as a daily briefing."""
                     workspace_id=ctx.workspace_id,
                     insight_type=InsightType.NEWS_OPPORTUNITY,
                     title="Daily Intelligence Briefing",
-                    body=response.text,
+                    body=response.content,
                     priority=5,
                     metadata_={
                         "sources_checked": stats["sources_checked"],

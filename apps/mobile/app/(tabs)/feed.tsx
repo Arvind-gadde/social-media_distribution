@@ -1,45 +1,59 @@
-import { useQuery } from "@tanstack/react-query";
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
-import { apiFetch } from "@/lib/api";
+import { useQuery } from '@tanstack/react-query';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { apiFetch } from '@/lib/api';
+import { AppCard } from '@/components/ui/AppCard';
+import { COLORS, SPACE, TYPE } from '@/lib/theme';
 
-type Post = { id: string; title: string; status: string; created_at: string };
+type ContentItem = { id: string; title: string; status: string; created_at: string };
+type PaginatedContent = { items: ContentItem[] };
 
 export default function FeedScreen() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["posts-feed"],
-    queryFn: () => apiFetch<Post[]>("/api/v1/posts?limit=50"),
+  // The legacy /api/v1/posts router is removed on the backend (superseded by
+  // content-projects); hitting it 404'd and the feed silently showed empty.
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['content-feed'],
+    queryFn:  () => apiFetch<PaginatedContent>('/api/v1/content-projects?page_size=50'),
   });
 
   if (isLoading) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator color="#A5B4FC" />
+      <View style={s.center}>
+        <ActivityIndicator color={COLORS.dark.indicator} size="large" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={s.center}>
+        <Text style={s.errorText}>{(error as Error).message}</Text>
       </View>
     );
   }
 
   return (
     <FlatList
-      style={styles.container}
-      contentContainerStyle={{ padding: 16 }}
-      data={data ?? []}
+      style={s.container}
+      contentContainerStyle={s.content}
+      data={data?.items ?? []}
       keyExtractor={(item) => item.id}
-      ListEmptyComponent={<Text style={styles.empty}>No posts yet.</Text>}
+      ListEmptyComponent={<Text style={s.empty}>No posts yet.</Text>}
       renderItem={({ item }) => (
-        <View style={styles.row}>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.meta}>{item.status} • {new Date(item.created_at).toLocaleString()}</Text>
-        </View>
+        <AppCard>
+          <Text style={s.title}>{item.title}</Text>
+          <Text style={s.meta}>{item.status} · {new Date(item.created_at).toLocaleString()}</Text>
+        </AppCard>
       )}
     />
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#020617" },
-  center: { alignItems: "center", justifyContent: "center" },
-  row: { padding: 14, backgroundColor: "#0F172A", borderRadius: 12, marginBottom: 10 },
-  title: { color: "#F8FAFC", fontSize: 16, fontWeight: "600" },
-  meta: { color: "#94A3B8", fontSize: 12, marginTop: 4 },
-  empty: { color: "#94A3B8", textAlign: "center", marginTop: 32 },
+const s = StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.dark.bg },
+  content:   { padding: SPACE.lg },
+  center:    { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.dark.bg },
+  title:     { color: COLORS.dark.text, fontSize: 16, fontWeight: '600' },
+  meta:      { color: COLORS.dark.textSecondary, fontSize: 12, marginTop: SPACE.xs },
+  empty:     { color: COLORS.dark.textSecondary, textAlign: 'center', marginTop: SPACE['3xl'] },
+  errorText: { color: COLORS.errorLight, fontSize: 14, textAlign: 'center', paddingHorizontal: SPACE['2xl'] },
 });

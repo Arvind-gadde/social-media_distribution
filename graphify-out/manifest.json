@@ -1,0 +1,2017 @@
+{
+  "C:\\Projects\\contentflow\\apps\\mobile\\app.json": {
+    "mtime": 1781713973.3068416,
+    "ast_hash": "175918d0d2b0129967b36a45c9fd83ce",
+    "semantic_hash": "175918d0d2b0129967b36a45c9fd83ce"
+  },
+  "C:\\Projects\\contentflow\\apps\\mobile\\app\\(auth)\\_layout.tsx": {
+    "mtime": 1781714023.0249116,
+    "ast_hash": "536f0e255f2b00b78dd8a35e9e3cd9a5",
+    "semantic_hash": "536f0e255f2b00b78dd8a35e9e3cd9a5"
+  },
+  "C:\\Projects\\contentflow\\apps\\mobile\\app\\(auth)\\login.tsx": {
+    "mtime": 1781856560.2849193,
+    "ast_hash": "db610c2d15bf305619452d5e8af824a7",
+    "semantic_hash": "db610c2d15bf305619452d5e8af824a7"
+  },
+  "C:\\Projects\\contentflow\\apps\\mobile\\app\\(auth)\\register.tsx": {
+    "mtime": 1781856563.7165246,
+    "ast_hash": "d06dbe935da3f1b6a936291648ca6072",
+    "semantic_hash": "d06dbe935da3f1b6a936291648ca6072"
+  },
+  "C:\\Projects\\contentflow\\apps\\mobile\\app\\(tabs)\\_layout.tsx": {
+    "mtime": 1781855038.4707513,
+    "ast_hash": "4bccd4d7c02e13d571202183054afaea",
+    "semantic_hash": "4bccd4d7c02e13d571202183054afaea"
+  },
+  "C:\\Projects\\contentflow\\apps\\mobile\\app\\(tabs)\\dashboard.tsx": {
+    "mtime": 1781855052.2920282,
+    "ast_hash": "a85d59b36b592ce634469b74185c9c86",
+    "semantic_hash": "a85d59b36b592ce634469b74185c9c86"
+  },
+  "C:\\Projects\\contentflow\\apps\\mobile\\app\\(tabs)\\feed.tsx": {
+    "mtime": 1781855061.501068,
+    "ast_hash": "96c975a3814266a015ce6d33987ba210",
+    "semantic_hash": "96c975a3814266a015ce6d33987ba210"
+  },
+  "C:\\Projects\\contentflow\\apps\\mobile\\app\\(tabs)\\schedule.tsx": {
+    "mtime": 1781855066.5423808,
+    "ast_hash": "ebf112f68e15661622d14060f100b03e",
+    "semantic_hash": "ebf112f68e15661622d14060f100b03e"
+  },
+  "C:\\Projects\\contentflow\\apps\\mobile\\app\\(tabs)\\settings.tsx": {
+    "mtime": 1781855073.8468902,
+    "ast_hash": "cb6e99a17e7b34afae174f0ff63f3704",
+    "semantic_hash": "cb6e99a17e7b34afae174f0ff63f3704"
+  },
+  "C:\\Projects\\contentflow\\apps\\mobile\\app\\_layout.tsx": {
+    "mtime": 1781714014.28914,
+    "ast_hash": "b0d87df2fe07b7df07cde381b8b213d1",
+    "semantic_hash": "b0d87df2fe07b7df07cde381b8b213d1"
+  },
+  "C:\\Projects\\contentflow\\apps\\mobile\\app\\index.tsx": {
+    "mtime": 1781714018.2096782,
+    "ast_hash": "55032833f73c43b721fa20f4e45348c8",
+    "semantic_hash": "55032833f73c43b721fa20f4e45348c8"
+  },
+  "C:\\Projects\\contentflow\\apps\\mobile\\babel.config.js": {
+    "mtime": 1781769375.8401158,
+    "ast_hash": "251b7e96cf813081e9158750dc602bac",
+    "semantic_hash": "251b7e96cf813081e9158750dc602bac"
+  },
+  "C:\\Projects\\contentflow\\apps\\mobile\\expo-env.d.ts": {
+    "mtime": 1781770599.7609415,
+    "ast_hash": "0dd9dccdb4b08595bc83df70d6a154d3",
+    "semantic_hash": "0dd9dccdb4b08595bc83df70d6a154d3"
+  },
+  "C:\\Projects\\contentflow\\apps\\mobile\\package.json": {
+    "mtime": 1781768606.4964318,
+    "ast_hash": "5493e9c3255351d983730d3040509f7f",
+    "semantic_hash": "5493e9c3255351d983730d3040509f7f"
+  },
+  "C:\\Projects\\contentflow\\apps\\mobile\\tsconfig.json": {
+    "mtime": 1781776843.3388188,
+    "ast_hash": "9ad81e8388512630e2d5d7fa1735cbf4",
+    "semantic_hash": "9ad81e8388512630e2d5d7fa1735cbf4"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\middleware.ts": {
+    "mtime": 1781798323.4605446,
+    "ast_hash": "9421a740464da85aa7d6c68394492c95",
+    "semantic_hash": "9421a740464da85aa7d6c68394492c95"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\next-env.d.ts": {
+    "mtime": 1775642656.8026452,
+    "ast_hash": "c68600c0eb0d34c34bfc0f4b2547e31f",
+    "semantic_hash": "c68600c0eb0d34c34bfc0f4b2547e31f"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\next.config.js": {
+    "mtime": 1781864098.4083965,
+    "ast_hash": "cfde1424267b2a564267f7dc1e046fec",
+    "semantic_hash": "cfde1424267b2a564267f7dc1e046fec"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\package.json": {
+    "mtime": 1781797958.8818092,
+    "ast_hash": "367d74ac7c3465822df5c308712854aa",
+    "semantic_hash": "367d74ac7c3465822df5c308712854aa"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\postcss.config.js": {
+    "mtime": 1775569788.3359008,
+    "ast_hash": "9a248c780e4c76f85b0f492f63a3d417",
+    "semantic_hash": "9a248c780e4c76f85b0f492f63a3d417"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\(auth)\\layout.tsx": {
+    "mtime": 1775654460.019748,
+    "ast_hash": "fd82e8ca3e2175a91ab16afe23b6ba82",
+    "semantic_hash": "fd82e8ca3e2175a91ab16afe23b6ba82"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\(auth)\\login\\page.tsx": {
+    "mtime": 1781858419.9460506,
+    "ast_hash": "33a2c5dde92a589cd21ccdc793a6c01e",
+    "semantic_hash": "33a2c5dde92a589cd21ccdc793a6c01e"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\(auth)\\register\\page.tsx": {
+    "mtime": 1781858420.5719025,
+    "ast_hash": "dcfaac78e3c6769f9b1850f457eeca84",
+    "semantic_hash": "dcfaac78e3c6769f9b1850f457eeca84"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\analytics\\page.tsx": {
+    "mtime": 1781682216.7517185,
+    "ast_hash": "16bd95d63165abd05217fd2325d6da5d",
+    "semantic_hash": "16bd95d63165abd05217fd2325d6da5d"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\auth\\google\\callback\\page.tsx": {
+    "mtime": 1781765200.4187584,
+    "ast_hash": "88834becad9c1ff2a2c05fe5f5b2892b",
+    "semantic_hash": "88834becad9c1ff2a2c05fe5f5b2892b"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\competitors\\[id]\\page.tsx": {
+    "mtime": 1781683274.754211,
+    "ast_hash": "6542052073a1f9286246a8e83a9e6653",
+    "semantic_hash": "6542052073a1f9286246a8e83a9e6653"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\competitors\\page.tsx": {
+    "mtime": 1781682282.8536034,
+    "ast_hash": "4cb86d089c243eb5030fe800949e63e7",
+    "semantic_hash": "4cb86d089c243eb5030fe800949e63e7"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\content\\[id]\\page.tsx": {
+    "mtime": 1781683281.1342797,
+    "ast_hash": "97fea85930c8e4d981beed9184fbd59c",
+    "semantic_hash": "97fea85930c8e4d981beed9184fbd59c"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\content\\create\\page.tsx": {
+    "mtime": 1777362101.5086892,
+    "ast_hash": "b99b9d821ffcf391dfdec73b4154b852",
+    "semantic_hash": "b99b9d821ffcf391dfdec73b4154b852"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\content\\ideas\\page.tsx": {
+    "mtime": 1775713545.0209599,
+    "ast_hash": "be5c4df12bc225bb297875019834dcc6",
+    "semantic_hash": "be5c4df12bc225bb297875019834dcc6"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\content\\page.tsx": {
+    "mtime": 1781764998.6251476,
+    "ast_hash": "9ed39c4c845fb970f85fe427caf035ab",
+    "semantic_hash": "9ed39c4c845fb970f85fe427caf035ab"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\debug\\page.tsx": {
+    "mtime": 1777360907.1160016,
+    "ast_hash": "19bd1e0fad9a85650653a2f67d5b287f",
+    "semantic_hash": "19bd1e0fad9a85650653a2f67d5b287f"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\error.tsx": {
+    "mtime": 1781798295.5872395,
+    "ast_hash": "3a0219ab6698ef65e0eeb387e0f7b794",
+    "semantic_hash": "3a0219ab6698ef65e0eeb387e0f7b794"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\goals\\page.tsx": {
+    "mtime": 1781764998.6745265,
+    "ast_hash": "7bf37f945b46c691b2aa21420887563d",
+    "semantic_hash": "7bf37f945b46c691b2aa21420887563d"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\inbox\\collaborations\\page.tsx": {
+    "mtime": 1777360097.7160463,
+    "ast_hash": "650dccd1e5953d4ec60d3c590392ff37",
+    "semantic_hash": "650dccd1e5953d4ec60d3c590392ff37"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\inbox\\page.tsx": {
+    "mtime": 1781683182.522396,
+    "ast_hash": "5471b1e204f8aea1a8775645fc618381",
+    "semantic_hash": "5471b1e204f8aea1a8775645fc618381"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\insights\\page.tsx": {
+    "mtime": 1781764998.6880312,
+    "ast_hash": "c1e033e8c9d0f573a8f733c5efdb9662",
+    "semantic_hash": "c1e033e8c9d0f573a8f733c5efdb9662"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\layout.tsx": {
+    "mtime": 1781859282.666329,
+    "ast_hash": "10c898be2f9b8b16d1221e1be2cc364f",
+    "semantic_hash": "10c898be2f9b8b16d1221e1be2cc364f"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\loading.tsx": {
+    "mtime": 1781798310.5090718,
+    "ast_hash": "ea0b3c7942e5cf7f70a745925f908ac4",
+    "semantic_hash": "ea0b3c7942e5cf7f70a745925f908ac4"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\news\\page.tsx": {
+    "mtime": 1781721684.7211356,
+    "ast_hash": "f5123549e4c63601968c8aea6f044396",
+    "semantic_hash": "f5123549e4c63601968c8aea6f044396"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\not-found.tsx": {
+    "mtime": 1781798281.1561847,
+    "ast_hash": "af0ea809bfc23b63ce7577f1ecd847b3",
+    "semantic_hash": "af0ea809bfc23b63ce7577f1ecd847b3"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\page.tsx": {
+    "mtime": 1781859347.941945,
+    "ast_hash": "0c1e7887c4e184bfce1eb678970abc25",
+    "semantic_hash": "0c1e7887c4e184bfce1eb678970abc25"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\providers.tsx": {
+    "mtime": 1781799007.409799,
+    "ast_hash": "87cd6c1db07d751907447b7bebd60f9d",
+    "semantic_hash": "87cd6c1db07d751907447b7bebd60f9d"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\schedule\\page.tsx": {
+    "mtime": 1781721635.5774682,
+    "ast_hash": "11faabfbb0c49721e04c4857ff7a5994",
+    "semantic_hash": "11faabfbb0c49721e04c4857ff7a5994"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\settings\\accounts\\page.tsx": {
+    "mtime": 1777360447.6115932,
+    "ast_hash": "b1a41be6a99f4018a7248fa702dc31dc",
+    "semantic_hash": "b1a41be6a99f4018a7248fa702dc31dc"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\settings\\agents\\page.tsx": {
+    "mtime": 1781764998.726446,
+    "ast_hash": "4d181686b12b6c6bccffab9714bdcafb",
+    "semantic_hash": "4d181686b12b6c6bccffab9714bdcafb"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\settings\\billing\\page.tsx": {
+    "mtime": 1777360769.8740008,
+    "ast_hash": "b072e0b86da801b56e4b63249a21f245",
+    "semantic_hash": "b072e0b86da801b56e4b63249a21f245"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\settings\\notifications\\page.tsx": {
+    "mtime": 1777360867.187624,
+    "ast_hash": "259ecbb4dfaa4a5b79b42af01c8278bc",
+    "semantic_hash": "259ecbb4dfaa4a5b79b42af01c8278bc"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\settings\\page.tsx": {
+    "mtime": 1775658054.0039341,
+    "ast_hash": "324cd57aeefa50da22b4f38020b0a0af",
+    "semantic_hash": "324cd57aeefa50da22b4f38020b0a0af"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\settings\\profile\\page.tsx": {
+    "mtime": 1781683222.9922812,
+    "ast_hash": "9e07416517964567105bf17a1dc0e070",
+    "semantic_hash": "9e07416517964567105bf17a1dc0e070"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\settings\\security\\page.tsx": {
+    "mtime": 1777360826.3595147,
+    "ast_hash": "cb8e2dd6f75a3a6cd3eaa1d430521b51",
+    "semantic_hash": "cb8e2dd6f75a3a6cd3eaa1d430521b51"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\studio\\page.tsx": {
+    "mtime": 1781721712.1535194,
+    "ast_hash": "b4aaf7a3e284b63ec5cecfbd40698ee4",
+    "semantic_hash": "b4aaf7a3e284b63ec5cecfbd40698ee4"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\app\\trends\\page.tsx": {
+    "mtime": 1781683227.1219132,
+    "ast_hash": "fc321fdd3e694bf811745ad6d0d1acbf",
+    "semantic_hash": "fc321fdd3e694bf811745ad6d0d1acbf"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\components\\auth\\AuthLeftPanel.tsx": {
+    "mtime": 1781858443.095024,
+    "ast_hash": "c14476c533ff75f1c7aa13a9d07f2a0b",
+    "semantic_hash": "c14476c533ff75f1c7aa13a9d07f2a0b"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\components\\goals\\GoalRings.tsx": {
+    "mtime": 1775570486.8223472,
+    "ast_hash": "194e44fce7629f4a108f3694a463416e",
+    "semantic_hash": "194e44fce7629f4a108f3694a463416e"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\components\\layout\\Navigation.tsx": {
+    "mtime": 1781860246.5280526,
+    "ast_hash": "55da51261f37b6a96aad54a680a81e71",
+    "semantic_hash": "55da51261f37b6a96aad54a680a81e71"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\components\\layout\\WebSocketStatus.tsx": {
+    "mtime": 1775650366.7669985,
+    "ast_hash": "ce60130d6af5921952da9037590f9223",
+    "semantic_hash": "ce60130d6af5921952da9037590f9223"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\components\\ui\\badge.tsx": {
+    "mtime": 1781798224.657441,
+    "ast_hash": "d25d6f0d9cc32bd80808124c0dc797e3",
+    "semantic_hash": "d25d6f0d9cc32bd80808124c0dc797e3"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\components\\ui\\button.tsx": {
+    "mtime": 1781858398.7800705,
+    "ast_hash": "b7cbe0c62b74642d1dc77ecd32eb8d15",
+    "semantic_hash": "b7cbe0c62b74642d1dc77ecd32eb8d15"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\components\\ui\\card.tsx": {
+    "mtime": 1781798216.1788259,
+    "ast_hash": "e7cc51000e96f68956d70acb32fd4b40",
+    "semantic_hash": "e7cc51000e96f68956d70acb32fd4b40"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\components\\ui\\command-bar.tsx": {
+    "mtime": 1781859323.2979577,
+    "ast_hash": "437d92267d1207c065a83523b616d894",
+    "semantic_hash": "437d92267d1207c065a83523b616d894"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\components\\ui\\theme-toggle.tsx": {
+    "mtime": 1781798192.8068497,
+    "ast_hash": "56022769c0b9af07ca42f4fbc924fa91",
+    "semantic_hash": "56022769c0b9af07ca42f4fbc924fa91"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\components\\ui\\toast.tsx": {
+    "mtime": 1775631964.8725712,
+    "ast_hash": "b705a60dd5e807de5f83377c5f6f9384",
+    "semantic_hash": "b705a60dd5e807de5f83377c5f6f9384"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\components\\ui\\toaster.tsx": {
+    "mtime": 1775631993.113213,
+    "ast_hash": "6f157caa767d087abca4172fb3a627b7",
+    "semantic_hash": "6f157caa767d087abca4172fb3a627b7"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\hooks\\useAgents.ts": {
+    "mtime": 1781764998.7419195,
+    "ast_hash": "395cba42e2f52b577ac3a14d5b58b731",
+    "semantic_hash": "395cba42e2f52b577ac3a14d5b58b731"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\hooks\\useAnalytics.ts": {
+    "mtime": 1781764998.780031,
+    "ast_hash": "7cd4b06e8398aa81959d2331b2a5d63a",
+    "semantic_hash": "7cd4b06e8398aa81959d2331b2a5d63a"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\hooks\\useAuth.ts": {
+    "mtime": 1781764998.8185966,
+    "ast_hash": "a913882fbf5a66e571e738aba1ff8725",
+    "semantic_hash": "a913882fbf5a66e571e738aba1ff8725"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\hooks\\useBilling.ts": {
+    "mtime": 1781764998.846893,
+    "ast_hash": "4f915051205e111cc95cae3680d14020",
+    "semantic_hash": "4f915051205e111cc95cae3680d14020"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\hooks\\useCollaborations.ts": {
+    "mtime": 1781764998.8775387,
+    "ast_hash": "3afa72a226ac397d0f8536753bed203c",
+    "semantic_hash": "3afa72a226ac397d0f8536753bed203c"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\hooks\\useCompetitors.ts": {
+    "mtime": 1781764998.9055865,
+    "ast_hash": "db45a21dd77809f17299126874536d40",
+    "semantic_hash": "db45a21dd77809f17299126874536d40"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\hooks\\useContent.ts": {
+    "mtime": 1781764998.95125,
+    "ast_hash": "0e11e07885ed3d7df31b783e3c063c70",
+    "semantic_hash": "0e11e07885ed3d7df31b783e3c063c70"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\hooks\\useGoals.ts": {
+    "mtime": 1781764998.989889,
+    "ast_hash": "4e25404423f520bbead7ffbd1a851ccc",
+    "semantic_hash": "4e25404423f520bbead7ffbd1a851ccc"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\hooks\\useInbox.ts": {
+    "mtime": 1781764999.0248957,
+    "ast_hash": "83ba6cf546e2a516491907338be00ee7",
+    "semantic_hash": "83ba6cf546e2a516491907338be00ee7"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\hooks\\useMediaUpload.ts": {
+    "mtime": 1781764999.0369453,
+    "ast_hash": "c25ac03dbdc52d7425568d9c929be76d",
+    "semantic_hash": "c25ac03dbdc52d7425568d9c929be76d"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\hooks\\useSocialAccounts.ts": {
+    "mtime": 1781764999.0906558,
+    "ast_hash": "ccc7e1d551a71746dc6bf5f7d9dcb716",
+    "semantic_hash": "ccc7e1d551a71746dc6bf5f7d9dcb716"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\hooks\\useTrends.ts": {
+    "mtime": 1775569907.3589141,
+    "ast_hash": "b2007cebc8dfe30a06b95cfd37178857",
+    "semantic_hash": "b2007cebc8dfe30a06b95cfd37178857"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\src\\hooks\\useWebSocketEvents.ts": {
+    "mtime": 1781681956.765285,
+    "ast_hash": "5f90a6edd023407d6a4690375df32534",
+    "semantic_hash": "5f90a6edd023407d6a4690375df32534"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\tailwind.config.ts": {
+    "mtime": 1781856543.2458193,
+    "ast_hash": "2b9e59a57aa7f3642fcf6a806bf74074",
+    "semantic_hash": "2b9e59a57aa7f3642fcf6a806bf74074"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\tsconfig.json": {
+    "mtime": 1775569756.232151,
+    "ast_hash": "0f57da9fbefd5f3f562fe5a9f66893ab",
+    "semantic_hash": "0f57da9fbefd5f3f562fe5a9f66893ab"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\vitest.config.ts": {
+    "mtime": 1775569997.3060205,
+    "ast_hash": "f91c0c71f80661e43f4250f81bc943a5",
+    "semantic_hash": "f91c0c71f80661e43f4250f81bc943a5"
+  },
+  "C:\\Projects\\contentflow\\backend\\alembic\\env.py": {
+    "mtime": 1781723876.6559083,
+    "ast_hash": "53d77da4388a1a1c275d9c499185ed25",
+    "semantic_hash": "53d77da4388a1a1c275d9c499185ed25"
+  },
+  "C:\\Projects\\contentflow\\backend\\alembic\\versions\\0001_baseline_baseline.py": {
+    "mtime": 1781724162.868601,
+    "ast_hash": "4d04b31619f7524e6adc72f6616f1100",
+    "semantic_hash": "4d04b31619f7524e6adc72f6616f1100"
+  },
+  "C:\\Projects\\contentflow\\backend\\alembic\\versions\\__init__.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\__init__.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "1501a7ceabb843a8f96f2c3d87dfb47d",
+    "semantic_hash": "1501a7ceabb843a8f96f2c3d87dfb47d"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\__init__.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\deps.py": {
+    "mtime": 1781854261.02149,
+    "ast_hash": "a46364ebd6509461e2308566dbacd9cd",
+    "semantic_hash": "a46364ebd6509461e2308566dbacd9cd"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\__init__.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\agent.py": {
+    "mtime": 1775303643.21218,
+    "ast_hash": "aeef08e1e33c563ca2059d9be6fb6ea2",
+    "semantic_hash": "aeef08e1e33c563ca2059d9be6fb6ea2"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\agents.py": {
+    "mtime": 1781766322.2288165,
+    "ast_hash": "efd267ad4b304bbee82446280d14ac1e",
+    "semantic_hash": "efd267ad4b304bbee82446280d14ac1e"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\ai.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "ae4b278bc004866a003305c75293dcc6",
+    "semantic_hash": "ae4b278bc004866a003305c75293dcc6"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\analytics.py": {
+    "mtime": 1775643144.78643,
+    "ast_hash": "d755dfed5a50d58b4066f46284161ed0",
+    "semantic_hash": "d755dfed5a50d58b4066f46284161ed0"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\analytics_api.py": {
+    "mtime": 1775304404.158189,
+    "ast_hash": "0869d5949ee4d5161950bfc9aef440c4",
+    "semantic_hash": "0869d5949ee4d5161950bfc9aef440c4"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\approvals.py": {
+    "mtime": 1775304369.449978,
+    "ast_hash": "57380adc2a41ac4eedf9fe59e422845a",
+    "semantic_hash": "57380adc2a41ac4eedf9fe59e422845a"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\audit.py": {
+    "mtime": 1775465533.5882366,
+    "ast_hash": "7e629e2bea9336071ba97ca759d6e9e0",
+    "semantic_hash": "7e629e2bea9336071ba97ca759d6e9e0"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\auth.py": {
+    "mtime": 1775657000.0364954,
+    "ast_hash": "64afe4dcd157bc34f34b69a769c2f602",
+    "semantic_hash": "64afe4dcd157bc34f34b69a769c2f602"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\billing.py": {
+    "mtime": 1781713201.35771,
+    "ast_hash": "4a90111b792307d7bfe422733342cf59",
+    "semantic_hash": "4a90111b792307d7bfe422733342cf59"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\business.py": {
+    "mtime": 1775332416.0919378,
+    "ast_hash": "fc32c533232cf4ad109655db055406f6",
+    "semantic_hash": "fc32c533232cf4ad109655db055406f6"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\collaborations.py": {
+    "mtime": 1781705097.0536304,
+    "ast_hash": "67e34363f92f6dc0bc2de0f6088791ef",
+    "semantic_hash": "67e34363f92f6dc0bc2de0f6088791ef"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\competitors.py": {
+    "mtime": 1775644106.863354,
+    "ast_hash": "db0f86423ea34177a36d0dfcd7000a86",
+    "semantic_hash": "db0f86423ea34177a36d0dfcd7000a86"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\content.py": {
+    "mtime": 1781705101.6768172,
+    "ast_hash": "f5d9e0889deed692664d546156962886",
+    "semantic_hash": "f5d9e0889deed692664d546156962886"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\content_projects.py": {
+    "mtime": 1775644120.3315883,
+    "ast_hash": "572ec78f19873be3004c38cb6715be91",
+    "semantic_hash": "572ec78f19873be3004c38cb6715be91"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\goals.py": {
+    "mtime": 1775644207.797703,
+    "ast_hash": "fd74316565cef5de9a4c22368e7c2167",
+    "semantic_hash": "fd74316565cef5de9a4c22368e7c2167"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\inbox.py": {
+    "mtime": 1781704795.124243,
+    "ast_hash": "95cb8f9b3bf6e3f8e4c67c683f65e358",
+    "semantic_hash": "95cb8f9b3bf6e3f8e4c67c683f65e358"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\insights.py": {
+    "mtime": 1775643928.8258321,
+    "ast_hash": "1213b42ed025c064cb873e7ba536d93e",
+    "semantic_hash": "1213b42ed025c064cb873e7ba536d93e"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\media.py": {
+    "mtime": 1781705100.5908847,
+    "ast_hash": "9464fee228ca814009301f1f9c7e1514",
+    "semantic_hash": "9464fee228ca814009301f1f9c7e1514"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\mfa.py": {
+    "mtime": 1781713558.3331935,
+    "ast_hash": "ae636f3fd68b534f3a4f26450c781ce2",
+    "semantic_hash": "ae636f3fd68b534f3a4f26450c781ce2"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\news.py": {
+    "mtime": 1781705543.7089972,
+    "ast_hash": "ee5b903f18a1271a54124ce8d488abeb",
+    "semantic_hash": "ee5b903f18a1271a54124ce8d488abeb"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\notifications.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "cde7808e377ec6b0f3eae6930cfc6193",
+    "semantic_hash": "cde7808e377ec6b0f3eae6930cfc6193"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\oauth.py": {
+    "mtime": 1781704418.9139342,
+    "ast_hash": "8470597883951161d8c9af660aaad4b0",
+    "semantic_hash": "8470597883951161d8c9af660aaad4b0"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\platform_webhooks.py": {
+    "mtime": 1781704154.5656338,
+    "ast_hash": "f32fbdaa43a8c0a9d672558a69adeb43",
+    "semantic_hash": "f32fbdaa43a8c0a9d672558a69adeb43"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\platforms.py": {
+    "mtime": 1773969706.0,
+    "ast_hash": "845eee372714931f56c8c4bc442a85ba",
+    "semantic_hash": "845eee372714931f56c8c4bc442a85ba"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\posts.py": {
+    "mtime": 1775644127.747334,
+    "ast_hash": "f9eb3dba34056e752adaa9ef2b6583f5",
+    "semantic_hash": "f9eb3dba34056e752adaa9ef2b6583f5"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\social_accounts.py": {
+    "mtime": 1781679292.7525115,
+    "ast_hash": "f56d6a719a190ce2cd6d3fc094edcfa8",
+    "semantic_hash": "f56d6a719a190ce2cd6d3fc094edcfa8"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\trends.py": {
+    "mtime": 1775567418.9323099,
+    "ast_hash": "a34a6eb89a61dd635c4e8202243086a9",
+    "semantic_hash": "a34a6eb89a61dd635c4e8202243086a9"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\usage.py": {
+    "mtime": 1775465552.2441938,
+    "ast_hash": "1f7fd1f22016f1d812cc0354b4e449bf",
+    "semantic_hash": "1f7fd1f22016f1d812cc0354b4e449bf"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\webhooks\\__init__.py": {
+    "mtime": 1775337065.0666804,
+    "ast_hash": "7ba6b8711db2f777d5d958327dac6367",
+    "semantic_hash": "7ba6b8711db2f777d5d958327dac6367"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\webhooks\\stripe_webhooks.py": {
+    "mtime": 1781713189.8572428,
+    "ast_hash": "afa3e501e927ad719f3ac0378dabf08e",
+    "semantic_hash": "afa3e501e927ad719f3ac0378dabf08e"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\workspace_insights.py": {
+    "mtime": 1775303410.5596972,
+    "ast_hash": "1853f90260985e65833271b66e851711",
+    "semantic_hash": "1853f90260985e65833271b66e851711"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\api\\v1\\workspaces.py": {
+    "mtime": 1775303035.047732,
+    "ast_hash": "6f994297ccc18b751fd9d52744d700a0",
+    "semantic_hash": "6f994297ccc18b751fd9d52744d700a0"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\config.py": {
+    "mtime": 1781779947.3724132,
+    "ast_hash": "8815e458c4d3e0bf3049ec3fff23dbd8",
+    "semantic_hash": "8815e458c4d3e0bf3049ec3fff23dbd8"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\constants.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "67c1904bfd7577d6423fb37461ffb7c6",
+    "semantic_hash": "67c1904bfd7577d6423fb37461ffb7c6"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\core\\__init__.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\core\\dev_bypass.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "1d912fe8a10a01b58be95d682e7750dc",
+    "semantic_hash": "1d912fe8a10a01b58be95d682e7750dc"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\core\\logging.py": {
+    "mtime": 1781633561.511314,
+    "ast_hash": "78a1e3c2ab3ed28fa3074d32fe83ea29",
+    "semantic_hash": "78a1e3c2ab3ed28fa3074d32fe83ea29"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\core\\middleware.py": {
+    "mtime": 1781860979.4793272,
+    "ast_hash": "766fb0f5c523c532a29dfccaed27f27a",
+    "semantic_hash": "766fb0f5c523c532a29dfccaed27f27a"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\core\\observability.py": {
+    "mtime": 1781721766.401106,
+    "ast_hash": "949e12a9002bbfd8df5a1634e4197458",
+    "semantic_hash": "949e12a9002bbfd8df5a1634e4197458"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\core\\security.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "37f2390a8809d7119180ae429ddfabe8",
+    "semantic_hash": "37f2390a8809d7119180ae429ddfabe8"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\db\\__init__.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\db\\session.py": {
+    "mtime": 1781762891.9814105,
+    "ast_hash": "4e110c9368467dc9c5a71866969a4056",
+    "semantic_hash": "4e110c9368467dc9c5a71866969a4056"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\domains\\__init__.py": {
+    "mtime": 1775301630.9272332,
+    "ast_hash": "9102230754e065494bebf40d993e65e9",
+    "semantic_hash": "9102230754e065494bebf40d993e65e9"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\domains\\business\\__init__.py": {
+    "mtime": 1775332267.8583417,
+    "ast_hash": "8b1b37c1054ea1475ff706fc2708bfbd",
+    "semantic_hash": "8b1b37c1054ea1475ff706fc2708bfbd"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\domains\\business\\models.py": {
+    "mtime": 1781724061.546723,
+    "ast_hash": "4ee2c6165036b282e73ce1edcfbbd62d",
+    "semantic_hash": "4ee2c6165036b282e73ce1edcfbbd62d"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\domains\\control\\__init__.py": {
+    "mtime": 1775301632.9622457,
+    "ast_hash": "bc85aded32406d24b636b72ed2e637ca",
+    "semantic_hash": "bc85aded32406d24b636b72ed2e637ca"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\domains\\control\\models.py": {
+    "mtime": 1775461327.9324706,
+    "ast_hash": "6a6b75ab38713217d04caaa29c00b587",
+    "semantic_hash": "6a6b75ab38713217d04caaa29c00b587"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\domains\\control\\seed_niches.py": {
+    "mtime": 1775302159.488562,
+    "ast_hash": "baad9b5456769fbdbe5e7eeebe6a6ecb",
+    "semantic_hash": "baad9b5456769fbdbe5e7eeebe6a6ecb"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\domains\\execution\\__init__.py": {
+    "mtime": 1775301637.0191536,
+    "ast_hash": "2b9fa65bb50907d529fa1d8753cdf22f",
+    "semantic_hash": "2b9fa65bb50907d529fa1d8753cdf22f"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\domains\\execution\\models.py": {
+    "mtime": 1775467143.7706852,
+    "ast_hash": "0f8327329ffde23f8ba9a53164123927",
+    "semantic_hash": "0f8327329ffde23f8ba9a53164123927"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\domains\\intelligence\\__init__.py": {
+    "mtime": 1775301635.0015502,
+    "ast_hash": "93b10de08d9ab0c9ddfe57beaab68e5a",
+    "semantic_hash": "93b10de08d9ab0c9ddfe57beaab68e5a"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\domains\\intelligence\\models.py": {
+    "mtime": 1775493931.86378,
+    "ast_hash": "370fd01ff3c927f19d9a249943457018",
+    "semantic_hash": "370fd01ff3c927f19d9a249943457018"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\domains\\intelligence\\prompt_library.py": {
+    "mtime": 1775312195.289831,
+    "ast_hash": "e7ca011a9636be51d25c1bb115a1b95d",
+    "semantic_hash": "e7ca011a9636be51d25c1bb115a1b95d"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\domains\\intelligence\\seed_policies.py": {
+    "mtime": 1775304764.050822,
+    "ast_hash": "0cbf624b5cc6c2e00b116f368397c21b",
+    "semantic_hash": "0cbf624b5cc6c2e00b116f368397c21b"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\domains\\intelligence\\seed_sources.py": {
+    "mtime": 1775312279.062968,
+    "ast_hash": "ba02438cfba17c4d63a2fe8464893271",
+    "semantic_hash": "ba02438cfba17c4d63a2fe8464893271"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\domains\\notifications\\models.py": {
+    "mtime": 1775336529.9828827,
+    "ast_hash": "e3b92d56517e80ff43b1889b66c7f49f",
+    "semantic_hash": "e3b92d56517e80ff43b1889b66c7f49f"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\domains\\schemas.py": {
+    "mtime": 1775302538.7018652,
+    "ast_hash": "86f9594da32c0c877ba1dff6e8fcc351",
+    "semantic_hash": "86f9594da32c0c877ba1dff6e8fcc351"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\exceptions.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "5b9712fd53555f8fd14ef517055df6a1",
+    "semantic_hash": "5b9712fd53555f8fd14ef517055df6a1"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\integrations\\__init__.py": {
+    "mtime": 1775301639.0378883,
+    "ast_hash": "ded58051530f5f8fd30838ab015dd2ac",
+    "semantic_hash": "ded58051530f5f8fd30838ab015dd2ac"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\integrations\\llm\\__init__.py": {
+    "mtime": 1781780091.5934787,
+    "ast_hash": "92e1535f24213bc93f3043580b00bb95",
+    "semantic_hash": "92e1535f24213bc93f3043580b00bb95"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\integrations\\llm\\observability.py": {
+    "mtime": 1781779971.0650659,
+    "ast_hash": "7612e442c2f17c3924e16ab5b688f279",
+    "semantic_hash": "7612e442c2f17c3924e16ab5b688f279"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\integrations\\llm\\provider.py": {
+    "mtime": 1781780085.5651581,
+    "ast_hash": "1b0fa07a2ccad643eda44db8ab7a6981",
+    "semantic_hash": "1b0fa07a2ccad643eda44db8ab7a6981"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\integrations\\platforms\\__init__.py": {
+    "mtime": 1775324788.2181444,
+    "ast_hash": "771503b197a5a1dd11c276cd08ae22bc",
+    "semantic_hash": "771503b197a5a1dd11c276cd08ae22bc"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\integrations\\platforms\\adapters.py": {
+    "mtime": 1781709606.411807,
+    "ast_hash": "1a12c3f20145cd467b63483649b08c9b",
+    "semantic_hash": "1a12c3f20145cd467b63483649b08c9b"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\main.py": {
+    "mtime": 1781854247.2844963,
+    "ast_hash": "0755ea707d32e276739b5828108e927f",
+    "semantic_hash": "0755ea707d32e276739b5828108e927f"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\models\\__init__.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\models\\models.py": {
+    "mtime": 1781713511.758122,
+    "ast_hash": "c6ae8d467ee9d22d24257774ad8f5848",
+    "semantic_hash": "c6ae8d467ee9d22d24257774ad8f5848"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\repositories\\__init__.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\repositories\\repositories.py": {
+    "mtime": 1775302222.9091108,
+    "ast_hash": "27fd7dca2afd1040fdbf16c7d799068c",
+    "semantic_hash": "27fd7dca2afd1040fdbf16c7d799068c"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\runtime\\__init__.py": {
+    "mtime": 1775301643.0744402,
+    "ast_hash": "9b8c92f3716ae68f0c357bc5e3a201dd",
+    "semantic_hash": "9b8c92f3716ae68f0c357bc5e3a201dd"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\runtime\\context.py": {
+    "mtime": 1775302021.2799864,
+    "ast_hash": "3bf716c442a8226bdf41315957e45c53",
+    "semantic_hash": "3bf716c442a8226bdf41315957e45c53"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\runtime\\correlation.py": {
+    "mtime": 1775465371.9458323,
+    "ast_hash": "ad49440370c6e69d62b845a006e4c8af",
+    "semantic_hash": "ad49440370c6e69d62b845a006e4c8af"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\runtime\\orchestration\\__init__.py": {
+    "mtime": 1775467400.8823225,
+    "ast_hash": "4ea1d35e99f89ef7dccab5404a5f3b1b",
+    "semantic_hash": "4ea1d35e99f89ef7dccab5404a5f3b1b"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\runtime\\orchestration\\nodes.py": {
+    "mtime": 1781699497.6712701,
+    "ast_hash": "3051a850a791eb9b696f81f80a26100d",
+    "semantic_hash": "3051a850a791eb9b696f81f80a26100d"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\runtime\\orchestration\\state.py": {
+    "mtime": 1775467412.6065338,
+    "ast_hash": "5bb96679a646286d6580aabfabbed631",
+    "semantic_hash": "5bb96679a646286d6580aabfabbed631"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\runtime\\orchestration\\workflow.py": {
+    "mtime": 1775493994.904017,
+    "ast_hash": "d9f9ef5ec65768c9efdf7666eb31a2bd",
+    "semantic_hash": "d9f9ef5ec65768c9efdf7666eb31a2bd"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\schemas\\__init__.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\schemas\\insights.py": {
+    "mtime": 1775336574.216334,
+    "ast_hash": "aaa62c42f9813a87decef09de9dfd1bf",
+    "semantic_hash": "aaa62c42f9813a87decef09de9dfd1bf"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\schemas\\schemas.py": {
+    "mtime": 1775656967.1541429,
+    "ast_hash": "c7663c5c2bedf7f65d1150dfba77876e",
+    "semantic_hash": "c7663c5c2bedf7f65d1150dfba77876e"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\__init__.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\agent_event_bus.py": {
+    "mtime": 1781687083.0203986,
+    "ast_hash": "50b521915b2aa93df643d29db4282bb9",
+    "semantic_hash": "50b521915b2aa93df643d29db4282bb9"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\agents\\__init__.py": {
+    "mtime": 1775331304.7539332,
+    "ast_hash": "6c15181d777538aa86ec3e606ea4110e",
+    "semantic_hash": "6c15181d777538aa86ec3e606ea4110e"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\agents\\analytics_agent.py": {
+    "mtime": 1775331363.5193362,
+    "ast_hash": "4308287fadb4594e1417c711e4850f64",
+    "semantic_hash": "4308287fadb4594e1417c711e4850f64"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\agents\\competitor_agent.py": {
+    "mtime": 1775331345.3099713,
+    "ast_hash": "3f332b7146b1679c8e39b89cc2a42488",
+    "semantic_hash": "3f332b7146b1679c8e39b89cc2a42488"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\agents\\goal_agent.py": {
+    "mtime": 1775331331.4364269,
+    "ast_hash": "819150be8e47826f1f2f9f2dd6636a02",
+    "semantic_hash": "819150be8e47826f1f2f9f2dd6636a02"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\agents\\news_agent.py": {
+    "mtime": 1775336956.473307,
+    "ast_hash": "6e69c691ecf3ad53a26d3542dad0e2f2",
+    "semantic_hash": "6e69c691ecf3ad53a26d3542dad0e2f2"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\agents\\niche_agent.py": {
+    "mtime": 1781771150.6454313,
+    "ast_hash": "89a785af01904fea99b62b3955465736",
+    "semantic_hash": "89a785af01904fea99b62b3955465736"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\agents\\orchestrator.py": {
+    "mtime": 1775336968.256923,
+    "ast_hash": "d759e50532f4893da0c044898fcdc81c",
+    "semantic_hash": "d759e50532f4893da0c044898fcdc81c"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\agents\\research_agent.py": {
+    "mtime": 1775336939.7016387,
+    "ast_hash": "9907a898086653ffe793bc36746a0d99",
+    "semantic_hash": "9907a898086653ffe793bc36746a0d99"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\agents\\scheduling_agent.py": {
+    "mtime": 1775331352.5293906,
+    "ast_hash": "204f2150cf134e3c69a08426939ae39b",
+    "semantic_hash": "204f2150cf134e3c69a08426939ae39b"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\agents\\synthesis_agent.py": {
+    "mtime": 1775334321.496984,
+    "ast_hash": "68b549c1968e99c733995c2d1927e939",
+    "semantic_hash": "68b549c1968e99c733995c2d1927e939"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\agents\\trend_agent.py": {
+    "mtime": 1775331320.2650607,
+    "ast_hash": "6adba1ec67e49b4901117722c4096fe8",
+    "semantic_hash": "6adba1ec67e49b4901117722c4096fe8"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\agents\\trend_sensor.py": {
+    "mtime": 1775336628.549507,
+    "ast_hash": "f795eb51a3613e9eeef861b756dd7fa6",
+    "semantic_hash": "f795eb51a3613e9eeef861b756dd7fa6"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\ai_service.py": {
+    "mtime": 1781765894.6293256,
+    "ast_hash": "0a6089c1f29a0013f6c948b19f3e90b6",
+    "semantic_hash": "0a6089c1f29a0013f6c948b19f3e90b6"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\analytics_sync.py": {
+    "mtime": 1775329370.6787126,
+    "ast_hash": "556f0689c8335adb13439ace7ea57e2b",
+    "semantic_hash": "556f0689c8335adb13439ace7ea57e2b"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\approval_service.py": {
+    "mtime": 1775466773.8476155,
+    "ast_hash": "e0ce57cd02b38079ee893e93290c110a",
+    "semantic_hash": "e0ce57cd02b38079ee893e93290c110a"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\audit_service.py": {
+    "mtime": 1775465397.3791568,
+    "ast_hash": "e0f9861e0b54bc2105097856462f0968",
+    "semantic_hash": "e0f9861e0b54bc2105097856462f0968"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\auth_service.py": {
+    "mtime": 1781669950.1523826,
+    "ast_hash": "34ffdf63c6ca7d79f8609222a7c519e9",
+    "semantic_hash": "34ffdf63c6ca7d79f8609222a7c519e9"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\billing\\__init__.py": {
+    "mtime": 1775336997.7854857,
+    "ast_hash": "017b265c39fbd8126628cc25279c901f",
+    "semantic_hash": "017b265c39fbd8126628cc25279c901f"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\billing\\entitlements.py": {
+    "mtime": 1781713225.8761299,
+    "ast_hash": "c3fa0366593fd7c3270a5e745428860e",
+    "semantic_hash": "c3fa0366593fd7c3270a5e745428860e"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\billing\\plans.py": {
+    "mtime": 1781713183.0896714,
+    "ast_hash": "4c3820b1561338a5c59644c503c1d757",
+    "semantic_hash": "4c3820b1561338a5c59644c503c1d757"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\billing\\stripe_adapter.py": {
+    "mtime": 1775337007.3962717,
+    "ast_hash": "658537828a2616a0595b4ca121ea7729",
+    "semantic_hash": "658537828a2616a0595b4ca121ea7729"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\business\\__init__.py": {
+    "mtime": 1775332318.61593,
+    "ast_hash": "9f88cafe57537b352f2fd703d25eeb52",
+    "semantic_hash": "9f88cafe57537b352f2fd703d25eeb52"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\business\\collab_evaluator.py": {
+    "mtime": 1775332748.3523417,
+    "ast_hash": "aaea29b1f8fd856c5956ed6772df4905",
+    "semantic_hash": "aaea29b1f8fd856c5956ed6772df4905"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\business\\contract_drafter.py": {
+    "mtime": 1775332752.2772381,
+    "ast_hash": "cdbc95d3a6f33eb9cf4ef7fc1c233636",
+    "semantic_hash": "cdbc95d3a6f33eb9cf4ef7fc1c233636"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\business\\inbox_sync.py": {
+    "mtime": 1775332335.151549,
+    "ast_hash": "a8cae1df5c0fb97ceb69f476038af0f2",
+    "semantic_hash": "a8cae1df5c0fb97ceb69f476038af0f2"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\cache_service.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "69f1f24c0b1f321c9d9939c7def380b7",
+    "semantic_hash": "69f1f24c0b1f321c9d9939c7def380b7"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\collaboration\\__init__.py": {
+    "mtime": 1775483337.2290778,
+    "ast_hash": "d8015fc2e07f0ca2498a9313402fb8e0",
+    "semantic_hash": "d8015fc2e07f0ca2498a9313402fb8e0"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\collaboration\\deal_tracker.py": {
+    "mtime": 1775483408.6885793,
+    "ast_hash": "9659daa0dd95fc56ded83e913433772c",
+    "semantic_hash": "9659daa0dd95fc56ded83e913433772c"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\collaboration\\dm_classifier.py": {
+    "mtime": 1775483371.051044,
+    "ast_hash": "6bf13def0479a6d63764177faeffc40d",
+    "semantic_hash": "6bf13def0479a6d63764177faeffc40d"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\competitors\\__init__.py": {
+    "mtime": 1775480119.0692806,
+    "ast_hash": "458885e8c8997e1804bc5d91fa4f849c",
+    "semantic_hash": "458885e8c8997e1804bc5d91fa4f849c"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\competitors\\competitor_analyzer.py": {
+    "mtime": 1775480200.134384,
+    "ast_hash": "4b835381079a6af0b295696482664b60",
+    "semantic_hash": "4b835381079a6af0b295696482664b60"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\competitors\\competitor_scraper.py": {
+    "mtime": 1775480153.8041468,
+    "ast_hash": "d9a51c7663f13871effd03857906ccb7",
+    "semantic_hash": "d9a51c7663f13871effd03857906ccb7"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\compression_service.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "2ed4994b6cc09baf0cc4eff4a1efaabc",
+    "semantic_hash": "2ed4994b6cc09baf0cc4eff4a1efaabc"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\content_agent\\__init__.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "e628f4aadbb40bb8d295ae5469aabe81",
+    "semantic_hash": "e628f4aadbb40bb8d295ae5469aabe81"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\content_agent\\agent.py": {
+    "mtime": 1781765894.6505103,
+    "ast_hash": "c9da2aeaa22e18c579794b491883c753",
+    "semantic_hash": "c9da2aeaa22e18c579794b491883c753"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\content_agent\\analyst_agent.py": {
+    "mtime": 1781765894.6760962,
+    "ast_hash": "135138efbbcf2a507f21452cb4736d40",
+    "semantic_hash": "135138efbbcf2a507f21452cb4736d40"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\content_agent\\collector.py": {
+    "mtime": 1775303685.2993944,
+    "ast_hash": "0b1bbff4d0b85db3d6f95a9aeacbcc5c",
+    "semantic_hash": "0b1bbff4d0b85db3d6f95a9aeacbcc5c"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\content_agent\\competitor_agent.py": {
+    "mtime": 1775324339.2459714,
+    "ast_hash": "d4154a64db752d9e299a22b0b663733b",
+    "semantic_hash": "d4154a64db752d9e299a22b0b663733b"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\content_agent\\creative_agent.py": {
+    "mtime": 1781765894.6951752,
+    "ast_hash": "d8f03f61b3dc253eec5435826fe34293",
+    "semantic_hash": "d8f03f61b3dc253eec5435826fe34293"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\content_agent\\fact_checker.py": {
+    "mtime": 1781765894.7207549,
+    "ast_hash": "fc9ec631cde097f6a87a2fa0d8b129b1",
+    "semantic_hash": "fc9ec631cde097f6a87a2fa0d8b129b1"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\content_agent\\goal_agent.py": {
+    "mtime": 1781670918.6280155,
+    "ast_hash": "afb92a93bd10815b7ed6c64127cd5f8c",
+    "semantic_hash": "afb92a93bd10815b7ed6c64127cd5f8c"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\content_agent\\hashtags.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "cdcf033f52e1a37a648e3de113f0a04b",
+    "semantic_hash": "cdcf033f52e1a37a648e3de113f0a04b"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\content_agent\\niche_adapter.py": {
+    "mtime": 1781670962.936387,
+    "ast_hash": "1ee33d58eb99430288ac4d9982fcd3af",
+    "semantic_hash": "1ee33d58eb99430288ac4d9982fcd3af"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\content_agent\\niche_resolver.py": {
+    "mtime": 1775324157.4980764,
+    "ast_hash": "2044b34276f08caad3cefb9f17b975cf",
+    "semantic_hash": "2044b34276f08caad3cefb9f17b975cf"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\content_agent\\normalization.py": {
+    "mtime": 1774117004.9402702,
+    "ast_hash": "b62eba807f171496cdb019ef1b140056",
+    "semantic_hash": "b62eba807f171496cdb019ef1b140056"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\content_agent\\orchestrator.py": {
+    "mtime": 1775303523.5024002,
+    "ast_hash": "aa05f19912145bc9113e20263553c11a",
+    "semantic_hash": "aa05f19912145bc9113e20263553c11a"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\content_agent\\sources.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "f71cfd8ed968513c3c80fc015bd8a098",
+    "semantic_hash": "f71cfd8ed968513c3c80fc015bd8a098"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\embeddings\\__init__.py": {
+    "mtime": 1781770997.6070497,
+    "ast_hash": "31cc9a575ee6ea2cd2f5293466f0493b",
+    "semantic_hash": "31cc9a575ee6ea2cd2f5293466f0493b"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\embeddings\\embedder.py": {
+    "mtime": 1781771219.3889966,
+    "ast_hash": "100da9246a224b5049d73bc1b0c9a6d2",
+    "semantic_hash": "100da9246a224b5049d73bc1b0c9a6d2"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\encryption\\__init__.py": {
+    "mtime": 1777362525.659786,
+    "ast_hash": "75823b6d2ba794a5227f1c7d8b2fe8f8",
+    "semantic_hash": "75823b6d2ba794a5227f1c7d8b2fe8f8"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\growth\\__init__.py": {
+    "mtime": 1775482381.0836618,
+    "ast_hash": "111de65d3f9e1c2cb52af7844cb9e9dd",
+    "semantic_hash": "111de65d3f9e1c2cb52af7844cb9e9dd"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\growth\\growth_optimizer.py": {
+    "mtime": 1775482463.6325085,
+    "ast_hash": "7f9425f1873396f2f0abf1f5cef6bae9",
+    "semantic_hash": "7f9425f1873396f2f0abf1f5cef6bae9"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\intelligence\\platform_adapters.py": {
+    "mtime": 1775337319.1249871,
+    "ast_hash": "74c6062b1efbfdb4d1a3a6cf072594d9",
+    "semantic_hash": "74c6062b1efbfdb4d1a3a6cf072594d9"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\intelligence\\trend_clustering.py": {
+    "mtime": 1775337337.4089642,
+    "ast_hash": "876052e8b8bcb2453fa8f50ff2ec962f",
+    "semantic_hash": "876052e8b8bcb2453fa8f50ff2ec962f"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\intelligence\\trend_performance.py": {
+    "mtime": 1775337358.8646865,
+    "ast_hash": "ba43e48926a1d8b7e052885255801a8f",
+    "semantic_hash": "ba43e48926a1d8b7e052885255801a8f"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\intelligence\\velocity_engine.py": {
+    "mtime": 1775334286.4044518,
+    "ast_hash": "91dd8be0b808956ec8fbbb14efa849e8",
+    "semantic_hash": "91dd8be0b808956ec8fbbb14efa849e8"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\llm\\__init__.py": {
+    "mtime": 1775471948.9315567,
+    "ast_hash": "40badc0b7bdd929bad7f21191b41363f",
+    "semantic_hash": "40badc0b7bdd929bad7f21191b41363f"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\llm\\client.py": {
+    "mtime": 1775472366.9971285,
+    "ast_hash": "314c9ae21a89cee8e425b10af2a277ee",
+    "semantic_hash": "314c9ae21a89cee8e425b10af2a277ee"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\llm\\router.py": {
+    "mtime": 1781766229.1859972,
+    "ast_hash": "d06b89a615db43094b7316ec98b2ef91",
+    "semantic_hash": "d06b89a615db43094b7316ec98b2ef91"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\media_service.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "c151a34b266d44712c52b6cf307c5183",
+    "semantic_hash": "c151a34b266d44712c52b6cf307c5183"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\mfa_service.py": {
+    "mtime": 1781713538.8658347,
+    "ast_hash": "287c7aefcc7aa4c6b7b850eaca67c9dd",
+    "semantic_hash": "287c7aefcc7aa4c6b7b850eaca67c9dd"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\news\\__init__.py": {
+    "mtime": 1775480590.1593356,
+    "ast_hash": "b0ed02910fa274551f7368a023a37d88",
+    "semantic_hash": "b0ed02910fa274551f7368a023a37d88"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\news\\news_fetcher.py": {
+    "mtime": 1775481424.3099406,
+    "ast_hash": "51b0651f21a911a352f6f280a7f2751b",
+    "semantic_hash": "51b0651f21a911a352f6f280a7f2751b"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\niche\\__init__.py": {
+    "mtime": 1775481788.499029,
+    "ast_hash": "32e1276de7dde7d32be0b59ecb4bc513",
+    "semantic_hash": "32e1276de7dde7d32be0b59ecb4bc513"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\niche\\content_index.py": {
+    "mtime": 1781771120.9323704,
+    "ast_hash": "a7d973197b4a6f8e0e2edfb478505cd6",
+    "semantic_hash": "a7d973197b4a6f8e0e2edfb478505cd6"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\niche\\niche_analyzer.py": {
+    "mtime": 1775481831.1083012,
+    "ast_hash": "fd927f0cbb0ae033ed3b26cecc37c96c",
+    "semantic_hash": "fd927f0cbb0ae033ed3b26cecc37c96c"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\niche\\qdrant_store.py": {
+    "mtime": 1781713087.3658557,
+    "ast_hash": "d6212e746851f0991ea17f01d42270c2",
+    "semantic_hash": "d6212e746851f0991ea17f01d42270c2"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\notification_service.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "4256848112d4f126b320b39fd6347314",
+    "semantic_hash": "4256848112d4f126b320b39fd6347314"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\notifications\\push_service.py": {
+    "mtime": 1775643883.315377,
+    "ast_hash": "8b6177d7fff56c10ab60d7452aeb8cbb",
+    "semantic_hash": "8b6177d7fff56c10ab60d7452aeb8cbb"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\oauth\\__init__.py": {
+    "mtime": 1781709750.5995,
+    "ast_hash": "f07c508aeaee9381af0c739f5ca61e0f",
+    "semantic_hash": "f07c508aeaee9381af0c739f5ca61e0f"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\oauth\\base.py": {
+    "mtime": 1781704313.3467374,
+    "ast_hash": "6c09914d6141c9be0cab92b4ef8e5e4a",
+    "semantic_hash": "6c09914d6141c9be0cab92b4ef8e5e4a"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\oauth\\facebook.py": {
+    "mtime": 1781709721.5202243,
+    "ast_hash": "e25e3af4649c3627f62f8c4d4af5f983",
+    "semantic_hash": "e25e3af4649c3627f62f8c4d4af5f983"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\oauth\\instagram.py": {
+    "mtime": 1781704345.9642348,
+    "ast_hash": "db68158fb34288896660b94ade16f646",
+    "semantic_hash": "db68158fb34288896660b94ade16f646"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\oauth\\linkedin.py": {
+    "mtime": 1781709702.967482,
+    "ast_hash": "992921f6d69e02be300e900cc3693b81",
+    "semantic_hash": "992921f6d69e02be300e900cc3693b81"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\oauth\\pinterest.py": {
+    "mtime": 1781709740.182412,
+    "ast_hash": "cac280e9d39fe2832c42fbed65558b8a",
+    "semantic_hash": "cac280e9d39fe2832c42fbed65558b8a"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\oauth\\tiktok.py": {
+    "mtime": 1781704351.5237122,
+    "ast_hash": "90cd06f51e0835934586dbd3f2f1a2dc",
+    "semantic_hash": "90cd06f51e0835934586dbd3f2f1a2dc"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\oauth\\twitter.py": {
+    "mtime": 1781704322.7853842,
+    "ast_hash": "f1ec22c1de079dfe64becd847d9f635b",
+    "semantic_hash": "f1ec22c1de079dfe64becd847d9f635b"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\oauth\\youtube.py": {
+    "mtime": 1781704356.7599676,
+    "ast_hash": "ba835afe8dcb02e9d0a6b01cdf5d8a69",
+    "semantic_hash": "ba835afe8dcb02e9d0a6b01cdf5d8a69"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\orchestration\\__init__.py": {
+    "mtime": 1775484755.102875,
+    "ast_hash": "8f44c6d9fa13fd279096a9cf936e12ce",
+    "semantic_hash": "8f44c6d9fa13fd279096a9cf936e12ce"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\orchestration\\orchestrator.py": {
+    "mtime": 1775484749.2075334,
+    "ast_hash": "c3bcab6eb279d8aed8cdf73c35b6c352",
+    "semantic_hash": "c3bcab6eb279d8aed8cdf73c35b6c352"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\outbox_service.py": {
+    "mtime": 1781705302.6506102,
+    "ast_hash": "5a36b49be65729d78837745d8badaef2",
+    "semantic_hash": "5a36b49be65729d78837745d8badaef2"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\platforms\\__init__.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\platforms\\base.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "b27ed8907ad87ed4d865dce4de293640",
+    "semantic_hash": "b27ed8907ad87ed4d865dce4de293640"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\platforms\\facebook.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "aae9a6266a7a258f87841f182d28f6e7",
+    "semantic_hash": "aae9a6266a7a258f87841f182d28f6e7"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\platforms\\instagram.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "631e0bdd16a86af3e593f23adbc790d3",
+    "semantic_hash": "631e0bdd16a86af3e593f23adbc790d3"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\platforms\\linkedin.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "05fa9ca96b4f4870609e77dca6f00ee4",
+    "semantic_hash": "05fa9ca96b4f4870609e77dca6f00ee4"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\platforms\\twitter.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "1b8dbc662a6ba03b327ba5eb2c62cef4",
+    "semantic_hash": "1b8dbc662a6ba03b327ba5eb2c62cef4"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\platforms\\youtube.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "30442bf0c026a1d5cf00e9e16846dc28",
+    "semantic_hash": "30442bf0c026a1d5cf00e9e16846dc28"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\post_service.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "33767a52a181338478990d258ba9e3eb",
+    "semantic_hash": "33767a52a181338478990d258ba9e3eb"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\publish_executor.py": {
+    "mtime": 1781709672.3298774,
+    "ast_hash": "eae6ba8b8f868a77162e6ead7bb644b9",
+    "semantic_hash": "eae6ba8b8f868a77162e6ead7bb644b9"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\scheduling\\__init__.py": {
+    "mtime": 1775482027.7802477,
+    "ast_hash": "b2842e5d899cbb15ded47466594e53eb",
+    "semantic_hash": "b2842e5d899cbb15ded47466594e53eb"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\scheduling\\schedule_optimizer.py": {
+    "mtime": 1775482077.6532407,
+    "ast_hash": "f3666ce72a4db7bf089511a334dead1a",
+    "semantic_hash": "f3666ce72a4db7bf089511a334dead1a"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\scraping\\__init__.py": {
+    "mtime": 1775479097.2335694,
+    "ast_hash": "afd5b870375fc24521964bb74e07bbae",
+    "semantic_hash": "afd5b870375fc24521964bb74e07bbae"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\scraping\\scraper.py": {
+    "mtime": 1775479118.4656982,
+    "ast_hash": "cf36b21b74986a635b7d9c5f153e19c4",
+    "semantic_hash": "cf36b21b74986a635b7d9c5f153e19c4"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\storage_service.py": {
+    "mtime": 1775330285.6190348,
+    "ast_hash": "9afa850e48bab1b7a27059dea38c4acc",
+    "semantic_hash": "9afa850e48bab1b7a27059dea38c4acc"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\tips\\__init__.py": {
+    "mtime": 1775481485.723553,
+    "ast_hash": "f01eed2a177e9329e978b01e96e818e2",
+    "semantic_hash": "f01eed2a177e9329e978b01e96e818e2"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\tips\\tips_provider.py": {
+    "mtime": 1775481538.420354,
+    "ast_hash": "209f39238d6d4a2def04a240a68f3765",
+    "semantic_hash": "209f39238d6d4a2def04a240a68f3765"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\token_refresh_service.py": {
+    "mtime": 1775326406.7575617,
+    "ast_hash": "b4c4dfee252a5a88e04a196a630de60a",
+    "semantic_hash": "b4c4dfee252a5a88e04a196a630de60a"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\trends\\__init__.py": {
+    "mtime": 1775479176.613788,
+    "ast_hash": "cad44110396b3a0fce82cc3fc5e0f96a",
+    "semantic_hash": "cad44110396b3a0fce82cc3fc5e0f96a"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\trends\\trend_detector.py": {
+    "mtime": 1775479171.4836218,
+    "ast_hash": "b210e2c7766a1f36c4b549d488b96c01",
+    "semantic_hash": "b210e2c7766a1f36c4b549d488b96c01"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\usage_service.py": {
+    "mtime": 1775465432.3527641,
+    "ast_hash": "f6af26d85497f32d545f562fe6f84af9",
+    "semantic_hash": "f6af26d85497f32d545f562fe6f84af9"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\video\\__init__.py": {
+    "mtime": 1775484575.2961545,
+    "ast_hash": "e10a6a024dcc3888c5c7eaef13707d34",
+    "semantic_hash": "e10a6a024dcc3888c5c7eaef13707d34"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\video\\video_analyzer.py": {
+    "mtime": 1775484571.2066312,
+    "ast_hash": "82c987d109bb308fdb33495fd4fbb2a3",
+    "semantic_hash": "82c987d109bb308fdb33495fd4fbb2a3"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\video\\whisper_service.py": {
+    "mtime": 1781713091.7743635,
+    "ast_hash": "280655d8d84451f8ae783008a4157153",
+    "semantic_hash": "280655d8d84451f8ae783008a4157153"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\virality\\__init__.py": {
+    "mtime": 1775482996.8663116,
+    "ast_hash": "db99009f27c716f11fc9dcaa57493feb",
+    "semantic_hash": "db99009f27c716f11fc9dcaa57493feb"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\virality\\virality_predictor.py": {
+    "mtime": 1775483082.0662682,
+    "ast_hash": "f68d6e2540e474d335fe893ffe5acdc3",
+    "semantic_hash": "f68d6e2540e474d335fe893ffe5acdc3"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\services\\webhook_reconciliation.py": {
+    "mtime": 1781705289.0401225,
+    "ast_hash": "aaccf65409c9a90dc9a7cd23876f8d7e",
+    "semantic_hash": "aaccf65409c9a90dc9a7cd23876f8d7e"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\workers\\__init__.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\workers\\agent_tasks.py": {
+    "mtime": 1775470681.4812598,
+    "ast_hash": "d8acdaf857056c5b3341d084a41ac313",
+    "semantic_hash": "d8acdaf857056c5b3341d084a41ac313"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\workers\\billing_tasks.py": {
+    "mtime": 1775463930.7128692,
+    "ast_hash": "030f3c2c0fbf3abc9c0a48165d5f7957",
+    "semantic_hash": "030f3c2c0fbf3abc9c0a48165d5f7957"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\workers\\celery_app.py": {
+    "mtime": 1775334389.7270322,
+    "ast_hash": "e539de3efedbafd2dc91506e72467a8b",
+    "semantic_hash": "e539de3efedbafd2dc91506e72467a8b"
+  },
+  "C:\\Projects\\contentflow\\backend\\app\\workers\\tasks.py": {
+    "mtime": 1775334359.5222046,
+    "ast_hash": "24ee7474da1f3d9a7a58ab47e6de981c",
+    "semantic_hash": "24ee7474da1f3d9a7a58ab47e6de981c"
+  },
+  "C:\\Projects\\contentflow\\backend\\generate_keys.py": {
+    "mtime": 1775329482.794287,
+    "ast_hash": "4d8e9f623e126b79e6dedb0c5f4d703f",
+    "semantic_hash": "4d8e9f623e126b79e6dedb0c5f4d703f"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\__init__.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\conftest.py": {
+    "mtime": 1781671192.2891884,
+    "ast_hash": "b078e8f701bb4326bb46deef8e64f206",
+    "semantic_hash": "b078e8f701bb4326bb46deef8e64f206"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_agent_event_bus.py": {
+    "mtime": 1781687255.0847702,
+    "ast_hash": "e33a1c3bbdab5375e9d6858e1673b641",
+    "semantic_hash": "e33a1c3bbdab5375e9d6858e1673b641"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_agent_orchestrator.py": {
+    "mtime": 1775484910.4577975,
+    "ast_hash": "5c3245bde1d44750b7d6796345d84317",
+    "semantic_hash": "5c3245bde1d44750b7d6796345d84317"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_agents_api.py": {
+    "mtime": 1781672887.0949738,
+    "ast_hash": "2edd2f20112d36c10f1e2ba082e7581b",
+    "semantic_hash": "2edd2f20112d36c10f1e2ba082e7581b"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_agents_v2.py": {
+    "mtime": 1781670886.4283683,
+    "ast_hash": "024b2288bc93c3431e7bf17394b57ec1",
+    "semantic_hash": "024b2288bc93c3431e7bf17394b57ec1"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_agents_websocket.py": {
+    "mtime": 1781704067.5348337,
+    "ast_hash": "617f424778c92aaf1e9787b9f84f0d3f",
+    "semantic_hash": "617f424778c92aaf1e9787b9f84f0d3f"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_ai_service.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "475b2e500ddc5215915c112914cc226d",
+    "semantic_hash": "475b2e500ddc5215915c112914cc226d"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_api_v1.py": {
+    "mtime": 1774105857.9364414,
+    "ast_hash": "eb1a15e80f9fd55a731779d1f4f34c66",
+    "semantic_hash": "eb1a15e80f9fd55a731779d1f4f34c66"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_auth_service.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "a8d124cfcf58eb839e08ed0a0926d85f",
+    "semantic_hash": "a8d124cfcf58eb839e08ed0a0926d85f"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_billing_plans.py": {
+    "mtime": 1781713241.70465,
+    "ast_hash": "1dce7284ea59f659b35f0cf974145e14",
+    "semantic_hash": "1dce7284ea59f659b35f0cf974145e14"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_cache_service.py": {
+    "mtime": 1774115827.237361,
+    "ast_hash": "97aa78e41dba002c332a836a7ab52ec7",
+    "semantic_hash": "97aa78e41dba002c332a836a7ab52ec7"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_collaboration_business.py": {
+    "mtime": 1775483483.022276,
+    "ast_hash": "5f1915ddf2e9372a1f9c8b712992c428",
+    "semantic_hash": "5f1915ddf2e9372a1f9c8b712992c428"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_competitor_intelligence.py": {
+    "mtime": 1775480293.9809787,
+    "ast_hash": "0c865c04248ac6b57feccd785b26af7e",
+    "semantic_hash": "0c865c04248ac6b57feccd785b26af7e"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_compression_service.py": {
+    "mtime": 1774104881.987495,
+    "ast_hash": "b77c6cb7acb099f7bb73b7d421be63fa",
+    "semantic_hash": "b77c6cb7acb099f7bb73b7d421be63fa"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_embeddings.py": {
+    "mtime": 1781771205.2266834,
+    "ast_hash": "b0db4b93dde57dc27ca54c1689ba5953",
+    "semantic_hash": "b0db4b93dde57dc27ca54c1689ba5953"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_facebook_pinterest_adapters.py": {
+    "mtime": 1781709651.1278694,
+    "ast_hash": "e5c33876290972b849599b5216e75c59",
+    "semantic_hash": "e5c33876290972b849599b5216e75c59"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_growth_optimization.py": {
+    "mtime": 1775482607.0512621,
+    "ast_hash": "711c793855625fbcbbc434aa668967a9",
+    "semantic_hash": "711c793855625fbcbbc434aa668967a9"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_llm_router_tier.py": {
+    "mtime": 1781780175.1049192,
+    "ast_hash": "932fb1aa529dc2aaa0086f8a1c1d5b30",
+    "semantic_hash": "932fb1aa529dc2aaa0086f8a1c1d5b30"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_media_service.py": {
+    "mtime": 1774105617.7354877,
+    "ast_hash": "acf1dcd69453cc0a15da1d6c5a79e9e4",
+    "semantic_hash": "acf1dcd69453cc0a15da1d6c5a79e9e4"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_mfa.py": {
+    "mtime": 1781713597.8060195,
+    "ast_hash": "94149937524b32236cfc7e5f27d5a074",
+    "semantic_hash": "94149937524b32236cfc7e5f27d5a074"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_news_research.py": {
+    "mtime": 1781672375.1014552,
+    "ast_hash": "674a3fe122e0576ff31a211924d8021c",
+    "semantic_hash": "674a3fe122e0576ff31a211924d8021c"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_niche_intelligence.py": {
+    "mtime": 1775481926.788125,
+    "ast_hash": "2c15e2fad42d9ba08ddaf1eb4ae587f4",
+    "semantic_hash": "2c15e2fad42d9ba08ddaf1eb4ae587f4"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_node_events.py": {
+    "mtime": 1781699530.8920827,
+    "ast_hash": "5f9c8efe80e6790ab8dd4494f8393f00",
+    "semantic_hash": "5f9c8efe80e6790ab8dd4494f8393f00"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_notification_service.py": {
+    "mtime": 1774105618.740089,
+    "ast_hash": "823087419c55db827f6820b2186252b9",
+    "semantic_hash": "823087419c55db827f6820b2186252b9"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_oauth_pkce.py": {
+    "mtime": 1781704472.5886948,
+    "ast_hash": "534b816def08d212e874b410ff49be93",
+    "semantic_hash": "534b816def08d212e874b410ff49be93"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_oauth_services_new.py": {
+    "mtime": 1781709775.2008631,
+    "ast_hash": "8830a1285724060558a58af911505344",
+    "semantic_hash": "8830a1285724060558a58af911505344"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_oauth_vault.py": {
+    "mtime": 1781671139.027446,
+    "ast_hash": "b20662a16d2c6f6e1bb1a814624942ff",
+    "semantic_hash": "b20662a16d2c6f6e1bb1a814624942ff"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_observability.py": {
+    "mtime": 1781713383.8197427,
+    "ast_hash": "9a4e28aaa5def6b0f1ef60fc3d91abd3",
+    "semantic_hash": "9a4e28aaa5def6b0f1ef60fc3d91abd3"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_orchestration.py": {
+    "mtime": 1781671004.6995444,
+    "ast_hash": "ae40fc79f22e270c1befdb07e3942901",
+    "semantic_hash": "ae40fc79f22e270c1befdb07e3942901"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_phase8_business.py": {
+    "mtime": 1781672580.939311,
+    "ast_hash": "c2051a15c9fcf82f81da746daec663b4",
+    "semantic_hash": "c2051a15c9fcf82f81da746daec663b4"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_phase_12_audit_governance.py": {
+    "mtime": 1781672612.1232038,
+    "ast_hash": "7bf0f31fd9ba2c267c1bd7fc01022e6b",
+    "semantic_hash": "7bf0f31fd9ba2c267c1bd7fc01022e6b"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_phase_13_agent_orchestration.py": {
+    "mtime": 1781672869.712659,
+    "ast_hash": "10d9ae15666c7a0ea2ddcdb3b03bd5fc",
+    "semantic_hash": "10d9ae15666c7a0ea2ddcdb3b03bd5fc"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_phase_14_infrastructure.py": {
+    "mtime": 1775471639.446725,
+    "ast_hash": "52fc95945bb02cb51ae831e7683b08ee",
+    "semantic_hash": "52fc95945bb02cb51ae831e7683b08ee"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_platform_adapters.py": {
+    "mtime": 1781709622.9571438,
+    "ast_hash": "1f3f7816baf9a0670cc266e95efa779c",
+    "semantic_hash": "1f3f7816baf9a0670cc266e95efa779c"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_platforms.py": {
+    "mtime": 1774105771.9010198,
+    "ast_hash": "f91522f0fb63c97cf7a665634d43b783",
+    "semantic_hash": "f91522f0fb63c97cf7a665634d43b783"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_post_service.py": {
+    "mtime": 1781633964.722606,
+    "ast_hash": "199553bee8538d9b9cdbba3b44789a57",
+    "semantic_hash": "199553bee8538d9b9cdbba3b44789a57"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_predictive_virality.py": {
+    "mtime": 1775483182.1370933,
+    "ast_hash": "b712eaea923beaa562acb920da317e37",
+    "semantic_hash": "b712eaea923beaa562acb920da317e37"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_publish_executor_helpers.py": {
+    "mtime": 1781704500.8872094,
+    "ast_hash": "59932b456a71f90f81f8e70c789b30f6",
+    "semantic_hash": "59932b456a71f90f81f8e70c789b30f6"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_qdrant_whisper.py": {
+    "mtime": 1781713118.781655,
+    "ast_hash": "a7d04ccafa795c066cc51ce71fa4b19c",
+    "semantic_hash": "a7d04ccafa795c066cc51ce71fa4b19c"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_security.py": {
+    "mtime": 1773925350.0,
+    "ast_hash": "5630ec99740da6bcb56e2006d5295a3c",
+    "semantic_hash": "5630ec99740da6bcb56e2006d5295a3c"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_smart_scheduling.py": {
+    "mtime": 1775482222.0105045,
+    "ast_hash": "129c71addef3ef61221e3fe287ad93c3",
+    "semantic_hash": "129c71addef3ef61221e3fe287ad93c3"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_tips_tricks.py": {
+    "mtime": 1775481638.6826873,
+    "ast_hash": "d9e95b1ec6dadfd6c9f2024bbce476f8",
+    "semantic_hash": "d9e95b1ec6dadfd6c9f2024bbce476f8"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_trend_detection.py": {
+    "mtime": 1781672491.3741777,
+    "ast_hash": "e85c6d8aa8741fb035ca17d8703e7b5d",
+    "semantic_hash": "e85c6d8aa8741fb035ca17d8703e7b5d"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_video_intelligence.py": {
+    "mtime": 1775484686.8721547,
+    "ast_hash": "8683baaa59a6e4de2e9fd950a01d79ed",
+    "semantic_hash": "8683baaa59a6e4de2e9fd950a01d79ed"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_webhook_reconciliation_parsers.py": {
+    "mtime": 1781705392.3838859,
+    "ast_hash": "4c898db4eb94d0a48c758a78b03c5dc2",
+    "semantic_hash": "4c898db4eb94d0a48c758a78b03c5dc2"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_webhook_signatures.py": {
+    "mtime": 1781704450.1468182,
+    "ast_hash": "bdc89e7eb51d9ed130314ab564239049",
+    "semantic_hash": "bdc89e7eb51d9ed130314ab564239049"
+  },
+  "C:\\Projects\\contentflow\\backend\\tests\\test_youtube_tiktok_adapters.py": {
+    "mtime": 1781705369.7092383,
+    "ast_hash": "9cdcecf96d376f2717e381010b915b6f",
+    "semantic_hash": "9cdcecf96d376f2717e381010b915b6f"
+  },
+  "C:\\Projects\\contentflow\\frontend\\package.json": {
+    "mtime": 1773925350.0,
+    "ast_hash": "847efff9de1d79647d5b9fd319855cef",
+    "semantic_hash": "847efff9de1d79647d5b9fd319855cef"
+  },
+  "C:\\Projects\\contentflow\\frontend\\postcss.config.js": {
+    "mtime": 1773925350.0,
+    "ast_hash": "5b32e38113adbc724c1d21b55894e237",
+    "semantic_hash": "5b32e38113adbc724c1d21b55894e237"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\App.tsx": {
+    "mtime": 1774016537.4414742,
+    "ast_hash": "e2c6a4ed5ced667cb975d79bdd000747",
+    "semantic_hash": "e2c6a4ed5ced667cb975d79bdd000747"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\api\\agent.ts": {
+    "mtime": 1774099859.8830886,
+    "ast_hash": "9ae8e588678c64ecbc3874614ef513de",
+    "semantic_hash": "9ae8e588678c64ecbc3874614ef513de"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\api\\ai.ts": {
+    "mtime": 1773925350.0,
+    "ast_hash": "d307559a3868b491b7c2995847896398",
+    "semantic_hash": "d307559a3868b491b7c2995847896398"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\api\\analytics.ts": {
+    "mtime": 1773925350.0,
+    "ast_hash": "bce5954ce06e08f1664d06d48cfcdefe",
+    "semantic_hash": "bce5954ce06e08f1664d06d48cfcdefe"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\api\\auth.ts": {
+    "mtime": 1773925350.0,
+    "ast_hash": "edb10df086aede08b5df00fedce55a33",
+    "semantic_hash": "edb10df086aede08b5df00fedce55a33"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\api\\client.ts": {
+    "mtime": 1773925350.0,
+    "ast_hash": "0a41c21beb75af130c43d6ab8b106ead",
+    "semantic_hash": "0a41c21beb75af130c43d6ab8b106ead"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\api\\insights.ts": {
+    "mtime": 1773925350.0,
+    "ast_hash": "5ca278432b4d94198b803ad80a727df2",
+    "semantic_hash": "5ca278432b4d94198b803ad80a727df2"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\api\\posts.ts": {
+    "mtime": 1773925350.0,
+    "ast_hash": "2b90964be8e9cbf63c08e17075b9a641",
+    "semantic_hash": "2b90964be8e9cbf63c08e17075b9a641"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\components\\ui\\Layout.tsx": {
+    "mtime": 1774117321.2180634,
+    "ast_hash": "702a3df80d0a5ab049f875b753ee3bb8",
+    "semantic_hash": "702a3df80d0a5ab049f875b753ee3bb8"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\components\\ui\\OverviewModal.tsx": {
+    "mtime": 1774102757.2928402,
+    "ast_hash": "dcb0e0f40f2f41c04f08d30072585ea0",
+    "semantic_hash": "dcb0e0f40f2f41c04f08d30072585ea0"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\components\\ui\\ProtectedRoute.tsx": {
+    "mtime": 1774016537.4426572,
+    "ast_hash": "d2f0e7ec558eee343480613d145968de",
+    "semantic_hash": "d2f0e7ec558eee343480613d145968de"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\main.tsx": {
+    "mtime": 1773925350.0,
+    "ast_hash": "7eb088347c4649dd9a20f3a093e0fc2c",
+    "semantic_hash": "7eb088347c4649dd9a20f3a093e0fc2c"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\pages\\AgentPage.tsx": {
+    "mtime": 1774117634.1749678,
+    "ast_hash": "60d3ac8aff87f614f0a0505ea8ccf809",
+    "semantic_hash": "60d3ac8aff87f614f0a0505ea8ccf809"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\pages\\AnalyticsPage.tsx": {
+    "mtime": 1773928048.0,
+    "ast_hash": "c85a73eafc4aa397633d5ad3a14fa2ba",
+    "semantic_hash": "c85a73eafc4aa397633d5ad3a14fa2ba"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\pages\\DashboardPage.tsx": {
+    "mtime": 1773928048.0,
+    "ast_hash": "431b0c24e1a3cdfae9dcea46ca6ac24d",
+    "semantic_hash": "431b0c24e1a3cdfae9dcea46ca6ac24d"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\pages\\HistoryPage.tsx": {
+    "mtime": 1774117768.8806527,
+    "ast_hash": "f7c0b978a4b68e6f60e008cfce6d3fa8",
+    "semantic_hash": "f7c0b978a4b68e6f60e008cfce6d3fa8"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\pages\\InsightsPage.tsx": {
+    "mtime": 1774117758.5933118,
+    "ast_hash": "58906a106aca2aaa65034ac64989864b",
+    "semantic_hash": "58906a106aca2aaa65034ac64989864b"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\pages\\LoginPage.tsx": {
+    "mtime": 1774117874.885193,
+    "ast_hash": "084e63061c960b6cdcc6d28adcecef40",
+    "semantic_hash": "084e63061c960b6cdcc6d28adcecef40"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\pages\\OAuthCallbackPage.tsx": {
+    "mtime": 1774117891.3124042,
+    "ast_hash": "7468089d9db65faa5f7c621176a542fe",
+    "semantic_hash": "7468089d9db65faa5f7c621176a542fe"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\pages\\RegisterPage.tsx": {
+    "mtime": 1774117884.2866743,
+    "ast_hash": "a4d258cea6e5a6696d764a9e2179974a",
+    "semantic_hash": "a4d258cea6e5a6696d764a9e2179974a"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\pages\\SettingsPage.tsx": {
+    "mtime": 1774117849.388285,
+    "ast_hash": "ad2c3412302a0788439ce8e039d4ecca",
+    "semantic_hash": "ad2c3412302a0788439ce8e039d4ecca"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\pages\\UploadPage.tsx": {
+    "mtime": 1774117780.6427834,
+    "ast_hash": "8b7604bbab0e5b42bb920ab15541118f",
+    "semantic_hash": "8b7604bbab0e5b42bb920ab15541118f"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\store\\authStore.ts": {
+    "mtime": 1773925350.0,
+    "ast_hash": "4978d8f59ac163256e04892ed9856f1d",
+    "semantic_hash": "4978d8f59ac163256e04892ed9856f1d"
+  },
+  "C:\\Projects\\contentflow\\frontend\\src\\types\\index.ts": {
+    "mtime": 1773925350.0,
+    "ast_hash": "4f7466f2bb42d83417048c7006ba5abe",
+    "semantic_hash": "4f7466f2bb42d83417048c7006ba5abe"
+  },
+  "C:\\Projects\\contentflow\\frontend\\tailwind.config.js": {
+    "mtime": 1773928048.0,
+    "ast_hash": "780f4dacafa0b17e102d684f70c57676",
+    "semantic_hash": "780f4dacafa0b17e102d684f70c57676"
+  },
+  "C:\\Projects\\contentflow\\frontend\\tsconfig.json": {
+    "mtime": 1773925350.0,
+    "ast_hash": "09ac65cf9f50807a3a98569d01a2e72c",
+    "semantic_hash": "09ac65cf9f50807a3a98569d01a2e72c"
+  },
+  "C:\\Projects\\contentflow\\frontend\\vite.config.ts": {
+    "mtime": 1773925350.0,
+    "ast_hash": "6a024aaab71e1288eb108af99f39dbcf",
+    "semantic_hash": "6a024aaab71e1288eb108af99f39dbcf"
+  },
+  "C:\\Projects\\contentflow\\package.json": {
+    "mtime": 1775642478.6383548,
+    "ast_hash": "32e84a39763151d5f753aa8e9eb234fd",
+    "semantic_hash": "32e84a39763151d5f753aa8e9eb234fd"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\example.ts": {
+    "mtime": 1775568919.5079386,
+    "ast_hash": "ddf22f15ed81c3e26d91847efa309183",
+    "semantic_hash": "ddf22f15ed81c3e26d91847efa309183"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\package.json": {
+    "mtime": 1775568377.2306454,
+    "ast_hash": "a3ff16a7564ca49a09adf1b479987f30",
+    "semantic_hash": "a3ff16a7564ca49a09adf1b479987f30"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\src\\agents.ts": {
+    "mtime": 1781683187.170973,
+    "ast_hash": "2cb6e802712bdc89ed5770bba331f18a",
+    "semantic_hash": "2cb6e802712bdc89ed5770bba331f18a"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\src\\analytics.ts": {
+    "mtime": 1775711694.9743073,
+    "ast_hash": "cb0453b13d4240082afc6c7611f2bb75",
+    "semantic_hash": "cb0453b13d4240082afc6c7611f2bb75"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\src\\auth.ts": {
+    "mtime": 1781683213.643678,
+    "ast_hash": "54d0ab4e2ea0b6e407bd4e03a2c17661",
+    "semantic_hash": "54d0ab4e2ea0b6e407bd4e03a2c17661"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\src\\billing.ts": {
+    "mtime": 1781682092.7438653,
+    "ast_hash": "7228411f3fb053456fffd5cccc56ee4e",
+    "semantic_hash": "7228411f3fb053456fffd5cccc56ee4e"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\src\\client.ts": {
+    "mtime": 1781864116.4167948,
+    "ast_hash": "8a2e694726ab5a3cc9027ff51576ea43",
+    "semantic_hash": "8a2e694726ab5a3cc9027ff51576ea43"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\src\\collaborations.ts": {
+    "mtime": 1781682109.8897843,
+    "ast_hash": "d1840549390da4e08a5269dd78b7401b",
+    "semantic_hash": "d1840549390da4e08a5269dd78b7401b"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\src\\competitors.ts": {
+    "mtime": 1781683067.914755,
+    "ast_hash": "0ab90cb37ee4e459d75dcc1255654026",
+    "semantic_hash": "0ab90cb37ee4e459d75dcc1255654026"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\src\\content.ts": {
+    "mtime": 1781683149.2602344,
+    "ast_hash": "efa9eb4cbccbe96d89c5aa239ed0200c",
+    "semantic_hash": "efa9eb4cbccbe96d89c5aa239ed0200c"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\src\\goals.ts": {
+    "mtime": 1775711623.8217323,
+    "ast_hash": "074d9da8b81456cd2fc2c6397b481def",
+    "semantic_hash": "074d9da8b81456cd2fc2c6397b481def"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\src\\inbox.ts": {
+    "mtime": 1781682124.4135616,
+    "ast_hash": "a529662fbacc2a7b6f640e323fd32ad5",
+    "semantic_hash": "a529662fbacc2a7b6f640e323fd32ad5"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\src\\index.ts": {
+    "mtime": 1781721663.455157,
+    "ast_hash": "1713576d1cec7f08740a2182f8c47014",
+    "semantic_hash": "1713576d1cec7f08740a2182f8c47014"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\src\\media.ts": {
+    "mtime": 1777361924.3231492,
+    "ast_hash": "a1c490a69f1418e0f0a1454ea7035ac1",
+    "semantic_hash": "a1c490a69f1418e0f0a1454ea7035ac1"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\src\\news.ts": {
+    "mtime": 1781721654.954979,
+    "ast_hash": "de707d40936a158d8ad7dcf74a8b325f",
+    "semantic_hash": "de707d40936a158d8ad7dcf74a8b325f"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\src\\oauth.ts": {
+    "mtime": 1777362548.9839592,
+    "ast_hash": "c1affa49f587b696f42a5d9ffa6b4989",
+    "semantic_hash": "c1affa49f587b696f42a5d9ffa6b4989"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\src\\social-accounts.ts": {
+    "mtime": 1781682138.0923116,
+    "ast_hash": "fc6d417abfee819b33ebe38dccd57f92",
+    "semantic_hash": "fc6d417abfee819b33ebe38dccd57f92"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\src\\trends.ts": {
+    "mtime": 1775568559.3034956,
+    "ast_hash": "1fbb8d157d3fa3b380c75801b53072f6",
+    "semantic_hash": "1fbb8d157d3fa3b380c75801b53072f6"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\tsconfig.json": {
+    "mtime": 1781722312.551995,
+    "ast_hash": "037719814c3b15039c300ea46d96e028",
+    "semantic_hash": "037719814c3b15039c300ea46d96e028"
+  },
+  "C:\\Projects\\contentflow\\packages\\types\\package.json": {
+    "mtime": 1775333184.6507332,
+    "ast_hash": "f8cf6d70315350783a2951f922f27031",
+    "semantic_hash": "f8cf6d70315350783a2951f922f27031"
+  },
+  "C:\\Projects\\contentflow\\packages\\types\\src\\index.ts": {
+    "mtime": 1775333271.500594,
+    "ast_hash": "d882e10697cd4a281021cef0d816a0e7",
+    "semantic_hash": "d882e10697cd4a281021cef0d816a0e7"
+  },
+  "C:\\Projects\\contentflow\\packages\\types\\tsconfig.json": {
+    "mtime": 1775333189.415971,
+    "ast_hash": "7dd961571c73a52e5b2fec57891c7f36",
+    "semantic_hash": "7dd961571c73a52e5b2fec57891c7f36"
+  },
+  "C:\\Projects\\contentflow\\packages\\typescript-config\\base.json": {
+    "mtime": 1775333165.1308722,
+    "ast_hash": "3edf00669141542ad8cddef35b0e5176",
+    "semantic_hash": "3edf00669141542ad8cddef35b0e5176"
+  },
+  "C:\\Projects\\contentflow\\packages\\typescript-config\\nextjs.json": {
+    "mtime": 1775333173.0152247,
+    "ast_hash": "81a26cd2f30b754967af46c8ee071961",
+    "semantic_hash": "81a26cd2f30b754967af46c8ee071961"
+  },
+  "C:\\Projects\\contentflow\\packages\\typescript-config\\package.json": {
+    "mtime": 1775333158.7120569,
+    "ast_hash": "b359a67b4c349bff3cb21c50ca2e7143",
+    "semantic_hash": "b359a67b4c349bff3cb21c50ca2e7143"
+  },
+  "C:\\Projects\\contentflow\\packages\\typescript-config\\react-native.json": {
+    "mtime": 1775333178.2840178,
+    "ast_hash": "e5c22009df43c895458bed914200bdb7",
+    "semantic_hash": "e5c22009df43c895458bed914200bdb7"
+  },
+  "C:\\Projects\\contentflow\\turbo.config.json": {
+    "mtime": 1775568367.9279997,
+    "ast_hash": "ebf02931933fe012c06baeac14cc541e",
+    "semantic_hash": "ebf02931933fe012c06baeac14cc541e"
+  },
+  "C:\\Projects\\contentflow\\turbo.json": {
+    "mtime": 1775642651.0160046,
+    "ast_hash": "a6f52cc787acd490d5a48087abcda9cf",
+    "semantic_hash": "a6f52cc787acd490d5a48087abcda9cf"
+  },
+  "C:\\Projects\\contentflow\\AGENTS.md": {
+    "mtime": 1775464027.567165,
+    "ast_hash": "6388b9e9c1a5f831cbbc27a223c64253",
+    "semantic_hash": "6388b9e9c1a5f831cbbc27a223c64253"
+  },
+  "C:\\Projects\\contentflow\\CLAUDE.md": {
+    "mtime": 1781791082.8615773,
+    "ast_hash": "5b16cdda9a44e4c8f2d665337cc9fcaa",
+    "semantic_hash": "5b16cdda9a44e4c8f2d665337cc9fcaa"
+  },
+  "C:\\Projects\\contentflow\\README.md": {
+    "mtime": 1773986728.411588,
+    "ast_hash": "9ec1fd5470e3146fac8f09ff4fc23f0c",
+    "semantic_hash": "9ec1fd5470e3146fac8f09ff4fc23f0c"
+  },
+  "C:\\Projects\\contentflow\\apps\\mobile\\README.md": {
+    "mtime": 1781714092.4385307,
+    "ast_hash": "5a1ce22dc8cf36e2fbd74a17de7f7a1e",
+    "semantic_hash": "5a1ce22dc8cf36e2fbd74a17de7f7a1e"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\README.md": {
+    "mtime": 1775570031.6290605,
+    "ast_hash": "ed18b3643e76472a488b22beb67a50eb",
+    "semantic_hash": "ed18b3643e76472a488b22beb67a50eb"
+  },
+  "C:\\Projects\\contentflow\\backend\\requirements.txt": {
+    "mtime": 1781779931.749869,
+    "ast_hash": "432e3adc612339ce7d201abe98433b9b",
+    "semantic_hash": "432e3adc612339ce7d201abe98433b9b"
+  },
+  "C:\\Projects\\contentflow\\docker-compose.yml": {
+    "mtime": 1781864103.3076534,
+    "ast_hash": "0dc7566418a4a0f0a18fe670d5859031",
+    "semantic_hash": "0dc7566418a4a0f0a18fe670d5859031"
+  },
+  "C:\\Projects\\contentflow\\frontend\\index.html": {
+    "mtime": 1773928048.0,
+    "ast_hash": "cb952dbf1aeab69a246e1d88fcdd97cb",
+    "semantic_hash": "cb952dbf1aeab69a246e1d88fcdd97cb"
+  },
+  "C:\\Projects\\contentflow\\monitoring\\grafana\\provisioning\\datasources\\prometheus.yml": {
+    "mtime": 1781713491.7676096,
+    "ast_hash": "8b674e7a04fbe133af7b772581d058e3",
+    "semantic_hash": "8b674e7a04fbe133af7b772581d058e3"
+  },
+  "C:\\Projects\\contentflow\\monitoring\\prometheus.yml": {
+    "mtime": 1781713487.8987708,
+    "ast_hash": "ab70b7156049662c8d738652817867b3",
+    "semantic_hash": "ab70b7156049662c8d738652817867b3"
+  },
+  "C:\\Projects\\contentflow\\packages\\api-client\\README.md": {
+    "mtime": 1775568736.642515,
+    "ast_hash": "fa2f4c2e0f1ef8d709326261801d5a17",
+    "semantic_hash": "fa2f4c2e0f1ef8d709326261801d5a17"
+  },
+  "C:\\Projects\\contentflow\\pnpm-workspace.yaml": {
+    "mtime": 1775333071.840575,
+    "ast_hash": "f5f68f0530f1523041e8467c1c46178d",
+    "semantic_hash": "f5f68f0530f1523041e8467c1c46178d"
+  },
+  "C:\\Projects\\contentflow\\apps\\web\\public\\images\\world-map.png": {
+    "mtime": 1781799500.7423093,
+    "ast_hash": "e5573697dcd122631c098b55703173ca",
+    "semantic_hash": "e5573697dcd122631c098b55703173ca"
+  },
+  "C:\\Projects\\contentflow\\apps\\mobile\\components\\ui\\AppButton.tsx": {
+    "mtime": 1781854962.9003222,
+    "ast_hash": "5b3b1ffc9330ac30ec1068d5e8b3d3a5",
+    "semantic_hash": "5b3b1ffc9330ac30ec1068d5e8b3d3a5"
+  },
+  "C:\\Projects\\contentflow\\apps\\mobile\\components\\ui\\AppCard.tsx": {
+    "mtime": 1781854968.2662923,
+    "ast_hash": "d03013de8f2cb937fbdb584b6638ee94",
+    "semantic_hash": "d03013de8f2cb937fbdb584b6638ee94"
+  },
+  "C:\\Projects\\contentflow\\apps\\mobile\\components\\ui\\AppInput.tsx": {
+    "mtime": 1781854977.708114,
+    "ast_hash": "2e786ed13d6c2d5a5cfc9fb4fea807f6",
+    "semantic_hash": "2e786ed13d6c2d5a5cfc9fb4fea807f6"
+  }
+}

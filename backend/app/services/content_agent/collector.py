@@ -108,7 +108,14 @@ async def _fetch_rss(source: Source, client: httpx.AsyncClient) -> list[RawItem]
 
 
 async def _fetch_nitter(source: Source, client: httpx.AsyncClient) -> list[RawItem]:
-    username = source.url.split("/")[-2]
+    # Guard the URL parse — a source URL without a trailing /<username>/<x>
+    # structure (config typo, future source shape) would IndexError and crash
+    # the whole collector run.
+    parts = [p for p in source.url.split("/") if p]
+    if len(parts) < 2:
+        logger.warning("nitter_bad_url", source=source.key, url=source.url)
+        return []
+    username = parts[-2]
     for instance in NITTER_INSTANCES:
         try:
             import feedparser

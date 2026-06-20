@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 
@@ -9,7 +9,18 @@ interface CallbackResponse {
   access_token?: string;
 }
 
-export default function GoogleCallbackPage() {
+function CallbackShell({ message }: { message: string }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="text-center">
+        <div className="text-2xl font-semibold mb-2 text-gray-900 dark:text-gray-50">ContentFlow</div>
+        <p className="text-gray-500 dark:text-gray-400">{message}</p>
+      </div>
+    </div>
+  );
+}
+
+function GoogleCallbackInner() {
   const router = useRouter();
   const params = useSearchParams();
   const ranRef = useRef(false);
@@ -59,12 +70,16 @@ export default function GoogleCallbackPage() {
       });
   }, [params, router]);
 
+  return <CallbackShell message={message} />;
+}
+
+// useSearchParams() must be wrapped in a Suspense boundary so Next can render
+// the surrounding shell statically; otherwise the production build errors /
+// forces the whole route into client-side rendering.
+export default function GoogleCallbackPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground">
-      <div className="text-center">
-        <div className="text-2xl font-semibold mb-2 gradient-text">ContentFlow</div>
-        <p>{message}</p>
-      </div>
-    </div>
+    <Suspense fallback={<CallbackShell message="Signing you in…" />}>
+      <GoogleCallbackInner />
+    </Suspense>
   );
 }

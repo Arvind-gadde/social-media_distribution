@@ -91,7 +91,7 @@ export const mediaApi = {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
-          onUploadProgress: (progressEvent) => {
+          onUploadProgress: (progressEvent: { loaded: number; total?: number }) => {
             if (onProgress && progressEvent.total) {
               const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
               onProgress(progress);

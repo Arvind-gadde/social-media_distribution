@@ -1,0 +1,25 @@
+# .graphifyignore — exclude build artifacts, keep all source
+node_modules/
+.next/
+dist/
+build/
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.generated.py
+*.generated.ts
+celerybeat-schedule
+pnpm-lock.yaml
+graphify-out/
+.claude/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.svg
+*.woff
+*.woff2
+*.ttf
+*.eot

@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.runtime.context import RunContext
 from app.domains.intelligence.models import WorkspaceInsight, InsightType
-from app.services.llm.provider import create_llm_provider, TaskType
+from app.integrations.llm.provider import create_llm_provider_from_settings, TaskType
 
 log = structlog.get_logger(__name__)
 
@@ -75,11 +75,7 @@ async def generate_content_ideas(ctx: RunContext) -> dict:
         # Generate AI content ideas
         if trending_topics:
             try:
-                provider = await create_llm_provider(
-                    task_type=TaskType.GENERATION,
-                    workspace_id=ctx.workspace_id,
-                    db_session=db
-                )
+                provider = create_llm_provider_from_settings()
                 
                 topics_summary = "\n".join([
                     f"- {t['title']} (from {t['source']})"
@@ -112,7 +108,7 @@ Format as numbered list."""
                     workspace_id=ctx.workspace_id,
                     insight_type=InsightType.CONTENT_IDEA,
                     title="Daily Content Ideas",
-                    body=response.text,
+                    body=response.content,
                     priority=6,
                     metadata_={
                         "sources": stats["sources_checked"],

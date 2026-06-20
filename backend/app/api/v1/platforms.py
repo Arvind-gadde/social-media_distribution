@@ -1,6 +1,8 @@
 """Platform OAuth connection routes."""
 from __future__ import annotations
 
+import json
+
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse
 
@@ -117,14 +119,24 @@ async def get_oauth_url(platform: str, _: CurrentUser) -> dict:
 async def platform_callback(
     platform: str, code: str = "", state: str = ""
 ) -> HTMLResponse:
-    html = f"""<html><body><p>Connecting {platform}...</p>
-    <script>
-        window.opener && window.opener.postMessage(
-            {{type:'oauth_success',platform:'{platform}',code:'{code}'}},
-            window.location.origin
-        );
-        window.close();
-    </script></body></html>"""
+    # Validate platform against the known registry; reject unknowns so an
+    # attacker cannot reflect an arbitrary path segment into the page.
+    if platform not in _PLATFORM_CREDS:
+        raise HTTPException(status_code=404, detail=f"Unknown platform: {platform}")
+    # Never interpolate attacker-controlled code/state/platform into inline JS
+    # via string formatting (reflected XSS). JSON-encode the whole payload so
+    # the values can only ever be data inside a JS object literal, and escape
+    # "<" to neutralize any "</script>" breakout.
+    payload = json.dumps(
+        {"type": "oauth_success", "platform": platform, "code": code, "state": state}
+    ).replace("<", "\\u003c")
+    html = (
+        "<!doctype html><html><body><p>Connecting...</p>"
+        "<script>"
+        f"window.opener && window.opener.postMessage({payload}, window.location.origin);"
+        "window.close();"
+        "</script></body></html>"
+    )
     return HTMLResponse(html)
 
 

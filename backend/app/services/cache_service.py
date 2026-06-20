@@ -74,6 +74,34 @@ class CacheService:
     async def get_push_subscription(self, user_id: str) -> Optional[dict]:
         return await self.get(f"push_sub:{user_id}")
 
+    # ── Login brute-force / credential-stuffing protection ────────────────
+
+    async def incr_login_failures(self, email: str, window_seconds: int = 900) -> int:
+        """Increment the failed-login counter for an account; returns new count.
+
+        Account-scoped (not IP-scoped) so a distributed/IP-rotating attacker
+        still hits a per-account ceiling. Window resets on the first failure.
+        """
+        key = f"login_fail:{email.lower()}"
+        try:
+            count = await self._redis.incr(key)
+            if count == 1:
+                await self._redis.expire(key, window_seconds)
+            return int(count)
+        except Exception as exc:
+            logger.warning("login_fail_incr_failed", error=str(exc))
+            return 0
+
+    async def get_login_failures(self, email: str) -> int:
+        try:
+            value = await self._redis.get(f"login_fail:{email.lower()}")
+            return int(value) if value else 0
+        except Exception:
+            return 0
+
+    async def clear_login_failures(self, email: str) -> None:
+        await self.delete(f"login_fail:{email.lower()}")
+
 
 # Module-level instance used in workers (where DI isn't available)
 _cache: Optional[CacheService] = None

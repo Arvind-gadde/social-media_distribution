@@ -10,7 +10,7 @@ from app.domains.intelligence.models import (
 )
 from app.domains.control.models import Workspace
 from app.core.logging import get_logger
-from app.services.llm.provider import create_llm_provider, TaskType
+from app.integrations.llm.provider import create_llm_provider_from_settings, TaskType
 
 logger = get_logger(__name__)
 
@@ -49,8 +49,12 @@ async def synthesize_trend_insights(
     )
     workspaces = result.scalars().all()
     
-    provider = create_llm_provider()
-    
+    provider = create_llm_provider_from_settings()
+
+    # (workspace_id, title, body, insight_id) tuples — dispatched only AFTER a
+    # successful commit so we never notify users about a rolled-back insight.
+    pending_pushes: list[tuple[str, str, str, str]] = []
+
     for workspace in workspaces:
         try:
             # Generate custom insight
@@ -72,7 +76,7 @@ Be specific, actionable, and urgent."""
                 db_session=db,
             )
             
-            insight_body = response.text.strip()
+            insight_body = response.content.strip()
             
             # Create WorkspaceInsight
             insight = WorkspaceInsight(
@@ -95,19 +99,18 @@ Be specific, actionable, and urgent."""
                 },
             )
             db.add(insight)
-            
+            await db.flush()  # populate insight.id before we reference it
+
             stats["insights_generated"] += 1
             stats["workspaces_processed"] += 1
-            
-            # Trigger push notification
-            from app.workers.tasks import send_expo_push
-            send_expo_push.delay(
-                workspace_id=str(workspace.id),
-                title=f"🔥 Trending: {trend.title}",
-                body=insight_body[:100] + "...",
-                data={"type": "trend_alert", "insight_id": str(insight.id)},
-            )
-            
+
+            pending_pushes.append((
+                str(workspace.id),
+                f"🔥 Trending: {trend.title}",
+                insight_body[:100] + "...",
+                str(insight.id),
+            ))
+
         except Exception as e:
             logger.error(
                 "synthesis_failed",
@@ -119,6 +122,16 @@ Be specific, actionable, and urgent."""
             continue
     
     await db.commit()
-    
+
+    # Only now that insights are durably persisted, dispatch notifications.
+    from app.workers.tasks import send_expo_push
+    for workspace_id, title, body, insight_id in pending_pushes:
+        send_expo_push.delay(
+            workspace_id=workspace_id,
+            title=title,
+            body=body,
+            data={"type": "trend_alert", "insight_id": insight_id},
+        )
+
     logger.info("trend_insights_synthesized", **stats)
     return stats

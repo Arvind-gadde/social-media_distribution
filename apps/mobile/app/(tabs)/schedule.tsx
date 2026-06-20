@@ -1,18 +1,19 @@
-import { Text, View, StyleSheet } from "react-native";
+import { StyleSheet, Text, View } from 'react-native';
+import { COLORS, SPACE, TYPE } from '@/lib/theme';
 
 export default function ScheduleScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Schedule</Text>
-      <Text style={styles.body}>
+    <View style={s.container}>
+      <Text style={s.title}>Schedule</Text>
+      <Text style={s.body}>
         Coming soon — view and manage scheduled posts here. For now use the web app.
       </Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#020617" },
-  title: { color: "#F8FAFC", fontSize: 24, fontWeight: "700", marginBottom: 8 },
-  body: { color: "#94A3B8", lineHeight: 20 },
+const s = StyleSheet.create({
+  container: { flex: 1, padding: SPACE.xl, backgroundColor: COLORS.dark.bg },
+  title:     { ...TYPE.title, color: COLORS.dark.text, marginBottom: SPACE.sm },
+  body:      { ...TYPE.body, color: COLORS.dark.textSecondary, lineHeight: 22 },
 });

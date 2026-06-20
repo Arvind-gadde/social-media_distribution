@@ -1,21 +1,45 @@
-/**
- * Content Creator Page
- * 
- * Create and schedule content with AI assistance
- */
-
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Sparkles, Upload, ArrowRight, ArrowLeft, Check } from 'lucide-react';
 import { useCreateContent, useScheduleContent } from '@/hooks/useContent';
 import { useMultipleMediaUpload, useFileDropzone, formatFileSize, validateFile } from '@/hooks/useMediaUpload';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import {
+  Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage,
+} from '@/components/ui/breadcrumb';
 
 type ContentType = 'reel' | 'short' | 'post' | 'carousel' | 'story' | 'video';
 type Platform = 'instagram' | 'youtube' | 'tiktok' | 'twitter' | 'linkedin';
+
+const inputCls = 'w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-gray-50 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/24';
+
+const contentTypes: { type: ContentType; label: string; icon: string }[] = [
+  { type: 'reel', label: 'Instagram Reel', icon: '🎬' },
+  { type: 'short', label: 'YouTube Short', icon: '⚡' },
+  { type: 'post', label: 'Social Post', icon: '📝' },
+  { type: 'carousel', label: 'Carousel', icon: '🖼️' },
+  { type: 'story', label: 'Story', icon: '📖' },
+  { type: 'video', label: 'Long Video', icon: '🎥' },
+];
+
+const platforms: { id: Platform; label: string; icon: string }[] = [
+  { id: 'instagram', label: 'Instagram', icon: '📷' },
+  { id: 'youtube', label: 'YouTube', icon: '▶️' },
+  { id: 'tiktok', label: 'TikTok', icon: '🎵' },
+  { id: 'twitter', label: 'Twitter', icon: '🐦' },
+  { id: 'linkedin', label: 'LinkedIn', icon: '💼' },
+];
+
+const steps = [
+  { n: 1, label: 'Type & Platform' },
+  { n: 2, label: 'Content Details' },
+  { n: 3, label: 'Schedule & Publish' },
+];
 
 export default function CreateContentPage() {
   const router = useRouter();
@@ -31,50 +55,19 @@ export default function CreateContentPage() {
 
   const createContent = useCreateContent();
   const scheduleContent = useScheduleContent();
-  
-  // File upload
   const { uploadFiles, uploads, reset: resetUploads, isUploading } = useMultipleMediaUpload();
-  const {
-    isDragging,
-    files: selectedFiles,
-    handleDragEnter,
-    handleDragLeave,
-    handleDragOver,
-    handleDrop,
-    handleFileSelect,
-    clearFiles,
-  } = useFileDropzone();
-
-  const contentTypes: { type: ContentType; label: string; icon: string; platforms: Platform[] }[] = [
-    { type: 'reel', label: 'Instagram Reel', icon: '🎬', platforms: ['instagram'] },
-    { type: 'short', label: 'YouTube Short', icon: '⚡', platforms: ['youtube'] },
-    { type: 'post', label: 'Social Post', icon: '📝', platforms: ['instagram', 'twitter', 'linkedin'] },
-    { type: 'carousel', label: 'Carousel', icon: '🖼️', platforms: ['instagram', 'linkedin'] },
-    { type: 'story', label: 'Story', icon: '📖', platforms: ['instagram'] },
-    { type: 'video', label: 'Long Video', icon: '🎥', platforms: ['youtube'] },
-  ];
-
-  const platforms: { id: Platform; label: string; icon: string }[] = [
-    { id: 'instagram', label: 'Instagram', icon: '📷' },
-    { id: 'youtube', label: 'YouTube', icon: '▶️' },
-    { id: 'tiktok', label: 'TikTok', icon: '🎵' },
-    { id: 'twitter', label: 'Twitter', icon: '🐦' },
-    { id: 'linkedin', label: 'LinkedIn', icon: '💼' },
-  ];
+  const { isDragging, files: selectedFiles, handleDragEnter, handleDragLeave, handleDragOver, handleDrop, handleFileSelect, clearFiles } = useFileDropzone();
 
   const togglePlatform = (platform: Platform) => {
     setSelectedPlatforms(prev =>
-      prev.includes(platform)
-        ? prev.filter(p => p !== platform)
-        : [...prev, platform]
+      prev.includes(platform) ? prev.filter(p => p !== platform) : [...prev, platform]
     );
   };
 
   const generateAICaption = async () => {
     setAiGenerating(true);
-    // Simulate AI generation
     await new Promise(resolve => setTimeout(resolve, 2000));
-    setCaption(`Check out this amazing content! 🚀\n\nThis is an AI-generated caption that's optimized for engagement. It includes relevant hashtags and a clear call-to-action.\n\nWhat do you think? Let me know in the comments! 👇`);
+    setCaption(`Check out this amazing content! 🚀\n\nThis is an AI-generated caption optimized for engagement. It includes relevant hashtags and a clear call-to-action.\n\nWhat do you think? Let me know in the comments! 👇`);
     setHashtags('#ContentCreation #AI #SocialMedia #CreatorEconomy #ContentMarketing');
     setAiGenerating(false);
   };
@@ -84,16 +77,24 @@ export default function CreateContentPage() {
       alert('Please select content type and at least one platform');
       return;
     }
-
     try {
-      // Upload files first if any
       let mediaUrls: string[] = [];
       if (selectedFiles.length > 0) {
+        // Enforce validation before upload — the per-file badges are only a
+        // display hint; without this an invalid file is uploaded anyway.
+        const invalid = selectedFiles
+          .map((f) => ({ name: f.name, v: validateFile(f) }))
+          .filter((x) => !x.v.valid);
+        if (invalid.length > 0) {
+          alert(
+            'Some files cannot be uploaded:\n' +
+              invalid.map((x) => `• ${x.name}: ${x.v.error ?? 'invalid file'}`).join('\n')
+          );
+          return;
+        }
         const uploadedMedia = await uploadFiles(selectedFiles);
-        mediaUrls = uploadedMedia.map(m => m.url);
+        mediaUrls = uploadedMedia.map((m: any) => m.url);
       }
-
-      // Create content
       const result = await createContent.mutateAsync({
         title: title || undefined,
         caption: caption || undefined,
@@ -103,88 +104,86 @@ export default function CreateContentPage() {
         status: action === 'publish' ? 'published' : 'draft',
         media_urls: mediaUrls.length > 0 ? mediaUrls : undefined,
       });
-
-      // Schedule if needed
       if (action === 'schedule' && scheduleDate && scheduleTime) {
-        const scheduledAt = new Date(`${scheduleDate}T${scheduleTime}`).toISOString();
         await scheduleContent.mutateAsync({
           id: result.id,
-          scheduledAt,
+          scheduledAt: new Date(`${scheduleDate}T${scheduleTime}`).toISOString(),
         });
       }
-
-      // Clear files and reset uploads
       clearFiles();
       resetUploads();
-
-      // Redirect to content calendar
       router.push('/content');
-    } catch (error) {
-      console.error('Failed to create content:', error);
+    } catch (e) {
+      console.error(e);
       alert('Failed to create content. Please try again.');
     }
   };
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-4xl font-bold gradient-text">Create Content</h1>
-              <p className="text-muted-foreground mt-2">
-                Create and schedule content with AI assistance
-              </p>
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 space-y-8 animate-fade-in">
+        <header className="space-y-4">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem><BreadcrumbLink href="/content">Content</BreadcrumbLink></BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem><BreadcrumbPage>Create</BreadcrumbPage></BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+
+          <div className="flex items-start justify-between">
+            <div className="space-y-1">
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">Create Content</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Create and schedule content with AI assistance.</p>
             </div>
-            <Button variant="outline" onClick={() => router.push('/content')}>
-              Cancel
-            </Button>
+            <Button variant="secondary" onClick={() => router.push('/content')}>Cancel</Button>
           </div>
 
-          {/* Progress Steps */}
-          <div className="flex items-center gap-4 mt-6">
-            {[1, 2, 3].map(s => (
-              <div key={s} className="flex items-center gap-2">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${
-                    step >= s ? 'bg-tech text-white' : 'bg-surface text-muted-foreground'
-                  }`}
-                >
-                  {s}
+          {/* Progress steps */}
+          <div className="flex items-center gap-3 mt-2">
+            {steps.map((s, i) => (
+              <div key={s.n} className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <div className={cn(
+                    'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors',
+                    step > s.n ? 'bg-brand-600 text-white' : step === s.n ? 'bg-brand-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                  )}>
+                    {step > s.n ? <Check className="h-4 w-4" /> : s.n}
+                  </div>
+                  <span className={cn(
+                    'text-sm font-medium hidden sm:block',
+                    step >= s.n ? 'text-gray-900 dark:text-gray-50' : 'text-gray-500 dark:text-gray-400'
+                  )}>
+                    {s.label}
+                  </span>
                 </div>
-                <span className={step >= s ? 'text-foreground' : 'text-muted-foreground'}>
-                  {s === 1 && 'Type & Platform'}
-                  {s === 2 && 'Content Details'}
-                  {s === 3 && 'Schedule & Publish'}
-                </span>
-                {s < 3 && <div className="w-12 h-0.5 bg-border" />}
+                {i < steps.length - 1 && <div className="w-8 h-0.5 bg-gray-200 dark:bg-gray-700" />}
               </div>
             ))}
           </div>
-        </div>
+        </header>
 
-        {/* Step 1: Content Type & Platform */}
+        {/* Step 1 */}
         {step === 1 && (
           <div className="space-y-6">
             <Card>
-              <CardHeader>
-                <CardTitle>Select Content Type</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>Select Content Type</CardTitle></CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {contentTypes.map(type => (
                     <button
                       key={type.type}
+                      type="button"
                       onClick={() => setContentType(type.type)}
-                      className={`p-6 rounded-lg border-2 transition-all ${
+                      className={cn(
+                        'p-5 rounded-lg border-2 text-left transition-all',
                         contentType === type.type
-                          ? 'border-tech bg-tech/10'
-                          : 'border-border hover:border-tech/50'
-                      }`}
+                          ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/20'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-brand-300 dark:hover:border-brand-700'
+                      )}
                     >
-                      <div className="text-4xl mb-2">{type.icon}</div>
-                      <div className="font-medium">{type.label}</div>
+                      <div className="text-3xl mb-2">{type.icon}</div>
+                      <p className="font-medium text-sm text-gray-900 dark:text-gray-50">{type.label}</p>
                     </button>
                   ))}
                 </div>
@@ -192,23 +191,23 @@ export default function CreateContentPage() {
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle>Select Platforms</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>Select Platforms</CardTitle></CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {platforms.map(platform => (
                     <button
                       key={platform.id}
+                      type="button"
                       onClick={() => togglePlatform(platform.id)}
-                      className={`p-6 rounded-lg border-2 transition-all ${
+                      className={cn(
+                        'p-5 rounded-lg border-2 text-left transition-all',
                         selectedPlatforms.includes(platform.id)
-                          ? 'border-tech bg-tech/10'
-                          : 'border-border hover:border-tech/50'
-                      }`}
+                          ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/20'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-brand-300 dark:hover:border-brand-700'
+                      )}
                     >
-                      <div className="text-4xl mb-2">{platform.icon}</div>
-                      <div className="font-medium">{platform.label}</div>
+                      <div className="text-3xl mb-2">{platform.icon}</div>
+                      <p className="font-medium text-sm text-gray-900 dark:text-gray-50">{platform.label}</p>
                     </button>
                   ))}
                 </div>
@@ -217,7 +216,9 @@ export default function CreateContentPage() {
 
             <div className="flex justify-end">
               <Button
+                variant="primary"
                 size="lg"
+                leadingIcon={<ArrowRight className="h-4 w-4" />}
                 onClick={() => setStep(2)}
                 disabled={!contentType || selectedPlatforms.length === 0}
               >
@@ -227,140 +228,90 @@ export default function CreateContentPage() {
           </div>
         )}
 
-        {/* Step 2: Content Details */}
+        {/* Step 2 */}
         {step === 2 && (
           <div className="space-y-6">
             <Card>
-              <CardHeader>
-                <CardTitle>Content Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+              <CardHeader><CardTitle>Content Details</CardTitle></CardHeader>
+              <CardContent className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Title (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="w-full px-3 py-2 bg-surface rounded-md border border-input focus:outline-none focus:ring-2 focus:ring-tech"
-                    placeholder="Give your content a title..."
-                  />
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Title (Optional)</label>
+                  <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} placeholder="Give your content a title..." />
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium">
-                      Caption
-                    </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Caption</label>
                     <Button
                       size="sm"
-                      variant="outline"
+                      variant="secondary"
+                      leadingIcon={<Sparkles className="h-3.5 w-3.5" />}
                       onClick={generateAICaption}
                       disabled={aiGenerating}
+                      loading={aiGenerating}
                     >
-                      {aiGenerating ? '✨ Generating...' : '✨ AI Generate'}
+                      {aiGenerating ? 'Generating...' : 'AI Generate'}
                     </Button>
                   </div>
                   <textarea
                     value={caption}
                     onChange={(e) => setCaption(e.target.value)}
-                    className="w-full px-3 py-2 bg-surface rounded-md border border-input focus:outline-none focus:ring-2 focus:ring-tech min-h-[150px]"
+                    className={`${inputCls} min-h-[150px] resize-y`}
                     placeholder="Write your caption here..."
                   />
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {caption.length} characters
-                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{caption.length} characters</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Hashtags
-                  </label>
-                  <input
-                    type="text"
-                    value={hashtags}
-                    onChange={(e) => setHashtags(e.target.value)}
-                    className="w-full px-3 py-2 bg-surface rounded-md border border-input focus:outline-none focus:ring-2 focus:ring-tech"
-                    placeholder="#hashtag1 #hashtag2 #hashtag3"
-                  />
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Hashtags</label>
+                  <input type="text" value={hashtags} onChange={(e) => setHashtags(e.target.value)} className={inputCls} placeholder="#hashtag1 #hashtag2 #hashtag3" />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Media Upload
-                  </label>
-                  
-                  {/* Drag and drop zone */}
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Media Upload</label>
+
                   <div
                     onDragEnter={handleDragEnter}
                     onDragLeave={handleDragLeave}
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
-                    className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors cursor-pointer ${
-                      isDragging
-                        ? 'border-tech bg-tech/10'
-                        : 'border-border hover:border-tech/50'
-                    }`}
                     onClick={() => document.getElementById('file-input')?.click()}
+                    className={cn(
+                      'border-2 border-dashed rounded-lg p-10 text-center cursor-pointer transition-colors',
+                      isDragging
+                        ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/20'
+                        : 'border-gray-300 dark:border-gray-600 hover:border-brand-300 dark:hover:border-brand-700'
+                    )}
                   >
-                    <input
-                      id="file-input"
-                      type="file"
-                      multiple
-                      accept="image/*,video/*"
-                      onChange={handleFileSelect}
-                      className="hidden"
-                    />
-                    <div className="text-4xl mb-2">📁</div>
-                    <div className="text-sm text-muted-foreground">
+                    <input id="file-input" type="file" multiple accept="image/*,video/*" onChange={handleFileSelect} className="hidden" />
+                    <Upload className="h-8 w-8 mx-auto mb-3 text-gray-400" />
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {isDragging ? 'Drop files here' : 'Click to upload or drag and drop'}
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Video, Image, or GIF (Max 100MB per file)
-                    </div>
+                    </p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Video, Image, or GIF (Max 100MB per file)</p>
                   </div>
 
-                  {/* Selected files */}
                   {selectedFiles.length > 0 && (
                     <div className="mt-4 space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">
+                        <span className="text-sm font-medium text-gray-900 dark:text-gray-50">
                           {selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''} selected
                         </span>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            clearFiles();
-                          }}
-                        >
-                          Clear
-                        </Button>
+                        <Button size="sm" variant="tertiary" onClick={(e) => { e.stopPropagation(); clearFiles(); }}>Clear</Button>
                       </div>
                       {selectedFiles.map((file, idx) => {
                         const validation = validateFile(file);
                         return (
-                          <div
-                            key={idx}
-                            className="flex items-center justify-between p-2 bg-surface rounded border border-border"
-                          >
-                            <div className="flex items-center gap-2 flex-1">
-                              <span className="text-xl">
-                                {file.type.startsWith('video/') ? '🎥' : '🖼️'}
-                              </span>
+                          <div key={idx} className="flex items-center justify-between p-2.5 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                              <span className="text-xl">{file.type.startsWith('video/') ? '🎥' : '🖼️'}</span>
                               <div className="flex-1 min-w-0">
-                                <div className="text-sm font-medium truncate">{file.name}</div>
-                                <div className="text-xs text-muted-foreground">
-                                  {formatFileSize(file.size)}
-                                </div>
+                                <p className="text-sm font-medium truncate text-gray-900 dark:text-gray-50">{file.name}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{formatFileSize(file.size)}</p>
                               </div>
                             </div>
                             {!validation.valid && (
-                              <Badge variant="error" className="text-xs">
-                                {validation.error}
-                              </Badge>
+                              <Badge variant="error" size="sm" className="text-xs shrink-0">{validation.error}</Badge>
                             )}
                           </div>
                         );
@@ -368,15 +319,14 @@ export default function CreateContentPage() {
                     </div>
                   )}
 
-                  {/* Upload progress */}
                   {uploads.length > 0 && (
                     <div className="mt-4 space-y-2">
-                      <div className="text-sm font-medium">Upload Progress</div>
-                      {uploads.map((upload, idx) => (
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-50">Upload Progress</p>
+                      {uploads.map((upload: any, idx: number) => (
                         <div key={idx} className="space-y-1">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="truncate flex-1">{upload.file.name}</span>
-                            <span className="text-muted-foreground ml-2">
+                            <span className="truncate flex-1 text-gray-700 dark:text-gray-300">{upload.file.name}</span>
+                            <span className="text-gray-500 dark:text-gray-400 ml-2">
                               {upload.status === 'success' && '✅'}
                               {upload.status === 'error' && '❌'}
                               {upload.status === 'uploading' && `${upload.progress}%`}
@@ -384,16 +334,11 @@ export default function CreateContentPage() {
                             </span>
                           </div>
                           {upload.status === 'uploading' && (
-                            <div className="w-full bg-surface rounded-full h-1.5">
-                              <div
-                                className="bg-tech h-1.5 rounded-full transition-all"
-                                style={{ width: `${upload.progress}%` }}
-                              />
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                              <div className="bg-brand-600 h-1.5 rounded-full transition-all" style={{ width: `${upload.progress}%` }} />
                             </div>
                           )}
-                          {upload.error && (
-                            <div className="text-xs text-error">{upload.error}</div>
-                          )}
+                          {upload.error && <p className="text-xs text-error-600 dark:text-error-400">{upload.error}</p>}
                         </div>
                       ))}
                     </div>
@@ -403,93 +348,81 @@ export default function CreateContentPage() {
             </Card>
 
             <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setStep(1)}>
-                Back
-              </Button>
-              <Button size="lg" onClick={() => setStep(3)}>
+              <Button variant="secondary" leadingIcon={<ArrowLeft className="h-4 w-4" />} onClick={() => setStep(1)}>Back</Button>
+              <Button variant="primary" size="lg" leadingIcon={<ArrowRight className="h-4 w-4" />} onClick={() => setStep(3)}>
                 Next: Schedule & Publish
               </Button>
             </div>
           </div>
         )}
 
-        {/* Step 3: Schedule & Publish */}
+        {/* Step 3 */}
         {step === 3 && (
           <div className="space-y-6">
             <Card>
-              <CardHeader>
-                <CardTitle>Schedule & Publish</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+              <CardHeader><CardTitle>Schedule & Publish</CardTitle></CardHeader>
+              <CardContent className="space-y-5">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Date
-                    </label>
-                    <input
-                      type="date"
-                      value={scheduleDate}
-                      onChange={(e) => setScheduleDate(e.target.value)}
-                      className="w-full px-3 py-2 bg-surface rounded-md border border-input focus:outline-none focus:ring-2 focus:ring-tech"
-                    />
+                    <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
+                    <input type="date" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} className={inputCls} />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Time
-                    </label>
-                    <input
-                      type="time"
-                      value={scheduleTime}
-                      onChange={(e) => setScheduleTime(e.target.value)}
-                      className="w-full px-3 py-2 bg-surface rounded-md border border-input focus:outline-none focus:ring-2 focus:ring-tech"
-                    />
+                    <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Time</label>
+                    <input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} className={inputCls} />
                   </div>
                 </div>
 
-                <div className="bg-surface rounded-lg p-4 border border-border">
-                  <div className="text-sm font-medium mb-2">AI Recommendation</div>
-                  <div className="text-sm text-muted-foreground">
+                <div className="rounded-lg bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-800 p-4">
+                  <p className="text-sm font-medium text-brand-700 dark:text-brand-300 mb-1 flex items-center gap-1.5">
+                    <Sparkles className="h-4 w-4" /> AI Recommendation
+                  </p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
                     Based on your audience activity, the best time to post is{' '}
-                    <span className="text-tech font-medium">Tuesday at 2:00 PM</span>
-                  </div>
+                    <span className="font-semibold text-brand-600 dark:text-brand-400">Tuesday at 2:00 PM</span>
+                  </p>
                 </div>
 
-                <div className="bg-surface rounded-lg p-4 border border-border">
-                  <div className="text-sm font-medium mb-3">Publishing to:</div>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedPlatforms.map(platform => (
-                      <Badge key={platform} variant="default">
-                        {platforms.find(p => p.id === platform)?.icon}{' '}
-                        {platforms.find(p => p.id === platform)?.label}
-                      </Badge>
-                    ))}
+                <div className="rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Publishing to:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedPlatforms.map(platform => {
+                      const p = platforms.find(pl => pl.id === platform);
+                      return (
+                        <Badge key={platform} variant="gray">
+                          {p?.icon} {p?.label}
+                        </Badge>
+                      );
+                    })}
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setStep(2)}>
-                Back
-              </Button>
+            <div className="flex items-center justify-between">
+              <Button variant="secondary" leadingIcon={<ArrowLeft className="h-4 w-4" />} onClick={() => setStep(2)}>Back</Button>
               <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="secondary"
                   onClick={() => handleSubmit('draft')}
                   disabled={createContent.isPending || isUploading}
+                  loading={isUploading || createContent.isPending}
                 >
                   {isUploading ? 'Uploading...' : createContent.isPending ? 'Saving...' : 'Save as Draft'}
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="secondary"
                   onClick={() => handleSubmit('schedule')}
                   disabled={createContent.isPending || isUploading || !scheduleDate || !scheduleTime}
+                  loading={isUploading || createContent.isPending}
                 >
                   {isUploading ? 'Uploading...' : createContent.isPending ? 'Scheduling...' : 'Schedule'}
                 </Button>
-                <Button 
+                <Button
+                  variant="primary"
                   onClick={() => handleSubmit('publish')}
                   disabled={createContent.isPending || isUploading}
+                  loading={isUploading || createContent.isPending}
                 >
                   {isUploading ? 'Uploading...' : createContent.isPending ? 'Publishing...' : 'Publish Now'}
                 </Button>

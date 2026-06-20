@@ -1,58 +1,28 @@
-/**
- * Root Layout
- * 
- * Main layout component that wraps the entire application
- */
-
-'use client';
-
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
-import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import { Providers } from './providers';
-import { Navigation } from '@/components/layout/Navigation';
-import { Toaster } from '@/components/ui/toaster';
-import { CommandBar, useCommandBar } from '@/components/ui/command-bar';
-import { CommandBarContext } from '@/lib/command-bar-context';
+import { AppShell } from '@/components/layout/AppShell';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
 
-function LayoutContent({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const commandBar = useCommandBar();
-  const { isOpen, close, defaultCommands } = commandBar;
-  const [mounted, setMounted] = useState(false);
-  
-  // Prevent hydration mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  
-  // Don't show navigation on auth pages
-  const isAuthPage = pathname?.startsWith('/login') || pathname?.startsWith('/register');
+export const metadata: Metadata = {
+  title: 'ContentFlow',
+  description: 'AI-Powered Creator Operating System',
+};
 
-  if (!mounted) {
-    return <>{children}</>;
-  }
-
-  return (
-    <CommandBarContext.Provider value={commandBar}>
-      {!isAuthPage ? (
-        <div className="flex h-screen">
-          <Navigation />
-          <main className="flex-1 ml-56 overflow-y-auto">
-            {children}
-          </main>
-        </div>
-      ) : (
-        children
-      )}
-      <Toaster />
-      {!isAuthPage && <CommandBar isOpen={isOpen} onClose={close} commands={defaultCommands} />}
-    </CommandBarContext.Provider>
-  );
-}
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#121009' },
+  ],
+};
 
 export default function RootLayout({
   children,
@@ -60,10 +30,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
-      <body className={inter.className} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
+      <body className={`${inter.className} antialiased`} suppressHydrationWarning>
         <Providers>
-          <LayoutContent>{children}</LayoutContent>
+          <AppShell>{children}</AppShell>
         </Providers>
       </body>
     </html>

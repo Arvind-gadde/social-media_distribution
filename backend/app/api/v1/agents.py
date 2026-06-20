@@ -18,7 +18,9 @@ from sqlalchemy import BigInteger, case, select, update, func, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
 
-from app.api.deps import CurrentUser, CurrentWorkspace, DbSession, WorkspaceCtx
+from app.api.deps import (
+    Cache, CurrentUser, CurrentWorkspace, DbSession, WorkspaceCtx, require_workspace_role,
+)
 from app.config import get_settings
 from app.core.security import decode_token
 from app.db.session import AsyncSessionLocal
@@ -270,22 +272,30 @@ async def update_agent_config(
 async def trigger_agent_run(
     body: AgentTriggerRequest,
     user: CurrentUser,
-    workspace: CurrentWorkspace,
+    workspace: Annotated[object, Depends(require_workspace_role("editor"))],
     ctx: WorkspaceCtx,
     db: DbSession,
+    cache: Cache,
 ) -> AgentRunResponse:
     """Trigger manual agent execution.
-    
+
+    Requires at least the EDITOR workspace role (privileged + cost-incurring).
+
     Can run:
     - Full workflow (all 14 agents in orchestrated sequence)
     - Single agent (on-demand execution)
-    
-    Args:
-        body: Agent trigger request
-    
-    Returns:
-        Agent run details (202 Accepted - runs async)
     """
+    # Cost-DoS guard: cap how often the expensive multi-agent LLM workflow can
+    # be manually triggered per workspace (the per-workspace budget hard-stop
+    # in the LLM provider backs this up for sustained abuse).
+    cooldown_key = f"agent_run_cooldown:{workspace.id}"
+    if await cache.exists(cooldown_key):
+        raise HTTPException(
+            status_code=429,
+            detail="Please wait a moment before triggering another agent run.",
+        )
+    await cache.set(cooldown_key, True, ttl_seconds=30)
+
     log.info("agent.trigger",
              workspace_id=str(workspace.id),
              user_id=str(user.id),

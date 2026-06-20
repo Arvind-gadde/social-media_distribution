@@ -1,5 +1,8 @@
-"""Encryption services package."""
+"""Encryption services package.
 
-from .token_vault import TokenVault
+Re-exports the single hardened TokenVault from app.services.token_vault.
+"""
 
-__all__ = ["TokenVault"]
+from .token_vault import TokenVault, TokenDecryptionError, get_vault
+
+__all__ = ["TokenVault", "TokenDecryptionError", "get_vault"]

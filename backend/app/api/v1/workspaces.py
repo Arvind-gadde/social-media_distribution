@@ -23,7 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import (
     CurrentUser, CurrentWorkspace, DbSession, get_current_user, get_db,
-    resolve_workspace,
+    resolve_workspace, require_workspace_role,
 )
 from app.domains.schemas import (
     WorkspaceCreate, WorkspaceResponse, WorkspaceUpdate,
@@ -84,10 +84,10 @@ async def get_current_workspace(
 @router.patch("/workspaces/current", response_model=WorkspaceResponse)
 async def update_workspace(
     body: WorkspaceUpdate,
-    workspace: CurrentWorkspace,
+    workspace: Annotated[object, Depends(require_workspace_role("admin"))],
     db: DbSession,
 ):
-    """Update the current workspace."""
+    """Update the current workspace. Requires ADMIN+."""
     from app.domains.control.models import Workspace
 
     update_data = body.model_dump(exclude_unset=True)

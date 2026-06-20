@@ -10,13 +10,13 @@ from __future__ import annotations
 import uuid
 from typing import Annotated
 
-from fastapi import Depends, Header, Path, Request, Cookie, HTTPException
+from fastapi import Depends, Header, Path, Request, Cookie
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
 from app.core.security import decode_token
-from app.exceptions import AuthenticationError
+from app.exceptions import AuthenticationError, AuthorizationError, NotFoundError, ValidationError
 from app.models.models import User
 from app.repositories.repositories import (
     UserRepository, WorkspaceRepository, NicheRepository,
@@ -71,8 +71,14 @@ async def get_current_user(
         raise AuthenticationError("Token has been revoked")
 
     user_id = payload.get("sub")
+    if not user_id:
+        raise AuthenticationError("Invalid token: missing subject")
+    try:
+        uid = uuid.UUID(user_id)
+    except (ValueError, TypeError):
+        raise AuthenticationError("Invalid token subject")
     repo = UserRepository(db)
-    user = await repo.get_by_id(uuid.UUID(user_id))
+    user = await repo.get_by_id(uid)
     if not user or not user.is_active:
         raise AuthenticationError("User not found or inactive")
     return user
@@ -102,11 +108,11 @@ async def resolve_workspace(
         try:
             workspace_id = uuid.UUID(x_workspace_id)
         except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid workspace ID")
+            raise ValidationError("Invalid workspace ID format")
 
         workspace = await repo.get_by_id(workspace_id)
         if not workspace:
-            raise HTTPException(status_code=404, detail="Workspace not found")
+            raise NotFoundError("Workspace", x_workspace_id)
 
         # Verify membership
         result = await db.execute(
@@ -117,18 +123,55 @@ async def resolve_workspace(
             )
         )
         if not result.scalar_one_or_none():
-            raise HTTPException(status_code=403, detail="Not a member of this workspace")
+            raise AuthorizationError("You are not a member of this workspace")
 
         return workspace
 
     # Default: first workspace
     workspaces = await repo.list_for_user(user.id)
     if not workspaces:
-        raise HTTPException(
-            status_code=404,
-            detail="No workspace found. Complete onboarding first.",
-        )
+        raise NotFoundError("Workspace", "complete onboarding to create one")
     return workspaces[0]
+
+
+# Workspace role hierarchy (higher number = more privilege).
+_ROLE_ORDER = {"viewer": 0, "analyst": 1, "editor": 2, "admin": 3, "owner": 4}
+
+
+def require_workspace_role(min_role: str):
+    """Dependency factory enforcing a minimum workspace role for the caller.
+
+    Drop-in replacement for ``CurrentWorkspace`` on privileged/destructive/
+    cost-incurring endpoints: returns the resolved Workspace, but raises 403
+    unless the caller's active membership role meets ``min_role``.
+    Without this, any member (even VIEWER) could perform every action.
+    """
+    min_rank = _ROLE_ORDER[min_role]
+
+    async def _dep(
+        db: Annotated[AsyncSession, Depends(get_db)],
+        user: Annotated[User, Depends(get_current_user)],
+        workspace=Depends(resolve_workspace),
+    ):
+        from app.domains.control.models import WorkspaceMembership, InviteStatus
+        from sqlalchemy import select
+
+        result = await db.execute(
+            select(WorkspaceMembership.role).where(
+                WorkspaceMembership.workspace_id == workspace.id,
+                WorkspaceMembership.user_id == user.id,
+                WorkspaceMembership.invite_status == InviteStatus.ACTIVE,
+            )
+        )
+        role = result.scalar_one_or_none()
+        role_str = getattr(role, "value", role)
+        if role is None or _ROLE_ORDER.get(role_str, -1) < min_rank:
+            raise AuthorizationError(
+                f"This action requires at least the '{min_role}' workspace role."
+            )
+        return workspace
+
+    return _dep
 
 
 def get_run_context(

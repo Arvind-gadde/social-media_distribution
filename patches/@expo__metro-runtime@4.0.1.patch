@@ -1,0 +1,37 @@
+diff --git a/src/HMRClient.native.ts b/src/HMRClient.native.ts
+index 64c164eb332756321e2fe5c1c1974538efe507de..88563cce7fa7c4fbb78d84236d255be8129d21f8 100644
+--- a/src/HMRClient.native.ts
++++ b/src/HMRClient.native.ts
+@@ -1,3 +1,5 @@
+-const HMRClient = require('react-native/Libraries/Utilities/HMRClient');
++// RN 0.81 switched HMRClient to ESM default export; unwrap when present.
++const HMRClientModule = require('react-native/Libraries/Utilities/HMRClient');
++const HMRClient = HMRClientModule.default ?? HMRClientModule;
+ 
+ export default HMRClient;
+diff --git a/src/messageSocket.native.ts b/src/messageSocket.native.ts
+index 1d7c93325d1af908040d6f5b7ccf7e990b040c3c..ab2a136f57a0da6375b5ef0111695d7574106323 100644
+--- a/src/messageSocket.native.ts
++++ b/src/messageSocket.native.ts
+@@ -1,7 +1,10 @@
+ /* eslint-env browser */
+ 
+ function createWebSocketConnection(path: string = '/message') {
+-  const getDevServer = require('react-native/Libraries/Core/Devtools/getDevServer');
++  // RN 0.81 switched these modules to ESM default exports; access `.default`
++  // when present so this works across RN 0.80 (CJS) and 0.81+ (ESM).
++  const getDevServerModule = require('react-native/Libraries/Core/Devtools/getDevServer');
++  const getDevServer = getDevServerModule.default ?? getDevServerModule;
+   const devServer = getDevServer();
+   if (!devServer.bundleLoadedFromServer) {
+     throw new Error('Cannot create devtools websocket connections in embedded environments.');
+@@ -9,7 +12,8 @@ function createWebSocketConnection(path: string = '/message') {
+ 
+   const devServerUrl = new URL(devServer.url);
+   const serverScheme = devServerUrl.protocol === 'https:' ? 'wss' : 'ws';
+-  const WebSocket = require('react-native/Libraries/WebSocket/WebSocket');
++  const WebSocketModule = require('react-native/Libraries/WebSocket/WebSocket');
++  const WebSocket = WebSocketModule.default ?? WebSocketModule;
+   return new WebSocket(`${serverScheme}://${devServerUrl.host}${path}`);
+ }
+ 

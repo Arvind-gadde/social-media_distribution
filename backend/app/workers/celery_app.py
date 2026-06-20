@@ -10,7 +10,7 @@ celery_app = Celery(
     "contentflow",
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
-    include=["app.workers.tasks"],
+    include=["app.workers.tasks", "app.workers.billing_tasks"],
 )
 
 celery_app.conf.update(
@@ -38,6 +38,8 @@ celery_app.conf.update(
         "app.workers.tasks.scan_niche_trends":     {"queue": "agent"},
         "app.workers.tasks.dispatch_trend_insights": {"queue": "agent"},
         "app.workers.tasks.send_expo_push":        {"queue": "default"},
+        "app.workers.tasks.sync_all_stripe_customers": {"queue": "default"},
+        "app.workers.tasks.handle_subscription_expiry": {"queue": "default"},
     },
     beat_schedule={
         "collect-and-process-content": {
@@ -87,6 +89,15 @@ celery_app.conf.update(
         "scan-niche-trends": {
             "task": "app.workers.tasks.scan_niche_trends",
             "schedule": crontab(minute=0, hour="*/4"),  # every 4 hours
+        },
+        # Phase 11: SaaS billing safety nets (defined in app.workers.billing_tasks)
+        "sync-all-stripe-customers": {
+            "task": "app.workers.tasks.sync_all_stripe_customers",
+            "schedule": crontab(minute=0, hour=3),  # daily at 3:00 AM — heal missed webhooks
+        },
+        "handle-subscription-expiry": {
+            "task": "app.workers.tasks.handle_subscription_expiry",
+            "schedule": crontab(minute=0),  # hourly — downgrade expired subs
         },
     },
 )

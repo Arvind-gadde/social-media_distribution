@@ -122,10 +122,11 @@ async def approve(
     """Approve a pending request."""
     svc = ApprovalService(db)
     try:
-        request = await svc.decide(
+        request = await svc.decide_approval(
             approval_id=uuid.UUID(approval_id),
-            decision=ApprovalDecision.APPROVED,
+            workspace_id=workspace.id,
             decided_by=str(current_user.id),
+            decision=ApprovalDecision.APPROVED,
             reason=body.get("reason"),
         )
         await db.commit()
@@ -145,10 +146,11 @@ async def reject(
     """Reject a pending request."""
     svc = ApprovalService(db)
     try:
-        request = await svc.decide(
+        request = await svc.decide_approval(
             approval_id=uuid.UUID(approval_id),
-            decision=ApprovalDecision.REJECTED,
+            workspace_id=workspace.id,
             decided_by=str(current_user.id),
+            decision=ApprovalDecision.REJECTED,
             reason=body.get("reason"),
         )
         await db.commit()

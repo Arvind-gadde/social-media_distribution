@@ -91,6 +91,8 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=1, max_length=128)
+    # TOTP / backup code, required only when the account has MFA enabled.
+    mfa_code: Optional[str] = Field(default=None, max_length=12)
 
 
 # ── Posts ─────────────────────────────────────────────────────────────────

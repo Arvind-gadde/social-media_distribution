@@ -107,13 +107,11 @@ def _parse_oauth_state(state: str) -> Dict[str, Any]:
             "code_verifier": data.get("cv"),
         }
     except Exception as exc:
-        try:
-            workspace_id_str, _ = state.split(":", 1)
-            workspace_id = uuid.UUID(workspace_id_str)
-            log.warning("oauth.callback.legacy_state_used", state_error=str(exc))
-            return {"workspace_id": workspace_id, "code_verifier": None}
-        except (ValueError, AttributeError) as legacy_exc:
-            raise ValueError("invalid OAuth state") from legacy_exc
+        # SECURITY: no unsigned/legacy fallback. An unsigned "workspace_id:nonce"
+        # state is attacker-forgeable and would let a malicious callback bind a
+        # social account (and its tokens) into an arbitrary victim workspace —
+        # cross-tenant account injection. Reject anything not HMAC-signed.
+        raise ValueError("invalid OAuth state") from exc
 
 
 def _generate_pkce_verifier() -> str:

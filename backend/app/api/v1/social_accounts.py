@@ -4,14 +4,15 @@ Workspace-scoped. Manages OAuth-connected platform accounts.
 """
 from __future__ import annotations
 
+from typing import Annotated
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
 from sqlalchemy import select, func, and_, update
 
-from app.api.deps import CurrentUser, CurrentWorkspace, DbSession
+from app.api.deps import CurrentUser, CurrentWorkspace, DbSession, require_workspace_role
 from app.domains.control.models import SocialAccount, TokenStatus
 from app.exceptions import NotFoundError
 
@@ -97,7 +98,7 @@ async def get_account(
 async def connect_account(
     body: dict,
     current_user: CurrentUser,
-    workspace: CurrentWorkspace,
+    workspace: Annotated[object, Depends(require_workspace_role("editor"))],
     db: DbSession,
 ) -> JSONResponse:
     """Manually register a social account (for dev/testing).
@@ -178,10 +179,10 @@ async def connect_account(
 async def disconnect_account(
     account_id: str,
     current_user: CurrentUser,
-    workspace: CurrentWorkspace,
+    workspace: Annotated[object, Depends(require_workspace_role("editor"))],
     db: DbSession,
 ) -> JSONResponse:
-    """Disconnect (deactivate) a social account."""
+    """Disconnect (deactivate) a social account. Requires EDITOR+."""
     result = await db.execute(
         select(SocialAccount).where(
             and_(
@@ -206,10 +207,10 @@ async def disconnect_account(
 async def set_primary(
     account_id: str,
     current_user: CurrentUser,
-    workspace: CurrentWorkspace,
+    workspace: Annotated[object, Depends(require_workspace_role("editor"))],
     db: DbSession,
 ) -> JSONResponse:
-    """Set an account as the primary for its platform."""
+    """Set an account as the primary for its platform. Requires EDITOR+."""
     result = await db.execute(
         select(SocialAccount).where(
             and_(

@@ -7,14 +7,34 @@ import structlog
 from datetime import datetime, timezone
 
 from app.db.session import get_db
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, require_workspace_role
 from app.models.models import User
-from app.domains.control.models import Workspace
+from app.domains.control.models import Workspace, WorkspaceMembership, InviteStatus
 from app.services.billing.stripe_adapter import create_checkout_session, create_portal_session
 from pydantic import BaseModel
 
 log = structlog.get_logger(__name__)
 router = APIRouter(prefix="/billing", tags=["billing"])
+
+
+async def _get_primary_workspace(db: AsyncSession, user: User) -> Workspace | None:
+    """Resolve a user's primary workspace via membership table.
+
+    User has no `workspace_id` column — membership is a many-to-many through
+    WorkspaceMembership. Pick the active membership with lowest created_at
+    (the workspace they joined first / their owned one).
+    """
+    result = await db.execute(
+        select(Workspace)
+        .join(WorkspaceMembership, WorkspaceMembership.workspace_id == Workspace.id)
+        .where(
+            WorkspaceMembership.user_id == user.id,
+            WorkspaceMembership.invite_status == InviteStatus.ACTIVE,
+        )
+        .order_by(WorkspaceMembership.joined_at.asc().nullslast())
+        .limit(1)
+    )
+    return result.scalar_one_or_none()
 
 class CheckoutRequest(BaseModel):
     price_id: str
@@ -41,17 +61,15 @@ async def create_checkout(
     request: CheckoutRequest,
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
+    _role: Annotated[object, Depends(require_workspace_role("admin"))],
 ):
-    """Create Stripe checkout session."""
+    """Create Stripe checkout session. Requires ADMIN+ (financial action)."""
     from app.services.billing.plans import known_price_ids
 
     if request.price_id not in known_price_ids():
         raise HTTPException(status_code=400, detail="Unknown price_id")
 
-    result = await db.execute(
-        select(Workspace).where(Workspace.id == current_user.workspace_id)
-    )
-    workspace = result.scalar_one_or_none()
+    workspace = await _get_primary_workspace(db, current_user)
     if not workspace:
         raise HTTPException(status_code=404, detail="Workspace not found")
 
@@ -89,12 +107,10 @@ async def create_portal(
     request: PortalRequest,
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
+    _role: Annotated[object, Depends(require_workspace_role("admin"))],
 ):
-    """Create Stripe customer portal session."""
-    result = await db.execute(
-        select(Workspace).where(Workspace.id == current_user.workspace_id)
-    )
-    workspace = result.scalar_one_or_none()
+    """Create Stripe customer portal session. Requires ADMIN+ (financial action)."""
+    workspace = await _get_primary_workspace(db, current_user)
     if not workspace or not workspace.stripe_customer_id:
         raise HTTPException(status_code=404, detail="No Stripe customer found")
     
@@ -116,11 +132,8 @@ async def get_usage(
     from app.services.billing.entitlements import TIER_FEATURES
     from datetime import datetime, timezone
     from dateutil.relativedelta import relativedelta
-    
-    result = await db.execute(
-        select(Workspace).where(Workspace.id == current_user.workspace_id)
-    )
-    workspace = result.scalar_one_or_none()
+
+    workspace = await _get_primary_workspace(db, current_user)
     if not workspace:
         raise HTTPException(status_code=404, detail="Workspace not found")
     

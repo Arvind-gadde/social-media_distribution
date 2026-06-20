@@ -28,6 +28,16 @@ _GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 # bcrypt cost factor — 12 is OWASP-recommended minimum for production
 _BCRYPT_ROUNDS = 12
 
+# Pre-computed valid bcrypt hash, verified against missing / password-less
+# accounts so login runs the full bcrypt path in constant time regardless of
+# whether the email exists (defeats timing-based user enumeration).
+_DUMMY_PASSWORD_HASH = bcrypt.hashpw(
+    b"contentflow-timing-dummy", bcrypt.gensalt(rounds=_BCRYPT_ROUNDS)
+).decode("utf-8")
+
+# Lock an account after this many failed attempts inside the failure window.
+_LOGIN_LOCK_THRESHOLD = 8
+
 
 class AuthService:
     """Business logic for authentication. No HTTP framework dependencies."""
@@ -141,17 +151,50 @@ class AuthService:
         Raises AuthenticationError on any failure — deliberately vague to
         prevent user enumeration attacks.
         """
-        user = await self._user_repo.get_by_email(email.lower())
+        email_l = email.lower()
 
-        # Always run verify_password even on missing user to prevent timing attacks
-        stored_hash = user.password_hash if user else "$2b$12$invalidhashfortimingatk"
+        # Account-scoped brute-force / credential-stuffing lockout. This is the
+        # per-account ceiling the global per-IP rate limiter cannot provide
+        # against an IP-rotating attacker.
+        if await self._cache.get_login_failures(email_l) >= _LOGIN_LOCK_THRESHOLD:
+            logger.warning("login_locked", email=email_l)
+            raise AuthenticationError(
+                "Too many failed login attempts. Please wait a few minutes and try again."
+            )
+
+        user = await self._user_repo.get_by_email(email_l)
+
+        # Always run verify_password (with a valid dummy hash on missing /
+        # password-less accounts) so timing is constant and does not leak
+        # whether the email exists.
+        stored_hash = (
+            user.password_hash if user and user.password_hash else _DUMMY_PASSWORD_HASH
+        )
         password_valid = self.verify_password(password, stored_hash)
 
         if not user or not password_valid or not user.is_active:
+            await self._cache.incr_login_failures(email_l)
             raise AuthenticationError("Invalid email or password")
 
+        await self._cache.clear_login_failures(email_l)
         logger.info("user_logged_in", user_id=str(user.id))
         return user
+
+    async def verify_mfa(self, user: User, code: str) -> bool:
+        """Verify a TOTP code, or consume a single-use backup code."""
+        from app.services import mfa_service
+
+        code = (code or "").strip()
+        if not code:
+            return False
+        if user.mfa_secret and mfa_service.verify_totp(user.mfa_secret, code):
+            return True
+        ok, remaining = mfa_service.consume_backup_code(user.mfa_backup_codes, code)
+        if ok:
+            user.mfa_backup_codes = remaining
+            await self._user_repo.save(user)
+            return True
+        return False
 
     # ── Google OAuth ──────────────────────────────────────────────────────
 
@@ -192,11 +235,17 @@ class AuthService:
 
     async def get_or_create_google_user(self, google_info: dict) -> User:
         """Find existing user by Google ID or email, or create a new one."""
-        google_id = google_info.get("id", "")
+        google_id = (google_info.get("id") or "").strip()
         email = google_info.get("email", "")
 
         if not email:
             raise AuthenticationError("Google account did not provide an email address")
+        # An empty google_id must never be used as a lookup key or written to
+        # the UNIQUE google_id column: a blank value would match the first
+        # account with no google_id (cross-account takeover) and collide on the
+        # second insert (IntegrityError). Require a stable subject.
+        if not google_id:
+            raise AuthenticationError("Google account did not provide a stable account id")
 
         user = await self._user_repo.get_by_google_id(google_id)
         if not user:

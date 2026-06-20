@@ -2,28 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Semantic token layer — driven by Untitled UI palette (see src/design/tokens.ts).
+ * `:root` is the LIGHT theme (Untitled default). `.dark` overrides for dark mode.
+ *
+ * HSL triplets allow Tailwind utilities like `bg-primary/10` (alpha modifier).
+ */
+
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    /* Surfaces — gray-50 page / white card */
+    --background: 220 20% 98%;        /* gray-50  #f9fafb */
+    --foreground: 222 47% 11%;        /* gray-900 #101828 */
+
+    --card: 0 0% 100%;                /* white */
+    --card-foreground: 222 47% 11%;   /* gray-900 */
+
+    --popover: 0 0% 100%;             /* white */
+    --popover-foreground: 222 47% 11%;
+
+    /* Brand — violet/purple */
+    --primary: 259 63% 54%;           /* brand-600 #7f56d9 */
+    --primary-foreground: 0 0% 100%;  /* white */
+
+    /* Secondary / muted — gray-100 */
+    --secondary: 220 24% 95%;         /* gray-100 #f2f4f7 */
+    --secondary-foreground: 213 27% 19%; /* gray-700 #344054 */
+
+    --muted: 220 24% 95%;             /* gray-100 */
+    --muted-foreground: 217 11% 46%;  /* gray-500 #667085 */
+
+    /* Accent — soft brand */
+    --accent: 277 100% 95%;           /* brand-50 #f9f5ff */
+    --accent-foreground: 261 53% 33%; /* brand-800 #53389e */
+
+    /* Destructive — error-600 */
+    --destructive: 4 75% 49%;         /* error-600 #d92d20 */
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders / inputs — gray-200 */
+    --border: 220 17% 93%;            /* gray-200 #eaecf0 */
+    --input: 220 17% 93%;
+    --ring: 258 75% 70%;              /* brand-500 #9e77ed */
+
+    --sidebar: 0 0% 100%;             /* white */
+
     --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Surfaces — gray-950 page / gray-900 card */
+    --background: 222 47% 8%;         /* gray-950 #0c111d */
+    --foreground: 220 20% 98%;        /* gray-50  #f9fafb */
+
+    --card: 222 47% 11%;              /* gray-900 #101828 */
+    --card-foreground: 220 20% 98%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 220 20% 98%;
+
+    /* Brand — lighter in dark mode for contrast */
+    --primary: 258 75% 70%;           /* brand-500 #9e77ed */
+    --primary-foreground: 261 53% 18%; /* brand-900-ish */
+
+    --secondary: 215 28% 17%;         /* gray-800 #182230 */
+    --secondary-foreground: 220 20% 98%;
+
+    --muted: 215 28% 17%;             /* gray-800 */
+    --muted-foreground: 218 15% 65%;  /* gray-400 #98a2b3 */
+
+    --accent: 263 53% 24%;            /* brand-950 #2c1c5f */
+    --accent-foreground: 268 100% 92%; /* brand-200 */
+
+    --destructive: 4 86% 58%;         /* error-500 #f04438 */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 213 27% 27%;            /* gray-700 #344054 */
+    --input: 213 27% 27%;
+    --ring: 258 75% 70%;              /* brand-500 */
+
+    --sidebar: 222 47% 11%;           /* gray-900 */
   }
 }
 
@@ -31,70 +89,296 @@
   * {
     @apply border-border;
   }
-  
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    transition: background-color 0.3s ease, color 0.2s ease;
   }
-  
-  /* Custom scrollbar */
+
+  ::selection {
+    @apply bg-primary/20 text-foreground;
+  }
+
+  /* Scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 5px;
+    height: 5px;
   }
-  
+
   ::-webkit-scrollbar-track {
-    @apply bg-surface;
+    background: transparent;
   }
-  
+
   ::-webkit-scrollbar-thumb {
-    @apply bg-surface-hover rounded-full;
+    @apply bg-border rounded-full;
   }
-  
+
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-muted;
+    @apply bg-muted-foreground/40;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
   }
 }
 
 @layer components {
-  /* Glassmorphism effect */
-  .glass {
-    @apply bg-surface/50 backdrop-blur-lg border border-white/10;
+  /* ── Card ─────────────────────────────────────────────── */
+  .card-base {
+    @apply bg-card border border-border rounded-xl shadow-sm;
   }
-  
-  /* Neon glow effect */
-  .neon-glow {
-    box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+
+  .stat-card {
+    @apply bg-card border border-border rounded-xl p-5 flex flex-col gap-1;
   }
-  
-  /* Card hover effect */
-  .card-hover {
-    @apply transition-all duration-200 hover:scale-[1.02] hover:shadow-lg;
+
+  /* ── Skeleton ──────────────────────────────────────────── */
+  .skeleton {
+    @apply rounded-md overflow-hidden relative;
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--secondary)) 50%,
+      hsl(var(--muted)) 75%
+    );
+    background-size: 400% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
   }
-  
-  /* Gradient text */
-  .gradient-text {
-    @apply bg-gradient-to-r from-tech to-fitness bg-clip-text text-transparent;
+
+  /* ── Inputs ────────────────────────────────────────────── */
+  .input-base {
+    @apply flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm
+           placeholder:text-muted-foreground
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1
+           disabled:cursor-not-allowed disabled:opacity-50
+           transition-colors;
+  }
+
+  /* Auth-page input (clean slate style — rebranded to gray scale) */
+  .auth-input {
+    @apply w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm bg-gray-50 text-gray-900
+           placeholder:text-gray-400
+           hover:border-gray-300
+           focus:outline-none focus:ring-2 focus:ring-brand-400/40 focus:border-brand-500 focus:bg-white
+           disabled:opacity-60 disabled:cursor-not-allowed
+           transition-all duration-150;
+  }
+
+  .auth-input-error {
+    @apply border-error-300 bg-error-50/50 focus:border-error-400 focus:ring-error-300/40;
+  }
+
+  /* ── Form labels ───────────────────────────────────────── */
+  .form-label {
+    @apply text-[10px] font-bold text-gray-500 uppercase tracking-widest;
+  }
+
+  .form-label-dark {
+    @apply text-[10px] font-bold text-muted-foreground uppercase tracking-widest;
+  }
+
+  /* ── Progress bar ──────────────────────────────────────── */
+  .progress-track {
+    @apply w-full rounded-full overflow-hidden bg-gray-100;
+  }
+
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-300;
+  }
+
+  /* ── Navigation ────────────────────────────────────────── */
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium
+           text-muted-foreground transition-all duration-150
+           hover:bg-secondary hover:text-foreground;
+  }
+
+  .nav-item-active {
+    @apply bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary;
+  }
+
+  /* ── Page headings ─────────────────────────────────────── */
+  .page-title {
+    @apply text-2xl font-bold tracking-tight text-foreground;
+  }
+
+  .page-subtitle {
+    @apply text-sm text-muted-foreground;
+  }
+
+  /* ── Badge base ────────────────────────────────────────── */
+  .badge-base {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors;
+  }
+
+  /* ── Gradient text (Untitled brand violet) ─────────────── */
+  .brand-gradient {
+    background: linear-gradient(135deg, #7f56d9 0%, #b692f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Brand gradient backgrounds ─────────────────────────── */
+  .bg-brand-gradient {
+    background: linear-gradient(135deg, #f4ebff 0%, #d6bbfb 100%);
+  }
+
+  .bg-brand-gradient-mobile {
+    background: linear-gradient(135deg, #f9f5ff 0%, #e9d7fe 100%);
+  }
+
+  /* ── Logo icon gradient ──────────────────────────────────── */
+  .logo-icon-gradient {
+    background: linear-gradient(135deg, #7f56d9 0%, #b692f6 100%);
+  }
+
+  /* ── Table ─────────────────────────────────────────────── */
+  .table-row-hover {
+    @apply hover:bg-secondary/50 transition-colors;
+  }
+
+  /* ── Auth panel ────────────────────────────────────────── */
+  .auth-left-panel {
+    @apply hidden lg:flex flex-col h-screen;
+    background: linear-gradient(135deg, #f4ebff 0%, #d6bbfb 100%);
+    box-shadow: 6px 0 32px rgba(16, 24, 40, 0.08);
+  }
+
+  .auth-map-tint {
+    background: rgba(255, 255, 255, 0.10);
+  }
+
+  .auth-map-img {
+    object-fit: fill;
+    filter: brightness(1.08) saturate(0.45) contrast(0.90);
+  }
+
+  .auth-map-gradient-top {
+    background: linear-gradient(to bottom, rgba(244, 235, 255, 0.90) 0%, rgba(244, 235, 255, 0.25) 60%, transparent 100%);
+  }
+
+  .auth-map-gradient-bottom {
+    background: linear-gradient(to top, rgba(214, 187, 251, 0.95) 0%, transparent 100%);
+  }
+
+  /* ── Error / alert boxes ────────────────────────────────── */
+  .alert-error {
+    @apply px-4 py-3 rounded-xl bg-error-50 border border-error-200 text-sm text-error-600 font-medium;
+  }
+
+  .alert-warning {
+    @apply flex items-start gap-3 p-3.5 rounded-xl bg-warning-50/80 border border-warning-200;
+  }
+
+  /* ── Section divider ────────────────────────────────────── */
+  .divider-or {
+    @apply relative my-6;
+  }
+
+  .divider-or::before {
+    content: '';
+    @apply absolute inset-0 flex items-center;
+  }
+
+  /* ── Flex shorthands ────────────────────────────────────── */
+  .flex-center {
+    @apply flex items-center justify-center;
+  }
+
+  .flex-between {
+    @apply flex items-center justify-between;
+  }
+
+  /* ── Feature tag pill (auth page) ──────────────────────── */
+  .tag-pill {
+    @apply inline-flex items-center px-3.5 py-1.5 rounded-full text-[11px] font-semibold tracking-wide
+           bg-white/60 border border-white/70 text-gray-700 backdrop-blur-sm;
   }
 }
 
 @layer utilities {
-  /* Hide scrollbar but keep functionality */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-  
+
   /* Animate on scroll */
   .animate-on-scroll {
-    @apply opacity-0 translate-y-4 transition-all duration-500;
+    @apply opacity-0 translate-y-3 transition-all duration-500 ease-out;
   }
-  
+
   .animate-on-scroll.visible {
     @apply opacity-100 translate-y-0;
+  }
+
+  /* Glass — clean Untitled-style card */
+  .glass {
+    @apply bg-card border border-border;
+  }
+
+  /* Legacy neon glow — rebranded to brand-500 violet */
+  .neon-glow {
+    box-shadow: 0 0 20px rgba(158, 119, 237, 0.18);
+  }
+
+  .gradient-text {
+    @apply brand-gradient;
+  }
+
+  /* Card hover */
+  .card-hover {
+    @apply transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer;
+  }
+
+  /* Glow */
+  .glow-primary {
+    box-shadow: 0 0 32px -8px hsl(var(--primary) / 0.4);
+  }
+
+  /* Grid background for 404/error pages */
+  .bg-grid {
+    background-image: linear-gradient(hsl(var(--border)) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border)) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Dot grid background */
+  .bg-dots {
+    background-image: radial-gradient(hsl(var(--border)) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* Text balance */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* ── Untitled-style focus rings ────────────────────────── */
+  .focus-ring-brand {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(158, 119, 237, 0.24);
+  }
+
+  .focus-ring-gray {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(152, 162, 179, 0.14);
+  }
+
+  .focus-ring-error {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(240, 68, 56, 0.24);
   }
 }
