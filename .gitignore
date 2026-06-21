@@ -88,6 +88,11 @@ parts/
 sdist/
 var/
 wheels/
+# The generic Python `lib/` rule above also matches apps/web/src/lib/ (the web
+# app's util layer: cn, api, toast, session, etc.). Keep it tracked — otherwise
+# that whole layer is silently ignored and the web app cannot build.
+!apps/web/src/lib/
+!apps/web/src/lib/**
 *.manifest
 *.spec
 
