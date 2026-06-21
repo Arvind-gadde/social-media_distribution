@@ -19,30 +19,17 @@ export {
 export { authApi } from './auth';
 export type * from './auth';
 
-// Export trends API
-export { trendsApi } from './trends';
-export type * from './trends';
-
 // Export content API
 export * from './content';
 
 // Export goals API
 export * from './goals';
 
-// Export competitors API
-export * from './competitors';
-
-// Export agents API
-export * from './agents';
-
 // Export analytics API
 export * from './analytics';
 
 // Export inbox API
 export * from './inbox';
-
-// Export collaborations API
-export * from './collaborations';
 
 // Export OAuth API
 export * from './oauth';
@@ -55,6 +42,3 @@ export * from './billing';
 
 // Export media API
 export * from './media';
-
-// Export news API
-export * from './news';

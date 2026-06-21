@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Inbox, RefreshCw, Sparkles, Users } from 'lucide-react';
+import { Inbox, RefreshCw, Sparkles } from 'lucide-react';
 import { useDMList, useDMStats, useMarkDMRead, useReplyToDM } from '@/hooks/useInbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -106,9 +106,6 @@ export default function InboxPage() {
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">DM Inbox</h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">AI-powered message management across all platforms.</p>
           </div>
-          <Button asChild variant="secondary" leadingIcon={<Users className="h-4 w-4" />}>
-            <Link href="/inbox/collaborations">View Collaborations</Link>
-          </Button>
         </header>
 
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
