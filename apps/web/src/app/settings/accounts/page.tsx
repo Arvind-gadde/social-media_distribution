@@ -1,9 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { Link2, RefreshCw, ArrowLeft } from 'lucide-react';
-import { useSocialAccountsList, useDisconnectAccount, useSetPrimaryAccount } from '@/hooks/useSocialAccounts';
+import { Link2, RefreshCw } from 'lucide-react';
+import {
+  useSocialAccountsList,
+  useDisconnectAccount,
+  useSetPrimaryAccount,
+  useConnectMastodon,
+  useConnectBluesky,
+} from '@/hooks/useSocialAccounts';
+import { oauthApi } from '@contentflow/api-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,17 +19,73 @@ import {
   Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage,
 } from '@/components/ui/breadcrumb';
 
+// Platforms connected via redirect OAuth (handled server-side at /oauth/{p}/authorize).
+const OAUTH_PLATFORMS = [
+  { name: 'LinkedIn', key: 'linkedin' },
+  { name: 'YouTube', key: 'youtube' },
+  { name: 'Instagram', key: 'instagram' },
+  { name: 'Facebook', key: 'facebook' },
+  { name: 'Pinterest', key: 'pinterest' },
+  { name: 'TikTok', key: 'tiktok' },
+  { name: 'Twitter', key: 'twitter' },
+];
+
+// Platforms connected via pasted credentials (no central OAuth app).
+const CREDENTIAL_PLATFORMS = [
+  { name: 'Mastodon', key: 'mastodon' },
+  { name: 'Bluesky', key: 'bluesky' },
+];
+
+const ALL_PLATFORM_KEYS = [...OAUTH_PLATFORMS, ...CREDENTIAL_PLATFORMS];
+
+const inputClass =
+  'w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm text-gray-900 dark:text-gray-50 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-tech/40';
+
 export default function AccountsSettingsPage() {
   const { data, isLoading, error, refetch } = useSocialAccountsList({ include_inactive: true });
   const disconnectAccount = useDisconnectAccount();
   const setPrimary = useSetPrimaryAccount();
+  const connectMastodon = useConnectMastodon();
+  const connectBluesky = useConnectBluesky();
+
+  const [credForm, setCredForm] = useState<'mastodon' | 'bluesky' | null>(null);
+  // Mastodon fields
+  const [mInstance, setMInstance] = useState('');
+  const [mToken, setMToken] = useState('');
+  // Bluesky fields
+  const [bHandle, setBHandle] = useState('');
+  const [bPassword, setBPassword] = useState('');
+
+  const resetForm = () => {
+    setCredForm(null);
+    setMInstance(''); setMToken(''); setBHandle(''); setBPassword('');
+  };
 
   const handleConnect = (platform: string) => {
-    alert(`OAuth flow for ${platform} will be implemented in Phase 20`);
+    if (platform === 'mastodon' || platform === 'bluesky') {
+      setCredForm(platform);
+      return;
+    }
+    // Redirect OAuth — backend authorize endpoint 307-redirects to the platform.
+    window.location.href = oauthApi.getAuthorizationUrl(platform);
+  };
+
+  const submitMastodon = async () => {
+    try {
+      await connectMastodon.mutateAsync({ instanceUrl: mInstance.trim(), accessToken: mToken.trim() });
+      resetForm();
+    } catch (e) { console.error(e); }
+  };
+
+  const submitBluesky = async () => {
+    try {
+      await connectBluesky.mutateAsync({ handle: bHandle.trim(), appPassword: bPassword.trim() });
+      resetForm();
+    } catch (e) { console.error(e); }
   };
 
   const handleDisconnect = async (accountId: string, platform: string) => {
-    if (confirm(`Are you sure you want to disconnect your ${platform} account?`)) {
+    if (confirm(`Disconnect your ${platform} account?`)) {
       try { await disconnectAccount.mutateAsync(accountId); } catch (e) { console.error(e); }
     }
   };
@@ -39,7 +101,10 @@ export default function AccountsSettingsPage() {
   };
 
   const getPlatformIcon = (platform: string) => {
-    const icons: Record<string, string> = { instagram: '📷', youtube: '▶️', tiktok: '🎵', twitter: '🐦', linkedin: '💼', facebook: '👥', pinterest: '📌' };
+    const icons: Record<string, string> = {
+      instagram: '📷', youtube: '▶️', tiktok: '🎵', twitter: '🐦', linkedin: '💼',
+      facebook: '👥', pinterest: '📌', mastodon: '🐘', bluesky: '🦋',
+    };
     return icons[platform?.toLowerCase()] || '📱';
   };
 
@@ -69,15 +134,7 @@ export default function AccountsSettingsPage() {
   const connectedAccounts = accounts.filter((a: any) => a.is_active);
   const totalFollowers = accounts.reduce((sum: number, a: any) => sum + (a.followers_count || 0), 0);
 
-  const availablePlatforms = [
-    { name: 'Instagram', key: 'instagram' },
-    { name: 'YouTube', key: 'youtube' },
-    { name: 'TikTok', key: 'tiktok' },
-    { name: 'Twitter', key: 'twitter' },
-    { name: 'LinkedIn', key: 'linkedin' },
-  ];
-
-  const allPlatforms = availablePlatforms.map(platform => {
+  const allPlatforms = ALL_PLATFORM_KEYS.map((platform) => {
     const connected = accounts.find((a: any) => a.platform.toLowerCase() === platform.key && a.is_active);
     return { ...platform, account: connected, connected: !!connected };
   });
@@ -85,7 +142,7 @@ export default function AccountsSettingsPage() {
   const statCards = [
     { label: 'Connected Accounts', value: connectedAccounts.length },
     { label: 'Total Followers', value: formatNumber(totalFollowers) },
-    { label: 'Available Platforms', value: availablePlatforms.length - connectedAccounts.length },
+    { label: 'Available Platforms', value: ALL_PLATFORM_KEYS.length - connectedAccounts.length },
   ];
 
   return (
@@ -176,6 +233,95 @@ export default function AccountsSettingsPage() {
           </CardContent>
         </Card>
 
+        {/* Credential connect modal (Mastodon / Bluesky) */}
+        {credForm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={resetForm}>
+            <Card className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+              <CardHeader>
+                <CardTitle>
+                  Connect {credForm === 'mastodon' ? 'Mastodon' : 'Bluesky'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {credForm === 'mastodon' ? (
+                  <>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Create an access token in your instance (Preferences → Development → New application,
+                      scope <code>write:statuses</code>), then paste it below.
+                    </p>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Instance URL</label>
+                      <input
+                        className={inputClass}
+                        placeholder="https://mastodon.social"
+                        value={mInstance}
+                        onChange={(e) => setMInstance(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Access token</label>
+                      <input
+                        className={inputClass}
+                        type="password"
+                        placeholder="Your instance access token"
+                        value={mToken}
+                        onChange={(e) => setMToken(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2 pt-2">
+                      <Button variant="secondary" size="sm" onClick={resetForm}>Cancel</Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={submitMastodon}
+                        disabled={connectMastodon.isPending || !mInstance.trim() || !mToken.trim()}
+                      >
+                        {connectMastodon.isPending ? 'Connecting…' : 'Connect'}
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Use an app password (Bluesky → Settings → App Passwords), not your main password.
+                    </p>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Handle</label>
+                      <input
+                        className={inputClass}
+                        placeholder="you.bsky.social"
+                        value={bHandle}
+                        onChange={(e) => setBHandle(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-gray-700 dark:text-gray-300">App password</label>
+                      <input
+                        className={inputClass}
+                        type="password"
+                        placeholder="xxxx-xxxx-xxxx-xxxx"
+                        value={bPassword}
+                        onChange={(e) => setBPassword(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2 pt-2">
+                      <Button variant="secondary" size="sm" onClick={resetForm}>Cancel</Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={submitBluesky}
+                        disabled={connectBluesky.isPending || !bHandle.trim() || !bPassword.trim()}
+                      >
+                        {connectBluesky.isPending ? 'Connecting…' : 'Connect'}
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         <Card>
           <CardHeader><CardTitle>Permissions & Data Access</CardTitle></CardHeader>
           <CardContent>
@@ -190,7 +336,7 @@ export default function AccountsSettingsPage() {
                 <li>Read your audience demographics and insights</li>
               </ul>
               <p className="text-gray-500 dark:text-gray-400">
-                You can revoke these permissions at any time by disconnecting the account. We never access your private messages or personal data beyond what's necessary for the service.
+                You can revoke these permissions at any time by disconnecting the account. We never access your private messages or personal data beyond what&apos;s necessary for the service.
               </p>
             </div>
           </CardContent>

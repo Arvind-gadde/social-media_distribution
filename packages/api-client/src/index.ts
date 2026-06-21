@@ -44,6 +44,9 @@ export * from './inbox';
 // Export collaborations API
 export * from './collaborations';
 
+// Export OAuth API
+export * from './oauth';
+
 // Export social accounts API
 export * from './social-accounts';
 

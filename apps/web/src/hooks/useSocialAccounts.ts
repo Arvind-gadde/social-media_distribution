@@ -12,6 +12,7 @@ import {
   disconnectSocialAccount,
   setPrimaryAccount,
   checkAccountHealth,
+  oauthApi,
   type SocialAccountsListParams,
   type SocialAccountCreate,
 } from '@contentflow/api-client';
@@ -99,6 +100,44 @@ export function useDisconnectAccount() {
     },
     onError: (error: Error) => {
       toast.error(`Failed to disconnect account: ${error.message}`);
+    },
+  });
+}
+
+/**
+ * Connect a Mastodon account (instance URL + access token)
+ */
+export function useConnectMastodon() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ instanceUrl, accessToken }: { instanceUrl: string; accessToken: string }) =>
+      oauthApi.connectMastodon(instanceUrl, accessToken),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: socialAccountKeys.lists() });
+      toast.success('Mastodon connected successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to connect Mastodon: ${error.message}`);
+    },
+  });
+}
+
+/**
+ * Connect a Bluesky account (handle + app-password)
+ */
+export function useConnectBluesky() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ handle, appPassword, pdsUrl }: { handle: string; appPassword: string; pdsUrl?: string }) =>
+      oauthApi.connectBluesky(handle, appPassword, pdsUrl),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: socialAccountKeys.lists() });
+      toast.success('Bluesky connected successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to connect Bluesky: ${error.message}`);
     },
   });
 }

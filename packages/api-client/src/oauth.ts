@@ -47,6 +47,35 @@ export const oauthApi = {
   },
 
   /**
+   * Connect a Mastodon account via instance URL + access token (no redirect OAuth).
+   */
+  async connectMastodon(
+    instanceUrl: string,
+    accessToken: string
+  ): Promise<{ id: string; platform: string; username: string; instance: string }> {
+    const client = getApiClient();
+    return await client.post<{ id: string; platform: string; username: string; instance: string }>(
+      '/api/v1/oauth/mastodon/connect',
+      { instance_url: instanceUrl, access_token: accessToken }
+    );
+  },
+
+  /**
+   * Connect a Bluesky account via handle + app-password (no redirect OAuth).
+   */
+  async connectBluesky(
+    handle: string,
+    appPassword: string,
+    pdsUrl?: string
+  ): Promise<{ id: string; platform: string; handle: string; did: string }> {
+    const client = getApiClient();
+    return await client.post<{ id: string; platform: string; handle: string; did: string }>(
+      '/api/v1/oauth/bluesky/connect',
+      { handle, app_password: appPassword, pds_url: pdsUrl }
+    );
+  },
+
+  /**
    * Refresh OAuth token for an account
    */
   async refreshToken(platform: string, accountId: string): Promise<{ refreshed: boolean; account_id: string }> {
