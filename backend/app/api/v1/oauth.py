@@ -7,13 +7,15 @@ from __future__ import annotations
 import base64
 import hashlib
 import hmac
+import ipaddress
 import json
 import secrets
+import socket
 import time
 import uuid
 from datetime import datetime, timezone
 from typing import Dict, Any
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 from fastapi import APIRouter, Query, Request, HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse
@@ -444,6 +446,35 @@ async def _upsert_credential_account(
     return account
 
 
+def _assert_public_http_url(raw_url: str) -> None:
+    """Reject SSRF-prone connect URLs.
+
+    The Mastodon/Bluesky connect endpoints fetch a user-supplied instance/PDS URL
+    server-side (with an Authorization header), so without this an authenticated
+    user could probe internal services or the cloud metadata endpoint, and the
+    bad host would be stored and re-hit by the publish adapter. Require http(s)
+    and reject any host that resolves to a private/loopback/link-local/reserved
+    address.
+    """
+    parsed = urlparse(raw_url)
+    if parsed.scheme not in ("http", "https") or not parsed.hostname:
+        raise HTTPException(status_code=400, detail="Invalid instance URL.")
+    port = parsed.port or (443 if parsed.scheme == "https" else 80)
+    try:
+        infos = socket.getaddrinfo(
+            parsed.hostname, port, proto=socket.IPPROTO_TCP
+        )
+    except OSError:
+        raise HTTPException(status_code=400, detail="Could not resolve that host.")
+    for info in infos:
+        ip = ipaddress.ip_address(info[4][0])
+        if (
+            ip.is_private or ip.is_loopback or ip.is_link_local
+            or ip.is_reserved or ip.is_multicast or ip.is_unspecified
+        ):
+            raise HTTPException(status_code=400, detail="That host is not allowed.")
+
+
 @router.post("/mastodon/connect")
 async def connect_mastodon(
     body: MastodonConnectRequest,
@@ -457,6 +488,7 @@ async def connect_mastodon(
     instance = body.instance_url.strip().rstrip("/")
     if not instance.startswith("http"):
         instance = f"https://{instance}"
+    _assert_public_http_url(instance)
     try:
         async with httpx.AsyncClient(timeout=15) as client:
             resp = await client.get(
@@ -522,6 +554,7 @@ async def connect_bluesky(
     pds = (body.pds_url or "https://bsky.social").strip().rstrip("/")
     if not pds.startswith("http"):
         pds = f"https://{pds}"
+    _assert_public_http_url(pds)
     handle = body.handle.strip().lstrip("@")
     try:
         async with httpx.AsyncClient(timeout=15) as client:
