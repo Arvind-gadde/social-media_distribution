@@ -14,14 +14,14 @@ import socket
 import time
 import uuid
 from datetime import datetime, timezone
-from typing import Dict, Any
+from typing import Annotated, Dict, Any
 from urllib.parse import urlencode, urlparse
 
-from fastapi import APIRouter, Query, Request, HTTPException
+from fastapi import APIRouter, Depends, Query, Request, HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse
 from sqlalchemy import select, and_
 
-from app.api.deps import CurrentUser, CurrentWorkspace, DbSession
+from app.api.deps import CurrentUser, CurrentWorkspace, DbSession, require_workspace_role
 from app.domains.control.models import SocialAccount, TokenStatus
 from app.services.oauth.instagram import InstagramOAuth
 from app.services.oauth.youtube import YouTubeOAuth
@@ -147,7 +147,7 @@ async def list_platforms() -> JSONResponse:
 async def initiate_oauth(
     platform: str,
     current_user: CurrentUser,
-    workspace: CurrentWorkspace,
+    workspace: Annotated[object, Depends(require_workspace_role("editor"))],
     request: Request,
 ) -> RedirectResponse:
     """Initiate OAuth flow for a platform."""
@@ -384,6 +384,7 @@ async def _upsert_credential_account(
     base_url: str,
     access_token: str,
     scope: str,
+    actor_id: str,
 ) -> SocialAccount:
     """Create or update a SocialAccount connected via pasted credentials.
 
@@ -441,6 +442,19 @@ async def _upsert_credential_account(
         )
         db.add(account)
 
+    await db.flush()  # populate account.id for the audit entry
+
+    from app.services.audit_service import AuditService
+    await AuditService(db).log_action(
+        action_type="social_account.connected",
+        resource_type="social_account",
+        actor_id=actor_id,
+        workspace_id=workspace_id,
+        resource_id=str(account.id),
+        reason=f"Connected {platform} account",
+        after_summary={"platform": platform, "platform_user_id": platform_user_id},
+    )
+
     await db.commit()
     await db.refresh(account)
     return account
@@ -479,7 +493,7 @@ def _assert_public_http_url(raw_url: str) -> None:
 async def connect_mastodon(
     body: MastodonConnectRequest,
     current_user: CurrentUser,
-    workspace: CurrentWorkspace,
+    workspace: Annotated[object, Depends(require_workspace_role("editor"))],
     db: DbSession,
 ) -> JSONResponse:
     """Connect a Mastodon account via an instance access token."""
@@ -526,6 +540,7 @@ async def connect_mastodon(
         base_url=instance,
         access_token=body.access_token,
         scope="write:statuses",
+        actor_id=str(current_user.id),
     )
     log.info(
         "oauth.mastodon.connected",
@@ -545,7 +560,7 @@ async def connect_mastodon(
 async def connect_bluesky(
     body: BlueskyConnectRequest,
     current_user: CurrentUser,
-    workspace: CurrentWorkspace,
+    workspace: Annotated[object, Depends(require_workspace_role("editor"))],
     db: DbSession,
 ) -> JSONResponse:
     """Connect a Bluesky account via handle + app-password."""
@@ -593,6 +608,7 @@ async def connect_bluesky(
         base_url=pds,
         access_token=body.app_password,
         scope="post",
+        actor_id=str(current_user.id),
     )
     log.info(
         "oauth.bluesky.connected",
@@ -613,7 +629,7 @@ async def refresh_token(
     platform: str,
     account_id: str,
     current_user: CurrentUser,
-    workspace: CurrentWorkspace,
+    workspace: Annotated[object, Depends(require_workspace_role("editor"))],
     db: DbSession,
 ) -> JSONResponse:
     """Refresh OAuth token for an account."""
@@ -687,7 +703,7 @@ async def revoke_token(
     platform: str,
     account_id: str,
     current_user: CurrentUser,
-    workspace: CurrentWorkspace,
+    workspace: Annotated[object, Depends(require_workspace_role("editor"))],
     db: DbSession,
 ) -> JSONResponse:
     """Revoke OAuth token for an account."""

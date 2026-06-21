@@ -304,6 +304,19 @@ async def _execute_single_job(
     )
     db.add(attempt)
 
+    # Audit every publish attempt — this is the point a decrypted platform token
+    # is used, so it belongs in the append-only trail. Flushed here; committed by
+    # the success branch or _mark_job_failed below.
+    from app.services.audit_service import audit_publish_attempt
+    await audit_publish_attempt(
+        db,
+        workspace_id=job.workspace_id,
+        publish_job_id=job.id,
+        actor_id="system",
+        platform=job.target_platform,
+        status="success" if result.success else "failed",
+    )
+
     if result.success:
         await db.execute(
             update(PublishJob)
