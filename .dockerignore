@@ -1,0 +1,26 @@
+# Never copy host-installed deps/build output into images — they shadow the
+# image's clean install (on Windows the symlinked node_modules break every
+# per-package .bin shim, e.g. next/tsc) and bloat the build context.
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+**/__pycache__
+**/*.pyc
+**/.venv
+.venv
+
+# VCS / local
+.git
+.gitignore
+
+# Secrets (provided at runtime via env_file, never baked into the image)
+.env
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Misc local artifacts
+graphify-out
+**/.DS_Store
+Temp*.json
