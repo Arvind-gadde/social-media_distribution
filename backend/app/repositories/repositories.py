@@ -13,6 +13,7 @@ import uuid
 from typing import Generic, Optional, Sequence, Type, TypeVar
 
 from sqlalchemy import select, func, delete, update
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import Base
@@ -323,7 +324,13 @@ class NicheRepository:
 
     async def list_all(self, *, include_inactive: bool = False):
         from app.domains.control.models import Niche
-        stmt = select(Niche).order_by(Niche.sort_order, Niche.name)
+        # Eager-load 2 levels of children — NicheResponse serializes them and
+        # async SQLAlchemy can't lazy-load during Pydantic serialization.
+        stmt = (
+            select(Niche)
+            .options(selectinload(Niche.children).selectinload(Niche.children))
+            .order_by(Niche.sort_order, Niche.name)
+        )
         if not include_inactive:
             stmt = stmt.where(Niche.is_active == True)
         result = await self._db.execute(stmt)
@@ -334,6 +341,7 @@ class NicheRepository:
         from app.domains.control.models import Niche
         result = await self._db.execute(
             select(Niche)
+            .options(selectinload(Niche.children).selectinload(Niche.children))
             .where(Niche.is_active == True, Niche.parent_niche_id.is_(None))
             .order_by(Niche.sort_order, Niche.name)
         )
@@ -342,7 +350,9 @@ class NicheRepository:
     async def get_by_slug(self, slug: str):
         from app.domains.control.models import Niche
         result = await self._db.execute(
-            select(Niche).where(Niche.slug == slug)
+            select(Niche)
+            .options(selectinload(Niche.children).selectinload(Niche.children))
+            .where(Niche.slug == slug)
         )
         return result.scalar_one_or_none()
 

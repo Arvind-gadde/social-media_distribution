@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, CurrentWorkspace
 from app.models.models import User
 from app.domains.intelligence.models import WorkspaceInsight, InsightType
 from app.schemas.insights import (
@@ -27,6 +27,7 @@ router = APIRouter(prefix="/insights", tags=["insights"])
 async def get_insights(
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
+    workspace: CurrentWorkspace,
     insight_type: Annotated[InsightType | None, Query()] = None,
     is_read: Annotated[bool | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
@@ -36,7 +37,7 @@ async def get_insights(
     This drives the mobile app's Home screen alert feed.
     """
     query = select(WorkspaceInsight).where(
-        WorkspaceInsight.workspace_id == current_user.workspace_id,
+        WorkspaceInsight.workspace_id == workspace.id,
         WorkspaceInsight.is_dismissed == False,
     )
     
@@ -62,12 +63,13 @@ async def mark_insight_read(
     insight_id: UUID,
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
+    workspace: CurrentWorkspace,
 ) -> dict[str, str]:
     """Mark an insight as read."""
     result = await db.execute(
         select(WorkspaceInsight).where(
             WorkspaceInsight.id == insight_id,
-            WorkspaceInsight.workspace_id == current_user.workspace_id,
+            WorkspaceInsight.workspace_id == workspace.id,
         )
     )
     insight = result.scalar_one_or_none()
@@ -81,7 +83,7 @@ async def mark_insight_read(
     logger.info(
         "insight_marked_read",
         insight_id=str(insight_id),
-        workspace_id=str(current_user.workspace_id),
+        workspace_id=str(workspace.id),
     )
     
     return {"status": "success"}
@@ -92,6 +94,7 @@ async def register_push_token(
     request: PushTokenRequest,
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
+    workspace: CurrentWorkspace,
 ) -> PushTokenResponse:
     """Register Expo push token for mobile notifications.
     
@@ -100,7 +103,7 @@ async def register_push_token(
     result = await register_device_token(
         db,
         current_user.id,
-        current_user.workspace_id,
+        workspace.id,
         request.token,
         request.platform,
         request.device_name,

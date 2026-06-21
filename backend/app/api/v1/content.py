@@ -19,7 +19,10 @@ from app.domains.execution.models import (
     ContentProject,
     ContentVariant,
     ProjectStatus,
+    PublishJob,
+    PublishStatus,
 )
+from app.domains.control.models import SocialAccount, TokenStatus
 from app.integrations.llm.provider import TaskType
 
 # ─── Two routers in one file ────────────────────────────────────────────────────
@@ -150,6 +153,75 @@ async def _load_variants(db, project_id: uuid.UUID) -> list[ContentVariant]:
         .scalars()
         .all()
     )
+
+
+# Statuses for which a publish job is "in flight or done" — used to avoid
+# enqueuing a duplicate when publish/schedule is called more than once.
+_ACTIVE_JOB_STATUSES = (
+    PublishStatus.QUEUED,
+    PublishStatus.LEASED,
+    PublishStatus.RUNNING,
+    PublishStatus.AWAITING_APPROVAL,
+    PublishStatus.COMPLETED,
+)
+
+
+async def _enqueue_publish_jobs(
+    db,
+    project: ContentProject,
+    variants: list[ContentVariant],
+    scheduled_at: datetime,
+) -> int:
+    """Create QUEUED PublishJobs for each (variant, connected account) pair.
+
+    This is what feeds the Celery publish pipeline — without it, marking a
+    project published/scheduled does nothing. Skips platforms with no valid,
+    active connected account and pairs that already have an in-flight/done job.
+    Returns the number of jobs created.
+    """
+    created = 0
+    for variant in variants:
+        accounts = (
+            await db.execute(
+                select(SocialAccount).where(
+                    SocialAccount.workspace_id == project.workspace_id,
+                    SocialAccount.platform == variant.target_platform,
+                    SocialAccount.is_active == True,
+                    SocialAccount.token_status == TokenStatus.VALID,
+                )
+            )
+        ).scalars().all()
+
+        for account in accounts:
+            existing = (
+                await db.execute(
+                    select(PublishJob.id)
+                    .where(
+                        PublishJob.content_variant_id == variant.id,
+                        PublishJob.social_account_id == account.id,
+                        PublishJob.status.in_(_ACTIVE_JOB_STATUSES),
+                    )
+                    .limit(1)
+                )
+            ).scalar_one_or_none()
+            if existing:
+                continue
+
+            db.add(
+                PublishJob(
+                    workspace_id=project.workspace_id,
+                    content_variant_id=variant.id,
+                    social_account_id=account.id,
+                    target_platform=variant.target_platform,
+                    scheduled_at=scheduled_at,
+                    status=PublishStatus.QUEUED,
+                    idempotency_key=f"{variant.id}:{account.id}:{int(scheduled_at.timestamp())}",
+                )
+            )
+            created += 1
+
+    await db.flush()
+    return created
 
 
 def _to_item(project: ContentProject, variants: list[ContentVariant]) -> ContentItemOut:
@@ -360,11 +432,13 @@ async def publish_content(
     db: DbSession,
 ) -> ContentItemOut:
     p = await _load_project(db, workspace.id, project_id)
+    variants = await _load_variants(db, p.id)
+    # Enqueue publish jobs NOW so the Celery pipeline picks them up immediately.
+    await _enqueue_publish_jobs(db, p, variants, datetime.now(timezone.utc))
     p.status = ProjectStatus.PUBLISHED
     p.published_at = datetime.now(timezone.utc)
     await db.flush()
     await db.refresh(p)
-    variants = await _load_variants(db, p.id)
     return _to_item(p, variants)
 
 
@@ -379,9 +453,11 @@ async def schedule_content(
     p = await _load_project(db, workspace.id, project_id)
     p.status = ProjectStatus.SCHEDULED
     p.scheduled_at = body.scheduled_at
+    variants = await _load_variants(db, p.id)
+    # Enqueue jobs at the scheduled time; the beat task picks them up when due.
+    await _enqueue_publish_jobs(db, p, variants, body.scheduled_at)
     await db.flush()
     await db.refresh(p)
-    variants = await _load_variants(db, p.id)
     return _to_item(p, variants)
 
 
