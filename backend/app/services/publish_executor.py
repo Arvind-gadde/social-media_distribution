@@ -255,6 +255,7 @@ async def _execute_single_job(
             access_token=access_token,
             platform_user_id=account.platform_user_id,
             platform_username=account.platform_username,
+            base_url=account.platform_url,
         )
     except ValueError as exc:
         await _mark_job_failed(db, job, str(exc), retryable=False)
@@ -278,6 +279,7 @@ async def _execute_single_job(
                     access_token=refreshed,
                     platform_user_id=account.platform_user_id,
                     platform_username=account.platform_username,
+                    base_url=account.platform_url,
                 )
             except ValueError as exc:
                 await _mark_job_failed(db, job, str(exc), retryable=False)

@@ -1,9 +1,44 @@
+import os
 import pytest
 import pytest_asyncio
 import asyncio
 import uuid
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
+
+
+def _test_database_url(main_url: str) -> str:
+    """Derive an isolated test-database URL so tests never touch the real DB.
+
+    Honours an explicit ``TEST_DATABASE_URL`` override; otherwise appends a
+    ``_test`` suffix to the configured database name. (The previous logic did a
+    ``.replace("/contentflow", ...)`` that silently no-op'd because the real DB
+    is named ``social-media-distribution`` — meaning tests ran against, and
+    dropped tables in, the live dev database.)
+    """
+    explicit = os.getenv("TEST_DATABASE_URL")
+    if explicit:
+        return explicit
+    base, sep, name = main_url.rpartition("/")
+    return f"{base}{sep}{name}_test"
+
+
+async def _ensure_database_exists(test_url: str) -> None:
+    """Create the test database if it does not already exist (idempotent)."""
+    base, _, dbname = test_url.rpartition("/")
+    # Strip any query string from the db name segment (e.g. ?ssl=...).
+    dbname = dbname.split("?", 1)[0]
+    admin_engine = create_async_engine(f"{base}/postgres", isolation_level="AUTOCOMMIT")
+    try:
+        async with admin_engine.connect() as conn:
+            exists = await conn.scalar(
+                text("SELECT 1 FROM pg_database WHERE datname = :n"), {"n": dbname}
+            )
+            if not exists:
+                await conn.execute(text(f'CREATE DATABASE "{dbname}"'))
+    finally:
+        await admin_engine.dispose()
 
 
 @pytest.fixture(scope="session")
@@ -25,9 +60,11 @@ async def db_session():
     import app.domains.intelligence.models  # noqa: F401
 
     settings = get_settings()
-    # Use test database URL if available, otherwise use main DB
-    db_url = settings.DATABASE_URL.replace("/contentflow", "/contentflow_test")
-    
+    # Always run against an isolated *_test database so the suite can never
+    # drop tables in the live dev/prod database.
+    db_url = _test_database_url(settings.DATABASE_URL)
+    await _ensure_database_exists(db_url)
+
     engine = create_async_engine(db_url, echo=False)
     
     # Create tables

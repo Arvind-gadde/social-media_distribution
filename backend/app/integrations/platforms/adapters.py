@@ -1169,6 +1169,230 @@ def _classify_pinterest_error(status_code: int, body: dict) -> tuple[str, bool]:
     return "client_error", False
 
 
+# ─── Mastodon ─────────────────────────────────────────────────────────────────
+
+
+class MastodonAdapter(PlatformAdapter):
+    """Mastodon adapter — posts a status to the user's instance.
+
+    Credential-paste model: the user creates an access token in their instance
+    (Preferences → Development → New application) and we store it plus the
+    instance base URL (``SocialAccount.platform_url`` → passed as ``base_url``).
+    No central app registration required.
+    """
+
+    PLATFORM = "mastodon"
+    MAX_CAPTION_LENGTH = 500
+    MAX_HASHTAGS = 30
+    SUPPORTED_MEDIA = ["text"]
+
+    def _base_url(self) -> str:
+        return str(self._extra.get("base_url") or "").rstrip("/")
+
+    async def publish(self, payload: PublishPayload) -> PublishResult:
+        start = time.monotonic()
+        base = self._base_url()
+        if not base:
+            return PublishResult(
+                success=False, failure_class="missing_instance", retryable=False,
+                error_message="Mastodon instance URL is not set for this account.",
+            )
+        try:
+            import hashlib
+            import httpx
+
+            text = self._build_full_caption(payload)
+            if payload.link_url and payload.link_url not in text:
+                text = f"{text}\n{payload.link_url}"[: self.MAX_CAPTION_LENGTH]
+
+            # Mastodon natively de-duplicates on this header — free idempotency.
+            idem = hashlib.sha256(f"{base}|{text}".encode("utf-8")).hexdigest()
+
+            async with httpx.AsyncClient(timeout=30) as client:
+                resp = await client.post(
+                    f"{base}/api/v1/statuses",
+                    headers={
+                        "Authorization": f"Bearer {self._access_token}",
+                        "Idempotency-Key": idem,
+                    },
+                    json={"status": text},
+                )
+            latency = int((time.monotonic() - start) * 1000)
+            if resp.status_code in (200, 201):
+                data = resp.json()
+                return PublishResult(
+                    success=True,
+                    platform_post_id=str(data.get("id", "")),
+                    platform_post_url=data.get("url") or data.get("uri"),
+                    provider_response_code=resp.status_code,
+                    provider_response={"id": data.get("id")},
+                    latency_ms=latency,
+                )
+            return PublishResult(
+                success=False,
+                provider_response_code=resp.status_code,
+                provider_response=resp.json() if resp.text else {},
+                failure_class="mastodon_publish_failed",
+                retryable=resp.status_code >= 500 or resp.status_code == 429,
+                error_message=resp.text,
+                latency_ms=latency,
+            )
+        except Exception as exc:
+            return PublishResult(
+                success=False, failure_class="exception", retryable=True,
+                error_message=str(exc),
+                latency_ms=int((time.monotonic() - start) * 1000),
+            )
+
+    async def validate_token(self) -> bool:
+        base = self._base_url()
+        if not base:
+            return False
+        try:
+            import httpx
+            async with httpx.AsyncClient(timeout=10) as client:
+                resp = await client.get(
+                    f"{base}/api/v1/accounts/verify_credentials",
+                    headers={"Authorization": f"Bearer {self._access_token}"},
+                )
+                return resp.status_code == 200
+        except Exception:
+            return False
+
+    async def refresh_token(self, refresh_token: str) -> dict[str, Any]:
+        # In-instance access tokens do not expire / refresh.
+        return {}
+
+
+# ─── Bluesky (AT Protocol) ────────────────────────────────────────────────────
+
+
+class BlueskyAdapter(PlatformAdapter):
+    """Bluesky adapter — creates a post via the AT Protocol.
+
+    Credential model: handle + app-password. The app-password is stored as the
+    access token, the handle as ``platform_username`` and the DID as
+    ``platform_user_id``; the PDS base URL (default https://bsky.social) arrives
+    as ``base_url``. A short-lived session JWT is minted per publish.
+    """
+
+    PLATFORM = "bluesky"
+    MAX_CAPTION_LENGTH = 300
+    MAX_HASHTAGS = 30
+    SUPPORTED_MEDIA = ["text"]
+    DEFAULT_PDS = "https://bsky.social"
+
+    def _pds(self) -> str:
+        return str(self._extra.get("base_url") or self.DEFAULT_PDS).rstrip("/")
+
+    async def _create_session(self, client: Any) -> dict[str, Any]:
+        identifier = (
+            self._extra.get("platform_username")
+            or self._extra.get("platform_user_id")
+            or ""
+        )
+        resp = await client.post(
+            f"{self._pds()}/xrpc/com.atproto.server.createSession",
+            json={"identifier": identifier, "password": self._access_token},
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+    async def publish(self, payload: PublishPayload) -> PublishResult:
+        start = time.monotonic()
+        try:
+            import httpx
+
+            text = self._build_full_caption(payload)
+            if payload.link_url and payload.link_url not in text:
+                text = f"{text}\n{payload.link_url}"
+            text = text[: self.MAX_CAPTION_LENGTH]
+
+            async with httpx.AsyncClient(timeout=30) as client:
+                try:
+                    session = await self._create_session(client)
+                except httpx.HTTPStatusError as exc:
+                    code = exc.response.status_code
+                    return PublishResult(
+                        success=False, provider_response_code=code,
+                        failure_class="bluesky_auth_failed",
+                        retryable=code >= 500,
+                        error_message=exc.response.text,
+                        latency_ms=int((time.monotonic() - start) * 1000),
+                    )
+                access_jwt = session.get("accessJwt")
+                did = session.get("did")
+                if not access_jwt or not did:
+                    return PublishResult(
+                        success=False,
+                        failure_class="bluesky_auth_failed",
+                        retryable=False,
+                        error_message="Bluesky session response missing credentials.",
+                        latency_ms=int((time.monotonic() - start) * 1000),
+                    )
+                record = {
+                    "$type": "app.bsky.feed.post",
+                    "text": text,
+                    "createdAt": datetime.now(timezone.utc)
+                    .isoformat()
+                    .replace("+00:00", "Z"),
+                }
+                resp = await client.post(
+                    f"{self._pds()}/xrpc/com.atproto.repo.createRecord",
+                    headers={"Authorization": f"Bearer {access_jwt}"},
+                    json={
+                        "repo": did,
+                        "collection": "app.bsky.feed.post",
+                        "record": record,
+                    },
+                )
+            latency = int((time.monotonic() - start) * 1000)
+            if resp.status_code == 200:
+                data = resp.json()
+                uri = data.get("uri", "")
+                rkey = uri.rsplit("/", 1)[-1] if uri else ""
+                handle = self._extra.get("platform_username") or did
+                return PublishResult(
+                    success=True,
+                    platform_post_id=uri,
+                    platform_post_url=(
+                        f"https://bsky.app/profile/{handle}/post/{rkey}"
+                        if rkey else None
+                    ),
+                    provider_response_code=200,
+                    provider_response={"uri": uri, "cid": data.get("cid")},
+                    latency_ms=latency,
+                )
+            return PublishResult(
+                success=False,
+                provider_response_code=resp.status_code,
+                provider_response=resp.json() if resp.text else {},
+                failure_class="bluesky_publish_failed",
+                retryable=resp.status_code >= 500 or resp.status_code == 429,
+                error_message=resp.text,
+                latency_ms=latency,
+            )
+        except Exception as exc:
+            return PublishResult(
+                success=False, failure_class="exception", retryable=True,
+                error_message=str(exc),
+                latency_ms=int((time.monotonic() - start) * 1000),
+            )
+
+    async def validate_token(self) -> bool:
+        try:
+            import httpx
+            async with httpx.AsyncClient(timeout=10) as client:
+                await self._create_session(client)
+                return True
+        except Exception:
+            return False
+
+    async def refresh_token(self, refresh_token: str) -> dict[str, Any]:
+        # App-password based; a fresh session is minted on each publish.
+        return {}
+
+
 # ─── Factory ──────────────────────────────────────────────────────────────────
 
 
@@ -1180,6 +1404,8 @@ ADAPTERS: dict[str, type[PlatformAdapter]] = {
     "tiktok": TikTokAdapter,
     "facebook": FacebookAdapter,
     "pinterest": PinterestAdapter,
+    "mastodon": MastodonAdapter,
+    "bluesky": BlueskyAdapter,
 }
 
 

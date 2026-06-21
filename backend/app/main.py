@@ -14,20 +14,17 @@ from app.core.middleware import (
 from app.exceptions import AppError
 from fastapi.exceptions import RequestValidationError
 from app.api.v1 import auth, ai, analytics, platforms, notifications, agent, oauth, mfa
-from app.api.v1 import workspaces, social_accounts, approvals, analytics_api, business, billing
+from app.api.v1 import workspaces, social_accounts, approvals, analytics_api, billing
 from app.api.v1 import content_projects, workspace_insights
 from app.api.v1 import insights as insights_api
 from app.api.v1 import audit, usage  # Phase 12: Audit & Governance
 from app.api.v1 import platform_webhooks
 from app.api.v1.webhooks import stripe_webhooks
-# Phase 15: Agent Management API - New comprehensive endpoints
-from app.api.v1 import agents, trends, competitors, goals
-# Phase 15 frontend-compat routers (match @contentflow/api-client URLs)
+from app.api.v1 import goals
+# frontend-compat routers (match @contentflow/api-client URLs)
 from app.api.v1 import inbox as inbox_api
-from app.api.v1 import collaborations as collaborations_api
 from app.api.v1 import content as content_api
 from app.api.v1 import media as media_api
-from app.api.v1 import news as news_api
 from app.db.session import AsyncSessionLocal
 from app.models.models import User
 
@@ -136,24 +133,17 @@ app.include_router(social_accounts.router,     prefix=PREFIX)
 app.include_router(approvals.router,           prefix=PREFIX)
 app.include_router(analytics_api.router,       prefix=PREFIX)
 app.include_router(platform_webhooks.router,   prefix=PREFIX)
-app.include_router(business.router,            prefix=PREFIX)
 app.include_router(billing.router,             prefix=PREFIX)
 app.include_router(stripe_webhooks.router,     prefix=PREFIX)
 # Phase 12: Audit & Governance
 app.include_router(audit.router,               prefix=PREFIX)
 app.include_router(usage.router,               prefix=PREFIX)
-# Phase 15: Agent Management API - Complete agent orchestration endpoints
-app.include_router(agents.router,              prefix=PREFIX)
-app.include_router(trends.router,              prefix=PREFIX)
-app.include_router(competitors.router,         prefix=PREFIX)
 app.include_router(goals.router,               prefix=PREFIX)
-# Phase 15 frontend-compat routers
+# frontend-compat routers
 app.include_router(inbox_api.router,                   prefix=PREFIX)
-app.include_router(collaborations_api.router,          prefix=PREFIX)
 app.include_router(content_api.projects_router,        prefix=PREFIX)
 app.include_router(content_api.ideas_router,           prefix=PREFIX)
 app.include_router(media_api.router,                   prefix=PREFIX)
-app.include_router(news_api.router,                    prefix=PREFIX)
 
 
 @app.get("/health")

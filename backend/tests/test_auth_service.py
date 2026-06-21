@@ -32,6 +32,9 @@ def _make_user(**kwargs) -> User:
 def _make_service(user_repo=None, cache=None):
     repo = user_repo or AsyncMock()
     c = cache or AsyncMock()
+    # login() reads the brute-force counter as an int for its `>=` threshold
+    # check; a bare AsyncMock would return a mock and break the comparison.
+    c.get_login_failures = AsyncMock(return_value=0)
     return AuthService(repo, c), repo, c
 
 

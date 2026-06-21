@@ -12,12 +12,7 @@ import {
   PenLine,
   Calendar,
   BarChart3,
-  Lightbulb,
-  TrendingUp,
-  Newspaper,
-  Users,
   Inbox,
-  Target,
   Settings,
   Search,
   LogOut,
@@ -64,19 +59,9 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    label: 'Discover',
-    items: [
-      { href: '/insights', label: 'AI Insights', Icon: Lightbulb },
-      { href: '/trends', label: 'Trends', Icon: TrendingUp },
-      { href: '/news', label: 'News', Icon: Newspaper },
-      { href: '/competitors', label: 'Competitors', Icon: Users },
-    ],
-  },
-  {
     label: 'Engage',
     items: [
       { href: '/inbox', label: 'Inbox', Icon: Inbox },
-      { href: '/goals', label: 'Goals', Icon: Target },
     ],
   },
 ];

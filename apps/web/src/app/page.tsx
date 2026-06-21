@@ -13,9 +13,10 @@ import {
   Plus,
   Settings,
   Target,
-  TrendingUp,
+  PenLine,
+  Calendar,
 } from 'lucide-react';
-import type { Goal, AgentInsight } from '@contentflow/api-client';
+import type { Goal } from '@contentflow/api-client';
 
 import {
   Card,
@@ -30,8 +31,6 @@ import { SkeletonCard } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 import { useGoalsList } from '@/hooks/useGoals';
-import { useAgentInsights } from '@/hooks/useAgents';
-import { useTrends } from '@/hooks/useTrends';
 import { useCurrentUser } from '@/hooks/useAuth';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -103,18 +102,8 @@ export default function HomePage() {
     data: goalsData,
     isLoading: goalsLoading,
   } = useGoalsList({ status: 'active', page_size: 3 });
-  const {
-    data: insightsData,
-    isLoading: insightsLoading,
-  } = useAgentInsights({ is_read: false, page_size: 5 });
-  const {
-    data: trendsData,
-    isLoading: trendsLoading,
-  } = useTrends({ page_size: 3 });
 
   const goals: Goal[] = goalsData?.items ?? [];
-  const insights: AgentInsight[] = insightsData?.items ?? [];
-  const trendsCount = trendsData?.items?.length ?? 0;
 
   const firstName = getFirstName(userData?.user);
 
@@ -124,9 +113,9 @@ export default function HomePage() {
     color: TileColor;
     href: string;
   }> = [
-    { label: 'Create goal', icon: <Target />, color: 'brand', href: '/goals' },
-    { label: 'View trends', icon: <TrendingUp />, color: 'warning', href: '/trends' },
-    { label: 'AI insights', icon: <Lightbulb />, color: 'info', href: '/insights' },
+    { label: 'Create content', icon: <PenLine />, color: 'brand', href: '/content/create' },
+    { label: 'Schedule', icon: <Calendar />, color: 'warning', href: '/schedule' },
+    { label: 'Generate ideas', icon: <Lightbulb />, color: 'info', href: '/content/ideas' },
     { label: 'Settings', icon: <Settings />, color: 'success', href: '/settings' },
   ];
 
@@ -158,25 +147,25 @@ export default function HomePage() {
           <KpiCard
             label="Active goals"
             value={goals.length}
-            deltaLabel="+12%"
-            deltaDirection="up"
-          />
-          <KpiCard
-            label="New insights"
-            value={insights.length}
-            deltaLabel="+8%"
-            deltaDirection="up"
-          />
-          <KpiCard
-            label="Trending now"
-            value={trendsCount}
             deltaLabel="Active"
             deltaDirection="up"
           />
           <KpiCard
-            label="Posts this week"
+            label="Scheduled posts"
             value={0}
-            deltaLabel="Schedule"
+            deltaLabel="Plan"
+            deltaDirection="flat"
+          />
+          <KpiCard
+            label="Published"
+            value={0}
+            deltaLabel="This week"
+            deltaDirection="flat"
+          />
+          <KpiCard
+            label="Connected accounts"
+            value={0}
+            deltaLabel="Connect"
             deltaDirection="flat"
           />
         </section>
@@ -247,50 +236,35 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          {/* Latest insights */}
+          {/* Getting started */}
           <Card className="flex flex-col">
             <CardHeader className="flex-row items-start justify-between space-y-0 gap-3">
               <div className="space-y-1">
-                <CardTitle>Latest insights</CardTitle>
-                <CardDescription>Fresh signals from your AI agents.</CardDescription>
+                <CardTitle>Getting started</CardTitle>
+                <CardDescription>Set up your workspace to start publishing.</CardDescription>
               </div>
-              <Button asChild variant="link-color" size="sm" className="shrink-0">
-                <Link href="/insights">View all</Link>
-              </Button>
             </CardHeader>
             <CardContent className="flex-1">
-              {insightsLoading ? (
-                <div className="space-y-3">
-                  <SkeletonCard showAvatar={false} lines={2} />
-                  <SkeletonCard showAvatar={false} lines={2} />
-                </div>
-              ) : insights.length > 0 ? (
-                <ul className="space-y-4">
-                  {insights.slice(0, 3).map((insight) => (
-                    <li key={insight.id} className="flex items-start gap-3">
-                      <span
-                        className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand-600"
-                        aria-hidden="true"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                          {insight.title}
-                        </p>
-                        <p className="mt-0.5 text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
-                          {insight.body}
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <EmptyState
-                  icon={<Lightbulb />}
-                  iconColor="brand"
-                  title="No new insights"
-                  description="Your agents will surface findings here as they run."
-                />
-              )}
+              <ul className="space-y-3 text-sm text-gray-700 dark:text-gray-300">
+                <li className="flex items-center justify-between gap-3">
+                  <span>Connect a social account</span>
+                  <Button asChild variant="link-color" size="sm">
+                    <Link href="/settings/accounts">Connect</Link>
+                  </Button>
+                </li>
+                <li className="flex items-center justify-between gap-3">
+                  <span>Create your first post</span>
+                  <Button asChild variant="link-color" size="sm">
+                    <Link href="/content/create">Create</Link>
+                  </Button>
+                </li>
+                <li className="flex items-center justify-between gap-3">
+                  <span>Generate ideas with AI</span>
+                  <Button asChild variant="link-color" size="sm">
+                    <Link href="/content/ideas">Ideas</Link>
+                  </Button>
+                </li>
+              </ul>
             </CardContent>
           </Card>
         </section>
@@ -303,7 +277,6 @@ export default function HomePage() {
               <CardDescription>Jump straight into the most common tasks.</CardDescription>
             </CardHeader>
             <CardContent>
-              {trendsLoading ? null : null}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {quickActions.map((action) => (
                   <button

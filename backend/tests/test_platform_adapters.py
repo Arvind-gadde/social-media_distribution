@@ -96,7 +96,7 @@ class TestAdapterFactory:
     def test_all_adapters_registered(self):
         assert set(ADAPTERS.keys()) == {
             "instagram", "twitter", "linkedin", "youtube", "tiktok",
-            "facebook", "pinterest",
+            "facebook", "pinterest", "mastodon", "bluesky",
         }
 
 

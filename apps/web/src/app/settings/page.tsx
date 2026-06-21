@@ -1,11 +1,10 @@
 import Link from 'next/link';
-import { User, Link2, Bot, CreditCard, Bell, Shield } from 'lucide-react';
+import { User, Link2, CreditCard, Bell, Shield } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 const sections = [
   { href: '/settings/profile', icon: User, label: 'Profile', description: 'Manage your personal information and preferences' },
   { href: '/settings/accounts', icon: Link2, label: 'Connected Accounts', description: 'Manage your social media platform connections' },
-  { href: '/settings/agents', icon: Bot, label: 'AI Agents', description: 'Configure and customize your AI agents' },
   { href: '/settings/billing', icon: CreditCard, label: 'Billing & Subscription', description: 'Manage your subscription and payment methods' },
   { href: '/settings/security', icon: Shield, label: 'Security & Privacy', description: 'Password, 2FA, and privacy settings' },
   { href: '/settings/notifications', icon: Bell, label: 'Notifications', description: 'Control how and when you receive notifications' },

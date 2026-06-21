@@ -474,6 +474,8 @@ class PaginatedIdeas(BaseModel):
 
 class GenerateIdeasRequest(BaseModel):
     count: int = Field(5, ge=1, le=20)
+    topic: str | None = Field(default=None, max_length=300)
+    niche: str | None = Field(default=None, max_length=80)
 
 
 class IdeaStatusUpdate(BaseModel):
@@ -537,9 +539,30 @@ async def generate_ideas(
     db: DbSession,
 ) -> list[ContentIdeaOut]:
     """Generate N ideas via LLM and persist them as ContentProjects in IDEA status."""
+    from app.services.content_agent.niche_resolver import get_primary_niche_slug
+
     llm = await get_llm_provider()
+
+    # Niche-aware: anchor ideas to the workspace's primary niche (or an explicit
+    # override) plus an optional topic, so suggestions are tailored — not generic.
+    niche = body.niche or await get_primary_niche_slug(db, workspace.id)
+    context_bits: list[str] = []
+    if niche:
+        context_bits.append(f"creator niche: {niche}")
+    if body.topic:
+        context_bits.append(f"topic focus: {body.topic}")
+    context_line = (
+        " Tailor every idea to this creator — " + "; ".join(context_bits) + "."
+        if context_bits
+        else ""
+    )
+
+    system_prompt = (
+        "You are a creative social-media content strategist who specializes in "
+        "niche-native, platform-aware viral content. Always return strict JSON."
+    )
     prompt = (
-        f"Generate {body.count} viral social media content ideas. "
+        f"Generate {body.count} viral social media content ideas.{context_line} "
         "Return JSON object {\"ideas\": [{title, description, hook, content_type, "
         "platforms (array), hashtags (array), estimated_virality (0-1)}]}."
     )
@@ -547,11 +570,12 @@ async def generate_ideas(
         resp = await llm.complete(
             task_type=TaskType.GENERATION,
             messages=[
-                {"role": "system", "content": "You are a creative content strategist."},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt},
             ],
             workspace_id=workspace.id,
             json_mode=True,
+            cache_system_prompt=True,
         )
         data = json.loads(resp.content)
         raw_ideas = data.get("ideas") if isinstance(data, dict) else data
